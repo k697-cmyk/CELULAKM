@@ -3,202 +3,751 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduTrack - Sistema de Gestión Escolar</title>
+    <title>Gestión Escolar KMT</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- jsPDF + html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Firebase Compat SDK (App, Database, Auth) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        display: ['Space Grotesk', 'sans-serif'],
-                        body: ['DM Sans', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* === Variables de diseño === */
         :root {
-            --bg: #0c1017; --bg2: #111827; --fg: #f1f5f9; --muted: #7c8a9e;
-            --accent: #0d9488; --accent-light: #2dd4bf; --amber: #f59e0b; --amber-light: #fbbf24;
-            --card: #161e2e; --border: #1f2d42; --danger: #ef4444; --success: #10b981;
+            --bg: #0B0F1A;
+            --fg: #F0F2F5;
+            --muted: #7B8794;
+            --accent: #10B981;
+            --accent-warm: #F59E0B;
+            --card: #141926;
+            --border: #1E2A3A;
+            --sidebar-bg: #0D1220;
+            --danger: #EF4444;
+            --info: #3B82F6;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
-        h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
-        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        
-        .login-bg { background: radial-gradient(ellipse at 15% 50%, rgba(13,148,136,0.12) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(245,158,11,0.08) 0%, transparent 50%), var(--bg); }
-        .login-card { background: rgba(22,30,46,0.85); backdrop-filter: blur(24px); border: 1px solid rgba(13,148,136,0.15); }
-        
-        .particle { position: absolute; border-radius: 50%; pointer-events: none; animation: floatUp linear infinite; opacity: 0; }
-        @keyframes floatUp { 0% { transform: translateY(0) scale(0); opacity: 0; } 15% { opacity: 0.8; transform: translateY(-10vh) scale(1); } 85% { opacity: 0.6; } 100% { transform: translateY(-105vh) scale(0.3); opacity: 0; } }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            margin: 0;
+            overflow-x: hidden;
+        }
 
-        .sidebar { background: var(--card); border-right: 1px solid var(--border); transition: transform 0.3s cubic-bezier(.4,0,.2,1); z-index: 50; }
-        .nav-item { border-left: 3px solid transparent; transition: all 0.2s ease; cursor: pointer; }
-        .nav-item:hover { background: rgba(13,148,136,0.08); border-left-color: rgba(13,148,136,0.4); }
-        .nav-item.active { background: rgba(13,148,136,0.12); border-left-color: var(--accent); color: var(--accent-light); }
+        /* === Pantalla de ingreso === */
+        #landing {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #0B0F1A 0%, #112233 40%, #0D7377 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        #landing::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(16,185,129,0.18), transparent 70%);
+            top: -180px; right: -180px;
+            border-radius: 50%;
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+        #landing::after {
+            content: '';
+            position: absolute;
+            width: 450px; height: 450px;
+            background: radial-gradient(circle, rgba(245,158,11,0.12), transparent 70%);
+            bottom: -120px; left: -120px;
+            border-radius: 50%;
+            animation: pulse-glow 5s ease-in-out infinite reverse;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        .landing-content { text-align: center; z-index: 10; position: relative; }
+        .landing-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 3.8rem;
+            margin-bottom: 0.3rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .landing-subtitle {
+            color: var(--muted);
+            font-size: 1.15rem;
+            margin-bottom: 2.8rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        .btn-ingresar {
+            padding: 18px 64px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            border: 2px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 60px;
+            transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+            cursor: pointer;
+        }
+        .btn-ingresar:hover {
+            background: var(--accent);
+            color: var(--bg);
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(16,185,129,0.3);
+        }
+        .btn-ingresar:active { transform: translateY(0); }
 
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; transition: border-color 0.25s, box-shadow 0.25s; }
-        .card:hover { border-color: rgba(13,148,136,0.25); box-shadow: 0 0 24px rgba(13,148,136,0.04); }
+        /* Partículas flotantes en el landing */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float-p linear infinite;
+        }
+        @keyframes float-p {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-80px) rotate(720deg); opacity: 0; }
+        }
 
-        .ipt { background: var(--bg2); border: 1px solid var(--border); color: var(--fg); border-radius: 8px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
-        .ipt:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
-        .ipt::placeholder { color: var(--muted); opacity: 0.55; }
-        select.ipt { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%237c8a9e' viewBox='0 0 16 16'%3E%3Cpath d='M8 12L2 5h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+        /* === App principal === */
+        #app { display: none; min-height: 100vh; }
 
-        .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 600; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-        .btn:active { transform: scale(0.97); }
-        .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: var(--accent-light); box-shadow: 0 4px 14px rgba(13,148,136,0.25); }
-        .btn-google { background: #fff; color: #333; } .btn-google:hover { background: #f3f4f6; }
-        .btn-amber { background: var(--amber); color: #0c1017; } .btn-amber:hover { background: var(--amber-light); }
-        .btn-danger { background: var(--danger); color: #fff; } .btn-danger:hover { background: #dc2626; }
-        .btn-ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); } .btn-ghost:hover { border-color: var(--accent); background: rgba(13,148,136,0.05); }
-        .btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 256px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-brand { padding: 22px 20px; border-bottom: 1px solid var(--border); }
+        .sidebar-brand h5 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            margin: 0;
+            color: var(--accent);
+            font-size: 1.15rem;
+        }
+        .sidebar-brand small { color: var(--muted); font-size: 0.72rem; }
+        .sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
+        .nav-item-custom {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 16px; border-radius: 10px;
+            color: var(--muted); text-decoration: none;
+            cursor: pointer; transition: all 0.2s ease;
+            margin-bottom: 3px; font-weight: 500; font-size: 0.92rem;
+        }
+        .nav-item-custom:hover { background: rgba(16,185,129,0.08); color: var(--fg); }
+        .nav-item-custom.active { background: rgba(16,185,129,0.15); color: var(--accent); }
+        .nav-item-custom i { font-size: 1.15rem; width: 22px; text-align: center; }
+        .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border); }
 
-        .dtable { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .dtable th { background: rgba(13,148,136,0.08); color: var(--accent-light); font-weight: 600; text-align: left; padding: 11px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
-        .dtable td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-        .dtable tbody tr:hover td { background: rgba(13,148,136,0.03); }
+        /* Contenido principal */
+        .main-content { margin-left: 256px; padding: 28px 32px; min-height: 100vh; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; font-size: 1.85rem; margin-bottom: 2px;
+        }
+        .page-header p { color: var(--muted); margin: 0; font-size: 0.92rem; }
 
-        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
-        .badge-positive { background: rgba(16,185,129,0.14); color: #34d399; } .badge-negative { background: rgba(239,68,68,0.14); color: #f87171; }
-        .badge-task { background: rgba(245,158,11,0.14); color: #fbbf24; } .badge-observation { background: rgba(59,130,246,0.14); color: #60a5fa; }
-        .badge-role { background: rgba(13,148,136,0.14); color: var(--accent-light); }
+        /* Tarjetas */
+        .card-custom {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .card-custom:hover { border-color: rgba(16,185,129,0.25); }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.18s ease; }
-        .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; max-width: 520px; width: 92%; max-height: 85vh; overflow-y: auto; animation: slideUp 0.25s ease; padding: 28px; }
-        .modal-box.wide { max-width: 700px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        /* Tarjetas de estadísticas */
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 70px; height: 70px;
+            border-radius: 0 14px 0 70px;
+            opacity: 0.1;
+        }
+        .stat-card.green::after { background: var(--accent); }
+        .stat-card.amber::after { background: var(--accent-warm); }
+        .stat-card.blue::after { background: var(--info); }
+        .stat-card.red::after { background: var(--danger); }
+        .stat-number { font-size: 2.1rem; font-weight: 700; line-height: 1; }
+        .stat-label { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
 
-        #toastBox { position: fixed; top: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
-        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; font-size: 0.88rem; box-shadow: 0 8px 28px rgba(0,0,0,0.35); animation: toastIn 0.3s ease; display: flex; align-items: center; gap: 8px; }
-        .toast.out { animation: toastOut 0.3s ease forwards; }
-        .toast-success { background: #065f46; color: #a7f3d0; border-left: 4px solid var(--success); } .toast-error { background: #7f1d1d; color: #fca5a5; border-left: 4px solid var(--danger); }
-        .toast-warning { background: #78350f; color: #fde68a; border-left: 4px solid var(--amber); } .toast-info { background: #1e3a5f; color: #93c5fd; border-left: 4px solid #3b82f6; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(80px); } to { opacity: 1; transform: translateX(0); } } @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(80px); } }
+        /* Tablas */
+        .table-custom { color: var(--fg); }
+        .table-custom thead th {
+            border-bottom: 1px solid var(--border);
+            color: var(--muted); font-weight: 600;
+            font-size: 0.78rem; text-transform: uppercase;
+            letter-spacing: 0.8px; padding: 10px 12px;
+        }
+        .table-custom tbody td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 12px; vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .table-custom tbody tr:hover { background: rgba(16,185,129,0.04); }
 
-        .stat-card { position: relative; overflow: hidden; }
-        .stat-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; opacity: 0.06; }
-        .stat-card.t::before { background: var(--accent); } .stat-card.a::before { background: var(--amber); } .stat-card.r::before { background: var(--danger); } .stat-card.b::before { background: #3b82f6; }
+        /* Botones */
+        .btn-accent {
+            background: var(--accent); color: var(--bg);
+            border: none; font-weight: 600; border-radius: 8px;
+            padding: 9px 18px; transition: all 0.2s ease; font-size: 0.88rem;
+        }
+        .btn-accent:hover {
+            background: #0EA472; color: var(--bg);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .btn-outline-accent {
+            background: transparent; color: var(--accent);
+            border: 1px solid var(--accent); font-weight: 600;
+            border-radius: 8px; padding: 9px 18px;
+            transition: all 0.2s ease; font-size: 0.88rem;
+        }
+        .btn-outline-accent:hover { background: var(--accent); color: var(--bg); }
+        .btn-sm-icon {
+            width: 32px; height: 32px; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 8px; border: 1px solid var(--border);
+            background: transparent; color: var(--muted);
+            transition: all 0.2s ease; cursor: pointer; font-size: 0.85rem;
+        }
+        .btn-sm-icon:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-sm-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
 
-        .pdf-area { position: absolute; left: -9999px; top: 0; width: 780px; background: #fff; color: #1e293b; padding: 36px; font-family: 'DM Sans', sans-serif; }
-        .pdf-area h2 { font-family: 'Space Grotesk', sans-serif; } .pdf-area table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        .pdf-area th, .pdf-area td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 0.82rem; text-align: left; } .pdf-area th { background: #f1f5f9; font-weight: 600; }
+        /* Badges de tipo de anotación */
+        .badge-tipo { padding: 4px 10px; border-radius: 20px; font-size: 0.73rem; font-weight: 600; }
+        .badge-positiva { background: rgba(16,185,129,0.15); color: #10B981; }
+        .badge-negativa { background: rgba(239,68,68,0.15); color: #EF4444; }
+        .badge-tarea { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .badge-observacion { background: rgba(59,130,246,0.15); color: #3B82F6; }
 
-        .timeline-item { position: relative; padding-left: 28px; padding-bottom: 18px; border-left: 2px solid var(--border); margin-left: 8px; }
-        .timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
-        .timeline-item::before { content: ''; position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--accent); background: var(--bg); }
-        .timeline-item.positive::before { border-color: var(--success); } .timeline-item.negative::before { border-color: var(--danger); }
-        .timeline-item.task::before { border-color: var(--amber); } .timeline-item.observation::before { border-color: #3b82f6; }
+        /* Formularios */
+        .form-control-custom {
+            background: var(--bg); border: 1px solid var(--border);
+            color: var(--fg); border-radius: 8px; padding: 9px 13px;
+            transition: border-color 0.2s ease; font-size: 0.9rem;
+        }
+        .form-control-custom:focus {
+            background: var(--bg); border-color: var(--accent);
+            color: var(--fg); box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+        }
+        .form-control-custom::placeholder { color: var(--muted); }
+        .form-label-custom {
+            color: var(--muted); font-size: 0.8rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px;
+        }
+        select.form-control-custom {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237B8794' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 34px;
+        }
+        select.form-control-custom option { background: var(--card); color: var(--fg); }
 
-        .conn-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }
-        .conn-on { background: rgba(16,185,129,0.12); color: #34d399; } .conn-off { background: rgba(245,158,11,0.12); color: #fbbf24; }
-        .sec-fade { animation: secFade 0.3s ease; } @keyframes secFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        /* Modales */
+        .modal-content-custom {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; color: var(--fg);
+        }
+        .modal-header-custom { border-bottom: 1px solid var(--border); padding: 18px 22px; }
+        .modal-body-custom { padding: 22px; }
+        .modal-footer-custom { border-top: 1px solid var(--border); padding: 14px 22px; }
 
-        @media (max-width: 768px) { .sidebar { position: fixed; transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; } }
+        /* Secciones */
+        .section-content { display: none; }
+        .section-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Timeline de anotaciones */
+        .annotation-item {
+            position: relative; padding-left: 22px; padding-bottom: 14px;
+            border-left: 2px solid var(--border); margin-left: 8px;
+        }
+        .annotation-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+        .annotation-item::before {
+            content: '';
+            position: absolute; left: -6px; top: 4px;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--accent);
+        }
+        .annotation-item.positiva::before { background: #10B981; }
+        .annotation-item.negativa::before { background: #EF4444; }
+        .annotation-item.tarea::before { background: #F59E0B; }
+        .annotation-item.observacion::before { background: #3B82F6; }
+
+        /* Podio top 3 */
+        .podium-item {
+            text-align: center; padding: 20px 14px;
+            border-radius: 14px; background: var(--card);
+            border: 1px solid var(--border); transition: all 0.3s ease;
+        }
+        .podium-item:hover { transform: translateY(-4px); border-color: rgba(16,185,129,0.3); }
+        .podium-rank {
+            font-size: 2rem; font-weight: 900;
+            font-family: 'Playfair Display', serif;
+        }
+        .podium-rank.gold { color: #F59E0B; }
+        .podium-rank.silver { color: #94A3B8; }
+        .podium-rank.bronze { color: #D97706; }
+
+        /* Estado vacío */
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+        .empty-state i { font-size: 2.8rem; margin-bottom: 14px; display: block; opacity: 0.3; }
+
+        /* Chart container */
+        .chart-container {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px;
+        }
+
+        /* Toast personalizado */
+        .toast-custom {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--fg); border-radius: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* Botón móvil */
+        .mobile-toggle {
+            display: none;
+            position: fixed; top: 14px; left: 14px; z-index: 1060;
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--fg); border-radius: 10px;
+            padding: 7px 11px; font-size: 1.15rem; cursor: pointer;
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55); z-index: 1040;
+        }
+        .sidebar-overlay.show { display: block; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px 16px; padding-top: 60px; }
+            .mobile-toggle { display: block !important; }
+            .landing-title { font-size: 2.4rem; }
+            .btn-ingresar { padding: 14px 40px; font-size: 1rem; letter-spacing: 3px; }
+        }
+
+        /* Animación de carga */
+        .spinner-landing {
+            width: 28px; height: 28px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* PDF oculto */
+        #pdf-content {
+            position: absolute; left: -9999px; top: 0;
+            width: 800px; background: #fff; color: #222;
+            padding: 40px; font-family: 'DM Sans', sans-serif;
+        }
+        #pdf-content h2 { color: #0D7377; font-family: 'Playfair Display', serif; }
+        #pdf-content table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        #pdf-content th, #pdf-content td {
+            border: 1px solid #ddd; padding: 8px 10px;
+            text-align: left; font-size: 0.82rem;
+        }
+        #pdf-content th { background: #0D7377; color: #fff; font-weight: 600; }
+        #pdf-content .student-block { margin-bottom: 24px; page-break-inside: avoid; }
+        #pdf-content .student-block h4 { margin: 0 0 4px; color: #1a1a2e; }
+        #pdf-content .student-block small { color: #666; }
     </style>
 </head>
 <body>
 
-<!-- ═══════════════ PÁGINA DE LOGIN (SOLO GOOGLE) ═══════════════ -->
-<div id="loginPage" class="login-bg min-h-screen flex items-center justify-center relative overflow-hidden">
-    <div id="particlesBox" class="absolute inset-0 pointer-events-none"></div>
-    <div class="login-card rounded-2xl p-8 w-full max-w-sm relative z-10 text-center">
-        <div class="mb-8">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-4" style="background:rgba(13,148,136,0.12);">
-                <i class="fas fa-graduation-cap text-2xl" style="color:var(--accent-light)"></i>
-            </div>
-            <h1 class="text-2xl font-bold tracking-tight">EduTrack</h1>
-            <p class="text-sm mt-1" style="color:var(--muted)">Sistema de Gestión Escolar</p>
+<!-- ==================== CONTENEDOR DE TOASTS ==================== -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999" id="toast-container"></div>
+
+<!-- ==================== PANTALLA DE INGRESO ==================== -->
+<div id="landing">
+    <div class="landing-content">
+        <h1 class="landing-title">Gestion Escolar</h1>
+        <p class="landing-subtitle">Sistema de gestion de estudiantes, cursos y participaciones</p>
+        <div id="landing-btn-area">
+            <button class="btn-ingresar" id="btn-ingresar" onclick="ingresarApp()">INGRESAR</button>
         </div>
-        <button onclick="signInWithGoogle()" class="btn btn-google w-full justify-center text-sm py-3 shadow-lg">
-            <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            Iniciar sesión con Google
-        </button>
-        <p class="text-xs mt-6" style="color:var(--muted);opacity:0.6">Acceso exclusivo con cuenta Google autorizada</p>
     </div>
 </div>
 
-<!-- ═══════════════ APLICACIÓN PRINCIPAL ═══════════════ -->
-<div id="mainApp" class="hidden min-h-screen flex">
-    <aside id="sidebar" class="sidebar w-60 flex-shrink-0 flex flex-col h-screen sticky top-0">
-        <div class="p-5 border-b" style="border-color:var(--border)">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(13,148,136,0.15)">
-                    <i class="fas fa-graduation-cap" style="color:var(--accent-light)"></i>
-                </div>
-                <div><h2 class="text-sm font-bold leading-tight">EduTrack</h2><span id="connStatus" class="conn-badge conn-off"><i class="fas fa-circle text-[6px]"></i> Conectando</span></div>
+<!-- ==================== APLICACION PRINCIPAL ==================== -->
+<div id="app">
+    <!-- Botón toggle móvil -->
+    <button class="mobile-toggle" id="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+    <!-- Overlay móvil -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h5><i class="bi bi-mortarboard-fill me-2"></i>KMT School</h5>
+            <small>Gestion Escolar</small>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item-custom active" data-section="dashboard" onclick="navigateTo('dashboard')">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </div>
+            <div class="nav-item-custom" data-section="estudiantes" onclick="navigateTo('estudiantes')">
+                <i class="bi bi-people-fill"></i> Estudiantes
+            </div>
+            <div class="nav-item-custom" data-section="cursos" onclick="navigateTo('cursos')">
+                <i class="bi bi-book-fill"></i> Cursos
+            </div>
+            <div class="nav-item-custom" data-section="anotaciones" onclick="navigateTo('anotaciones')">
+                <i class="bi bi-journal-text"></i> Anotaciones
+            </div>
+            <div class="nav-item-custom" data-section="estadisticas" onclick="navigateTo('estadisticas')">
+                <i class="bi bi-bar-chart-fill"></i> Estadisticas
             </div>
         </div>
-        <nav class="flex-1 py-3">
-            <div class="px-3 mb-2"><span class="text-[0.65rem] font-bold uppercase tracking-widest" style="color:var(--muted);opacity:0.5">Menú</span></div>
-            <div class="nav-item active flex items-center gap-3 px-5 py-2.5 text-sm" data-section="estudiantes"><i class="fas fa-users w-5 text-center opacity-70"></i> Estudiantes</div>
-            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="cursos"><i class="fas fa-book w-5 text-center opacity-70"></i> Cursos</div>
-            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="anotaciones"><i class="fas fa-clipboard-list w-5 text-center opacity-70"></i> Anotaciones</div>
-            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="estadisticas"><i class="fas fa-chart-pie w-5 text-center opacity-70"></i> Estadísticas</div>
-            <div class="px-3 mt-5 mb-2"><span class="text-[0.65rem] font-bold uppercase tracking-widest" style="color:var(--muted);opacity:0.5">Herramientas</span></div>
-            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" onclick="exportBackup()"><i class="fas fa-download w-5 text-center opacity-70"></i> Exportar Respaldo</div>
-            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload w-5 text-center opacity-70"></i> Importar Respaldo</div>
-            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
-        </nav>
-        <div class="p-4 border-t" style="border-color:var(--border)">
-            <div class="flex items-center gap-3 mb-3">
-                <img id="userPhoto" class="w-8 h-8 rounded-full object-cover hidden" alt="Avatar">
-                <div id="userInitialBox" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(13,148,136,0.18);color:var(--accent-light)"><span id="userInitial">?</span></div>
-                <div class="flex-1 min-w-0">
-                    <p id="userName" class="text-sm font-semibold truncate">Cargando...</p>
-                    <span id="userRole" class="badge badge-role">--</span>
+        <div class="sidebar-footer">
+            <div class="nav-item-custom" onclick="exportBackup()" title="Exportar respaldo JSON">
+                <i class="bi bi-download"></i> Exportar respaldo
+            </div>
+            <div class="nav-item-custom" onclick="document.getElementById('import-file').click()" title="Importar respaldo JSON">
+                <i class="bi bi-upload"></i> Importar respaldo
+            </div>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(event)">
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+
+        <!-- ===== DASHBOARD ===== -->
+        <div class="section-content active" id="sec-dashboard">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Resumen general del sistema</p>
+            </div>
+            <div class="row g-3 mb-4" id="dashboard-stats"></div>
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h6 style="font-weight:600;margin-bottom:16px;">Estudiantes por curso</h6>
+                        <canvas id="chart-dashboard" height="220"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card-custom" style="height:100%;">
+                        <h6 style="font-weight:600;margin-bottom:16px;">Ultimas anotaciones</h6>
+                        <div id="dashboard-recent-annotations"></div>
+                    </div>
                 </div>
             </div>
-            <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</button>
         </div>
-    </aside>
-    <div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
-    <main class="flex-1 min-h-screen overflow-y-auto">
-        <header class="md:hidden flex items-center gap-3 p-4 border-b" style="border-color:var(--border);background:var(--card)">
-            <button onclick="toggleSidebar()" class="btn btn-ghost btn-sm"><i class="fas fa-bars"></i></button>
-            <h2 class="text-sm font-bold">EduTrack</h2>
-            <span id="mobileUser" class="ml-auto text-xs font-medium" style="color:var(--muted)">...</span>
-        </header>
-        <div class="p-5 md:p-8"><div id="contentArea"></div></div>
-    </main>
+
+        <!-- ===== ESTUDIANTES ===== -->
+        <div class="section-content" id="sec-estudiantes">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2>Estudiantes</h2>
+                    <p>Gestiona los estudiantes del sistema</p>
+                </div>
+                <button class="btn-accent" onclick="openEstudianteModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Agregar estudiante
+                </button>
+            </div>
+            <div class="card-custom">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead><tr>
+                            <th>Nombre</th><th>Email</th><th>Curso</th><th>Anotaciones</th><th style="width:120px;">Acciones</th>
+                        </tr></thead>
+                        <tbody id="tbody-estudiantes"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state d-none" id="empty-estudiantes">
+                    <i class="bi bi-people"></i>
+                    <p>No hay estudiantes registrados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CURSOS ===== -->
+        <div class="section-content" id="sec-cursos">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2>Cursos</h2>
+                    <p>Administra los cursos disponibles</p>
+                </div>
+                <button class="btn-accent" onclick="openCursoModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Agregar curso
+                </button>
+            </div>
+            <div class="row g-3" id="cursos-grid"></div>
+            <div class="empty-state d-none" id="empty-cursos">
+                <i class="bi bi-book"></i>
+                <p>No hay cursos creados</p>
+            </div>
+        </div>
+
+        <!-- ===== ANOTACIONES ===== -->
+        <div class="section-content" id="sec-anotaciones">
+            <div class="page-header">
+                <h2>Anotaciones</h2>
+                <p>Registro de participaciones y observaciones por estudiante</p>
+            </div>
+            <div class="row g-3">
+                <!-- Selector de estudiante y formulario -->
+                <div class="col-lg-5">
+                    <div class="card-custom mb-3">
+                        <label class="form-label-custom">Seleccionar estudiante</label>
+                        <select class="form-control-custom w-100" id="select-estudiante-anot" onchange="renderAnotacionesEstudiante()">
+                            <option value="">-- Elige un estudiante --</option>
+                        </select>
+                    </div>
+                    <div class="card-custom" id="form-anotacion-wrap" style="display:none;">
+                        <h6 style="font-weight:600;margin-bottom:14px;">Nueva anotacion</h6>
+                        <div class="mb-2">
+                            <label class="form-label-custom">Fecha</label>
+                            <input type="date" class="form-control-custom w-100" id="anot-fecha">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label-custom">Tipo</label>
+                            <select class="form-control-custom w-100" id="anot-tipo">
+                                <option value="positiva">Participacion positiva</option>
+                                <option value="negativa">Participacion negativa</option>
+                                <option value="tarea">Tarea pendiente</option>
+                                <option value="observacion">Observacion general</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">Texto</label>
+                            <textarea class="form-control-custom w-100" id="anot-texto" rows="3" placeholder="Descripcion de la anotacion..."></textarea>
+                        </div>
+                        <button class="btn-accent w-100" onclick="addAnotacion()">
+                            <i class="bi bi-plus-circle me-1"></i> Agregar anotacion
+                        </button>
+                    </div>
+                </div>
+                <!-- Historial de anotaciones -->
+                <div class="col-lg-7">
+                    <div class="card-custom" style="min-height:300px;">
+                        <h6 style="font-weight:600;margin-bottom:16px;">Historial de anotaciones</h6>
+                        <div id="anotaciones-timeline"></div>
+                        <div class="empty-state" id="empty-anotaciones">
+                            <i class="bi bi-journal-text"></i>
+                            <p>Selecciona un estudiante para ver sus anotaciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ESTADISTICAS ===== -->
+        <div class="section-content" id="sec-estadisticas">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2>Estadisticas</h2>
+                    <p>Visualizacion de datos del sistema</p>
+                </div>
+                <button class="btn-outline-accent" onclick="exportPDF()">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Exportar PDF
+                </button>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h6 style="font-weight:600;margin-bottom:16px;">Estudiantes por curso</h6>
+                        <canvas id="chart-est-curso" height="260"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h6 style="font-weight:600;margin-bottom:16px;">Distribucion de anotaciones por tipo</h6>
+                        <canvas id="chart-anot-tipo" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <h6 style="font-weight:600;margin-bottom:14px;">Top 3 estudiantes con mas participaciones positivas</h6>
+                    <div class="row g-3" id="top3-container"></div>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="stat-card blue" style="text-align:center;">
+                        <div class="stat-number" id="pct-observacion">0%</div>
+                        <div class="stat-label">Estudiantes con al menos una observacion</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card green" style="text-align:center;">
+                        <div class="stat-number" id="total-positivas">0</div>
+                        <div class="stat-label">Total anotaciones positivas</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card amber" style="text-align:center;">
+                        <div class="stat-number" id="total-tareas">0</div>
+                        <div class="stat-label">Total tareas pendientes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- ==================== MODAL: ESTUDIANTE ==================== -->
+<div class="modal fade" id="modal-estudiante" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title" id="modal-estudiante-title">Agregar estudiante</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <input type="hidden" id="est-id">
+                <div class="mb-3">
+                    <label class="form-label-custom">Nombre</label>
+                    <input type="text" class="form-control-custom w-100" id="est-nombre" placeholder="Nombre del estudiante">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">Apellido</label>
+                    <input type="text" class="form-control-custom w-100" id="est-apellido" placeholder="Apellido del estudiante">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">Email</label>
+                    <input type="email" class="form-control-custom w-100" id="est-email" placeholder="correo@ejemplo.com">
+                </div>
+                <div class="mb-0">
+                    <label class="form-label-custom">Curso asignado</label>
+                    <select class="form-control-custom w-100" id="est-curso">
+                        <option value="">-- Sin curso --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-sm" style="color:var(--muted)" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-accent" onclick="saveEstudiante()">Guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="toastBox"></div>
-<div id="modalBox"></div>
-<div id="pdfArea" class="pdf-area"></div>
+<!-- ==================== MODAL: CURSO ==================== -->
+<div class="modal fade" id="modal-curso" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title" id="modal-curso-title">Agregar curso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <input type="hidden" id="cur-id">
+                <div class="mb-3">
+                    <label class="form-label-custom">Nombre del curso</label>
+                    <input type="text" class="form-control-custom w-100" id="cur-nombre" placeholder="Ej: Matematicas">
+                </div>
+                <div class="mb-0">
+                    <label class="form-label-custom">Descripcion (opcional)</label>
+                    <input type="text" class="form-control-custom w-100" id="cur-descripcion" placeholder="Breve descripcion del curso">
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-sm" style="color:var(--muted)" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-accent" onclick="saveCurso()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL: ELIMINAR CURSO ==================== -->
+<div class="modal fade" id="modal-delete-curso" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">Eliminar curso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <p id="delete-curso-msg" style="margin-bottom:16px;"></p>
+                <div class="mb-3" id="reassign-group" style="display:none;">
+                    <label class="form-label-custom">Reasignar a curso</label>
+                    <select class="form-control-custom w-100" id="reassign-curso"></select>
+                </div>
+                <div class="form-check mb-2" id="chk-delete-students-wrap" style="display:none;">
+                    <input class="form-check-input" type="checkbox" id="chk-delete-students" onchange="toggleReassign()">
+                    <label class="form-check-label" for="chk-delete-students" style="color:var(--danger);font-size:0.9rem;">
+                        Eliminar tambien a todos los estudiantes de este curso
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-sm" style="color:var(--muted)" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-sm" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-weight:600;" onclick="confirmDeleteCurso()">Eliminar curso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== CONTENIDO OCULTO PARA PDF ==================== -->
+<div id="pdf-content"></div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- jsPDF y html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-/* ══════════════════════════════════════════════════════════
-   CONFIGURACIÓN Y VARIABLES GLOBALES
-   ══════════════════════════════════════════════════════════ */
-
-// ⚠️ CAMBIA ESTO POR TU CORREO DE GOOGLE PARA SER ADMIN
-const ADMIN_EMAILS = ['TU_CORREO@gmail.com']; 
-
-const App = { currentUser: null, courses: {}, students: {}, annotations: {}, activeSection: 'estudiantes', charts: {}, useFirebase: false };
-function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
-
-// ═══════════════ FIREBASE CONFIG & INIT ═══════════════
+// =====================================================
+// CONFIGURACION DE FIREBASE
+// =====================================================
 const firebaseConfig = {
     apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
     authDomain: "celulakmt.firebaseapp.com",
@@ -209,182 +758,976 @@ const firebaseConfig = {
     appId: "1:623088700057:web:fffb8fccbae5ff6d834608",
     measurementId: "G-CY1HY229XX"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-let db, auth;
-try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    auth = firebase.auth();
-} catch (e) { console.error('Error init Firebase:', e); }
+// =====================================================
+// ESTADO DE LA APLICACION
+// =====================================================
+let cursos = {};
+let estudiantes = {};
+let anotaciones = {};
+let currentSection = 'dashboard';
+let deleteCursoId = null;
+let chartInstances = {}; // Almacenar instancias de Chart.js para destruir antes de recrear
 
-// ═══════════════ AUTENTICACIÓN GOOGLE ═══════════════
-function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err => {
-        if (err.code !== 'auth/popup-closed-by-user') {
-            toast('Error al iniciar sesión: ' + err.message, 'error');
+// =====================================================
+// UTILIDADES
+// =====================================================
+
+// Mostrar notificación toast
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const id = 'toast-' + Date.now();
+    const iconMap = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill',
+        warning: 'bi-exclamation-circle-fill'
+    };
+    const colorMap = {
+        success: 'var(--accent)',
+        error: 'var(--danger)',
+        info: 'var(--info)',
+        warning: 'var(--accent-warm)'
+    };
+    const html = `
+        <div id="${id}" class="toast toast-custom show" role="alert" style="min-width:280px;">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi ${iconMap[type] || iconMap.info}" style="color:${colorMap[type]};font-size:1.1rem;"></i>
+                <span style="font-size:0.88rem;">${message}</span>
+                <button type="button" class="btn-close btn-close-white ms-auto" style="font-size:0.65rem;" onclick="document.getElementById('${id}').remove()"></button>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+    // Auto-eliminar después de 3.5 segundos
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }, 3500);
+}
+
+// Formatear fecha para mostrar
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// Obtener nombre de curso por ID
+function getCursoNombre(cursoId) {
+    if (!cursoId || !cursos[cursoId]) return 'Sin curso';
+    return cursos[cursoId].nombre;
+}
+
+// Obtener nombre completo de estudiante
+function getEstudianteNombre(estId) {
+    if (!estId || !estudiantes[estId]) return 'Desconocido';
+    return (estudiantes[estId].nombre || '') + ' ' + (estudiantes[estId].apellido || '');
+}
+
+// Contar anotaciones de un estudiante
+function countAnotaciones(estId) {
+    return Object.values(anotaciones).filter(a => a.estudianteId === estId).length;
+}
+
+// Obtener la fecha de hoy en formato YYYY-MM-DD
+function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// =====================================================
+// AUTENTICACION ANONIMA Y INGRESO
+// =====================================================
+
+// Crear partículas flotantes en la pantalla de ingreso
+function createParticles() {
+    const landing = document.getElementById('landing');
+    const colors = ['rgba(16,185,129,0.4)', 'rgba(245,158,11,0.3)', 'rgba(59,130,246,0.3)'];
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 6 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.animationDuration = (Math.random() * 8 + 6) + 's';
+        p.style.animationDelay = (Math.random() * 6) + 's';
+        landing.appendChild(p);
+    }
+}
+
+// Función principal al hacer clic en INGRESAR
+async function ingresarApp() {
+    const btnArea = document.getElementById('landing-btn-area');
+    btnArea.innerHTML = '<div class="spinner-landing"></div>';
+
+    try {
+        // Autenticación anónima para cumplir regla "auth != null"
+        await auth.signInAnonymously();
+        // Cargar datos desde Firebase
+        await loadData();
+        // Ocultar landing y mostrar app
+        document.getElementById('landing').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        renderAll();
+        showToast('Sesion iniciada correctamente', 'success');
+    } catch (error) {
+        console.error('Error al ingresar:', error);
+        btnArea.innerHTML = '<button class="btn-ingresar" onclick="ingresarApp()">INGRESAR</button>';
+        showToast('Error al conectar: ' + error.message, 'error');
+    }
+}
+
+// =====================================================
+// CARGA DE DATOS DESDE FIREBASE
+// =====================================================
+function loadData() {
+    return new Promise((resolve) => {
+        let loaded = 0;
+        const checkDone = () => { if (loaded >= 3) resolve(); };
+
+        // Escuchar cambios en cursos
+        db.ref('cursos').on('value', (snap) => {
+            cursos = snap.val() || {};
+            loaded++;
+            checkDone();
+            renderIfAppVisible();
+        });
+
+        // Escuchar cambios en estudiantes
+        db.ref('estudiantes').on('value', (snap) => {
+            estudiantes = snap.val() || {};
+            loaded++;
+            checkDone();
+            renderIfAppVisible();
+        });
+
+        // Escuchar cambios en anotaciones
+        db.ref('anotaciones').on('value', (snap) => {
+            anotaciones = snap.val() || {};
+            loaded++;
+            checkDone();
+            renderIfAppVisible();
+        });
+    });
+}
+
+// Renderizar solo si la app es visible
+function renderIfAppVisible() {
+    if (document.getElementById('app').style.display === 'block') {
+        renderAll();
+    }
+}
+
+// =====================================================
+// PRECARGA DE DATOS DE EJEMPLO
+// =====================================================
+async function preloadData() {
+    const snap = await db.ref('cursos').once('value');
+    if (snap.exists()) return; // Ya hay datos, no precargar
+
+    // Crear cursos de ejemplo
+    const cur1Ref = db.ref('cursos').push();
+    const cur2Ref = db.ref('cursos').push();
+    const cur1Id = cur1Ref.key;
+    const cur2Id = cur2Ref.key;
+
+    await cur1Ref.set({ nombre: 'Matematicas', descripcion: 'Algebra y geometria' });
+    await cur2Ref.set({ nombre: 'Ciencias', descripcion: 'Ciencias naturales y fisica' });
+
+    // Crear estudiantes de ejemplo
+    const est1Ref = db.ref('estudiantes').push();
+    const est2Ref = db.ref('estudiantes').push();
+    const est3Ref = db.ref('estudiantes').push();
+    const est1Id = est1Ref.key;
+    const est2Id = est2Ref.key;
+    const est3Id = est3Ref.key;
+
+    await est1Ref.set({ nombre: 'Juan', apellido: 'Perez', email: 'juan.perez@escuela.com', cursoId: cur1Id });
+    await est2Ref.set({ nombre: 'Maria', apellido: 'Garcia', email: 'maria.garcia@escuela.com', cursoId: cur2Id });
+    await est3Ref.set({ nombre: 'Carlos', apellido: 'Lopez', email: 'carlos.lopez@escuela.com', cursoId: cur1Id });
+
+    // Crear anotaciones de ejemplo
+    const hoy = todayStr();
+    const ayer = (function() {
+        const d = new Date(); d.setDate(d.getDate()-1);
+        return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    })();
+
+    await db.ref('anotaciones').push({ estudianteId: est1Id, fecha: hoy, tipo: 'positiva', texto: 'Excelente participacion en clase de algebra' });
+    await db.ref('anotaciones').push({ estudianteId: est1Id, fecha: ayer, tipo: 'tarea', texto: 'Pendiente entrega del trabajo practico 3' });
+    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Muy buena comprension del tema de fisica' });
+    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: ayer, tipo: 'observacion', texto: 'Llego tarde a la clase de hoy' });
+    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Colaboro activamente en el trabajo grupal' });
+    await db.ref('anotaciones').push({ estudianteId: est3Id, fecha: hoy, tipo: 'negativa', texto: 'No participo durante la sesion de ejercicios' });
+    await db.ref('anotaciones').push({ estudianteId: est3Id, fecha: ayer, tipo: 'observacion', texto: 'Necesita refuerzo en el tema de geometria' });
+
+    showToast('Datos de ejemplo precargados', 'info');
+}
+
+// =====================================================
+// RENDERIZADO GENERAL
+// =====================================================
+function renderAll() {
+    renderDashboard();
+    renderEstudiantes();
+    renderCursos();
+    renderAnotacionesEstudiante();
+    renderEstadisticas();
+}
+
+// =====================================================
+// NAVEGACION ENTRE SECCIONES
+// =====================================================
+function navigateTo(section) {
+    currentSection = section;
+    // Actualizar clases activas del sidebar
+    document.querySelectorAll('.nav-item-custom[data-section]').forEach(el => {
+        el.classList.toggle('active', el.dataset.section === section);
+    });
+    // Mostrar/ocultar secciones
+    document.querySelectorAll('.section-content').forEach(el => {
+        el.classList.toggle('active', el.id === 'sec-' + section);
+    });
+    // Cerrar sidebar en móvil
+    if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('show');
+        document.getElementById('sidebar-overlay').classList.remove('show');
+    }
+    // Re-renderizar la sección activa
+    if (section === 'estadisticas') renderEstadisticas();
+    if (section === 'dashboard') renderDashboard();
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+    document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+
+// =====================================================
+// DASHBOARD
+// =====================================================
+function renderDashboard() {
+    const totalEst = Object.keys(estudiantes).length;
+    const totalCur = Object.keys(cursos).length;
+    const totalAnot = Object.keys(anotaciones).length;
+    const totalPos = Object.values(anotaciones).filter(a => a.tipo === 'positiva').length;
+
+    // Tarjetas de estadísticas
+    document.getElementById('dashboard-stats').innerHTML = `
+        <div class="col-6 col-md-3">
+            <div class="stat-card green">
+                <div class="stat-number">${totalEst}</div>
+                <div class="stat-label">Estudiantes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card amber">
+                <div class="stat-number">${totalCur}</div>
+                <div class="stat-label">Cursos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card blue">
+                <div class="stat-number">${totalAnot}</div>
+                <div class="stat-label">Anotaciones</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card green">
+                <div class="stat-number">${totalPos}</div>
+                <div class="stat-label">Positivas</div>
+            </div>
+        </div>
+    `;
+
+    // Gráfico de estudiantes por curso
+    renderChart('chart-dashboard', 'bar', getEstudiantesPorCursoData());
+
+    // Últimas anotaciones (5 más recientes)
+    const anotArr = Object.entries(anotaciones).sort((a,b) => (b[1].fecha||'').localeCompare(a[1].fecha||'')).slice(0,5);
+    const recentDiv = document.getElementById('dashboard-recent-annotations');
+    if (anotArr.length === 0) {
+        recentDiv.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Sin anotaciones registradas</p>';
+    } else {
+        recentDiv.innerHTML = anotArr.map(([id, a]) => `
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span style="font-weight:600;font-size:0.85rem;">${getEstudianteNombre(a.estudianteId)}</span>
+                    <span class="badge-tipo badge-${a.tipo}">${a.tipo}</span>
+                </div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-bottom:2px;">${a.texto || ''}</div>
+                <div style="font-size:0.72rem;color:var(--muted);">${formatDate(a.fecha)}</div>
+            </div>
+        `).join('');
+    }
+}
+
+// =====================================================
+// ESTUDIANTES - CRUD
+// =====================================================
+
+// Renderizar tabla de estudiantes
+function renderEstudiantes() {
+    const tbody = document.getElementById('tbody-estudiantes');
+    const emptyEl = document.getElementById('empty-estudiantes');
+    const entries = Object.entries(estudiantes);
+
+    if (entries.length === 0) {
+        tbody.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        return;
+    }
+    emptyEl.classList.add('d-none');
+
+    tbody.innerHTML = entries.map(([id, e]) => `
+        <tr>
+            <td><span style="font-weight:600;">${e.nombre} ${e.apellido}</span></td>
+            <td style="color:var(--muted);font-size:0.85rem;">${e.email || '-'}</td>
+            <td><span class="badge-tipo" style="background:rgba(16,185,129,0.1);color:var(--accent);">${getCursoNombre(e.cursoId)}</span></td>
+            <td style="color:var(--muted);">${countAnotaciones(id)}</td>
+            <td>
+                <button class="btn-sm-icon me-1" title="Ver anotaciones" onclick="viewEstudianteAnotaciones('${id}')"><i class="bi bi-journal-text"></i></button>
+                <button class="btn-sm-icon me-1" title="Editar" onclick="openEstudianteModal('${id}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn-sm-icon danger" title="Eliminar" onclick="deleteEstudiante('${id}')"><i class="bi bi-trash3"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Abrir modal de estudiante (agregar o editar)
+function openEstudianteModal(id = null) {
+    document.getElementById('est-id').value = id || '';
+    document.getElementById('modal-estudiante-title').textContent = id ? 'Editar estudiante' : 'Agregar estudiante';
+
+    // Llenar dropdown de cursos
+    const sel = document.getElementById('est-curso');
+    sel.innerHTML = '<option value="">-- Sin curso --</option>';
+    Object.entries(cursos).forEach(([cid, c]) => {
+        sel.innerHTML += `<option value="${cid}">${c.nombre}</option>`;
+    });
+
+    if (id && estudiantes[id]) {
+        const e = estudiantes[id];
+        document.getElementById('est-nombre').value = e.nombre || '';
+        document.getElementById('est-apellido').value = e.apellido || '';
+        document.getElementById('est-email').value = e.email || '';
+        sel.value = e.cursoId || '';
+    } else {
+        document.getElementById('est-nombre').value = '';
+        document.getElementById('est-apellido').value = '';
+        document.getElementById('est-email').value = '';
+    }
+    new bootstrap.Modal(document.getElementById('modal-estudiante')).show();
+}
+
+// Guardar estudiante (crear o actualizar)
+async function saveEstudiante() {
+    const id = document.getElementById('est-id').value;
+    const nombre = document.getElementById('est-nombre').value.trim();
+    const apellido = document.getElementById('est-apellido').value.trim();
+    const email = document.getElementById('est-email').value.trim();
+    const cursoId = document.getElementById('est-curso').value;
+
+    // Validaciones
+    if (!nombre) { showToast('El nombre es obligatorio', 'warning'); return; }
+    if (!apellido) { showToast('El apellido es obligatorio', 'warning'); return; }
+
+    const data = { nombre, apellido, email, cursoId };
+
+    try {
+        if (id) {
+            await db.ref('estudiantes/' + id).update(data);
+            showToast('Estudiante actualizado', 'success');
+        } else {
+            await db.ref('estudiantes').push(data);
+            showToast('Estudiante agregado', 'success');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('modal-estudiante')).hide();
+    } catch (err) {
+        showToast('Error al guardar: ' + err.message, 'error');
+    }
+}
+
+// Eliminar estudiante
+async function deleteEstudiante(id) {
+    const nombre = getEstudianteNombre(id);
+    if (!confirm('Se eliminara al estudiante "' + nombre + '" y todas sus anotaciones. Continuar?')) return;
+
+    try {
+        // Eliminar anotaciones del estudiante
+        const anotsOfEst = Object.entries(anotaciones).filter(([,a]) => a.estudianteId === id);
+        const updates = {};
+        anotsOfEst.forEach(([aid]) => { updates['anotaciones/' + aid] = null; });
+        updates['estudiantes/' + id] = null;
+        await db.ref().update(updates);
+        showToast('Estudiante eliminado', 'success');
+    } catch (err) {
+        showToast('Error al eliminar: ' + err.message, 'error');
+    }
+}
+
+// Ver anotaciones de un estudiante (navega a la sección de anotaciones)
+function viewEstudianteAnotaciones(estId) {
+    navigateTo('anotaciones');
+    document.getElementById('select-estudiante-anot').value = estId;
+    renderAnotacionesEstudiante();
+}
+
+// =====================================================
+// CURSOS - CRUD
+// =====================================================
+
+// Renderizar tarjetas de cursos
+function renderCursos() {
+    const grid = document.getElementById('cursos-grid');
+    const emptyEl = document.getElementById('empty-cursos');
+    const entries = Object.entries(cursos);
+
+    if (entries.length === 0) {
+        grid.innerHTML = '';
+        emptyEl.classList.remove('d-none');
+        return;
+    }
+    emptyEl.classList.add('d-none');
+
+    grid.innerHTML = entries.map(([id, c]) => {
+        const numEst = Object.values(estudiantes).filter(e => e.cursoId === id).length;
+        return `
+            <div class="col-md-6 col-lg-4">
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 style="font-weight:700;margin:0;font-size:1.05rem;">${c.nombre}</h6>
+                            <span style="color:var(--muted);font-size:0.8rem;">${c.descripcion || ''}</span>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn-sm-icon" title="Editar" onclick="openCursoModal('${id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn-sm-icon danger" title="Eliminar" onclick="openDeleteCursoModal('${id}')"><i class="bi bi-trash3"></i></button>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-people" style="color:var(--accent);"></i>
+                        <span style="font-size:0.88rem;">${numEst} estudiante${numEst!==1?'s':''}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Abrir modal de curso (agregar o editar)
+function openCursoModal(id = null) {
+    document.getElementById('cur-id').value = id || '';
+    document.getElementById('modal-curso-title').textContent = id ? 'Editar curso' : 'Agregar curso';
+
+    if (id && cursos[id]) {
+        document.getElementById('cur-nombre').value = cursos[id].nombre || '';
+        document.getElementById('cur-descripcion').value = cursos[id].descripcion || '';
+    } else {
+        document.getElementById('cur-nombre').value = '';
+        document.getElementById('cur-descripcion').value = '';
+    }
+    new bootstrap.Modal(document.getElementById('modal-curso')).show();
+}
+
+// Guardar curso (crear o actualizar)
+async function saveCurso() {
+    const id = document.getElementById('cur-id').value;
+    const nombre = document.getElementById('cur-nombre').value.trim();
+    const descripcion = document.getElementById('cur-descripcion').value.trim();
+
+    if (!nombre) { showToast('El nombre del curso es obligatorio', 'warning'); return; }
+
+    const data = { nombre, descripcion };
+
+    try {
+        if (id) {
+            await db.ref('cursos/' + id).update(data);
+            showToast('Curso actualizado', 'success');
+        } else {
+            await db.ref('cursos').push(data);
+            showToast('Curso creado', 'success');
+        }
+        bootstrap.Modal.getInstance(document.getElementById('modal-curso')).hide();
+    } catch (err) {
+        showToast('Error al guardar: ' + err.message, 'error');
+    }
+}
+
+// Abrir modal de eliminación de curso con opciones de reasignación
+function openDeleteCursoModal(id) {
+    deleteCursoId = id;
+    const c = cursos[id];
+    const estOfCurso = Object.entries(estudiantes).filter(([,e]) => e.cursoId === id);
+    const otrosCursos = Object.entries(cursos).filter(([cid]) => cid !== id);
+
+    document.getElementById('delete-curso-msg').textContent =
+        `Se eliminara el curso "${c.nombre}" que tiene ${estOfCurso.length} estudiante(s) asignado(s).`;
+
+    // Checkbox para eliminar estudiantes
+    const chkWrap = document.getElementById('chk-delete-students-wrap');
+    const reassignGroup = document.getElementById('reassign-group');
+
+    if (estOfCurso.length > 0) {
+        chkWrap.style.display = 'block';
+        // Llenar dropdown de reasignación
+        const sel = document.getElementById('reassign-curso');
+        sel.innerHTML = '<option value="">-- Seleccionar curso --</option>';
+        otrosCursos.forEach(([cid, cur]) => {
+            sel.innerHTML += `<option value="${cid}">${cur.nombre}</option>`;
+        });
+        if (otrosCursos.length > 0) {
+            reassignGroup.style.display = 'block';
+        } else {
+            reassignGroup.style.display = 'none';
+        }
+        document.getElementById('chk-delete-students').checked = false;
+    } else {
+        chkWrap.style.display = 'none';
+        reassignGroup.style.display = 'none';
+    }
+
+    new bootstrap.Modal(document.getElementById('modal-delete-curso')).show();
+}
+
+// Alternar visibilidad del dropdown de reasignación
+function toggleReassign() {
+    const chk = document.getElementById('chk-delete-students');
+    const reassignGroup = document.getElementById('reassign-group');
+    reassignGroup.style.display = chk.checked ? 'none' : 'block';
+}
+
+// Confirmar eliminación de curso
+async function confirmDeleteCurso() {
+    if (!deleteCursoId) return;
+    const deleteStudents = document.getElementById('chk-delete-students').checked;
+    const reassignTo = document.getElementById('reassign-curso').value;
+
+    const estOfCurso = Object.entries(estudiantes).filter(([,e]) => e.cursoId === deleteCursoId);
+
+    try {
+        const updates = {};
+        updates['cursos/' + deleteCursoId] = null;
+
+        if (deleteStudents) {
+            // Eliminar estudiantes y sus anotaciones
+            estOfCurso.forEach(([eid]) => {
+                updates['estudiantes/' + eid] = null;
+                // Eliminar anotaciones de esos estudiantes
+                Object.entries(anotaciones).filter(([,a]) => a.estudianteId === eid).forEach(([aid]) => {
+                    updates['anotaciones/' + aid] = null;
+                });
+            });
+        } else if (reassignTo) {
+            // Reasignar estudiantes al curso seleccionado
+            estOfCurso.forEach(([eid]) => {
+                updates['estudiantes/' + eid + '/cursoId'] = reassignTo;
+            });
+        } else if (estOfCurso.length > 0) {
+            // No se eligió reasignar ni eliminar - dejar sin curso
+            estOfCurso.forEach(([eid]) => {
+                updates['estudiantes/' + eid + '/cursoId'] = '';
+            });
+        }
+
+        await db.ref().update(updates);
+        showToast('Curso eliminado', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modal-delete-curso')).hide();
+        deleteCursoId = null;
+    } catch (err) {
+        showToast('Error al eliminar: ' + err.message, 'error');
+    }
+}
+
+// =====================================================
+// ANOTACIONES
+// =====================================================
+
+// Renderizar selector de estudiante y sus anotaciones
+function renderAnotacionesEstudiante() {
+    const sel = document.getElementById('select-estudiante-anot');
+    const currentVal = sel.value;
+
+    // Llenar dropdown
+    sel.innerHTML = '<option value="">-- Elige un estudiante --</option>';
+    Object.entries(estudiantes).sort((a,b) => {
+        const na = (a[1].nombre||'')+(a[1].apellido||'');
+        const nb = (b[1].nombre||'')+(b[1].apellido||'');
+        return na.localeCompare(nb);
+    }).forEach(([id, e]) => {
+        sel.innerHTML += `<option value="${id}">${e.nombre} ${e.apellido}</option>`;
+    });
+
+    // Restaurar selección previa
+    if (currentVal) sel.value = currentVal;
+
+    const estId = sel.value;
+    const formWrap = document.getElementById('form-anotacion-wrap');
+    const timeline = document.getElementById('anotaciones-timeline');
+    const emptyEl = document.getElementById('empty-anotaciones');
+
+    if (!estId) {
+        formWrap.style.display = 'none';
+        timeline.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+    }
+
+    formWrap.style.display = 'block';
+    // Fecha por defecto: hoy
+    document.getElementById('anot-fecha').value = todayStr();
+
+    // Obtener anotaciones del estudiante, ordenadas por fecha (más reciente primero)
+    const estAnots = Object.entries(anotaciones)
+        .filter(([,a]) => a.estudianteId === estId)
+        .sort((a,b) => (b[1].fecha||'').localeCompare(a[1].fecha||''));
+
+    if (estAnots.length === 0) {
+        timeline.innerHTML = '';
+        emptyEl.style.display = 'block';
+        emptyEl.querySelector('p').textContent = 'Este estudiante no tiene anotaciones';
+        return;
+    }
+
+    emptyEl.style.display = 'none';
+    const tipoLabels = {
+        positiva: 'Participacion positiva',
+        negativa: 'Participacion negativa',
+        tarea: 'Tarea pendiente',
+        observacion: 'Observacion general'
+    };
+
+    timeline.innerHTML = estAnots.map(([id, a]) => `
+        <div class="annotation-item ${a.tipo}">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge-tipo badge-${a.tipo}">${tipoLabels[a.tipo] || a.tipo}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size:0.75rem;color:var(--muted);">${formatDate(a.fecha)}</span>
+                    <button class="btn-sm-icon danger" style="width:24px;height:24px;font-size:0.7rem;" title="Eliminar" onclick="deleteAnotacion('${id}')"><i class="bi bi-x"></i></button>
+                </div>
+            </div>
+            <div style="font-size:0.88rem;color:var(--fg);line-height:1.4;">${a.texto || ''}</div>
+        </div>
+    `).join('');
+}
+
+// Agregar nueva anotación
+async function addAnotacion() {
+    const estId = document.getElementById('select-estudiante-anot').value;
+    if (!estId) { showToast('Selecciona un estudiante', 'warning'); return; }
+
+    const fecha = document.getElementById('anot-fecha').value || todayStr();
+    const tipo = document.getElementById('anot-tipo').value;
+    const texto = document.getElementById('anot-texto').value.trim();
+
+    if (!texto) { showToast('Escribe una descripcion para la anotacion', 'warning'); return; }
+
+    try {
+        await db.ref('anotaciones').push({ estudianteId: estId, fecha, tipo, texto });
+        document.getElementById('anot-texto').value = '';
+        showToast('Anotacion registrada', 'success');
+    } catch (err) {
+        showToast('Error al guardar: ' + err.message, 'error');
+    }
+}
+
+// Eliminar anotación
+async function deleteAnotacion(id) {
+    if (!confirm('Eliminar esta anotacion?')) return;
+    try {
+        await db.ref('anotaciones/' + id).remove();
+        showToast('Anotacion eliminada', 'success');
+    } catch (err) {
+        showToast('Error al eliminar: ' + err.message, 'error');
+    }
+}
+
+// =====================================================
+// ESTADISTICAS Y GRAFICOS
+// =====================================================
+
+// Datos para gráfico de estudiantes por curso
+function getEstudiantesPorCursoData() {
+    const labels = [];
+    const data = [];
+    const colors = ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
+    const bgColors = [];
+
+    Object.entries(cursos).forEach(([id, c], i) => {
+        labels.push(c.nombre);
+        data.push(Object.values(estudiantes).filter(e => e.cursoId === id).length);
+        bgColors.push(colors[i % colors.length]);
+    });
+
+    // Estudiantes sin curso
+    const sinCurso = Object.values(estudiantes).filter(e => !e.cursoId || !cursos[e.cursoId]).length;
+    if (sinCurso > 0) {
+        labels.push('Sin curso');
+        data.push(sinCurso);
+        bgColors.push('#6B7280');
+    }
+
+    return { labels, data, bgColors };
+}
+
+// Renderizar gráfico reutilizable
+function renderChart(canvasId, type, chartData) {
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: type,
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: chartData.label || 'Cantidad',
+                data: chartData.data,
+                backgroundColor: chartData.bgColors,
+                borderColor: type === 'bar' ? chartData.bgColors.map(c => c) : undefined,
+                borderWidth: type === 'bar' ? 0 : undefined,
+                borderRadius: type === 'bar' ? 6 : undefined,
+                hoverOffset: type === 'pie' ? 12 : undefined,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: type === 'pie', labels: { color: '#7B8794', font: { size: 12 } } }
+            },
+            scales: type === 'bar' ? {
+                x: { ticks: { color: '#7B8794' }, grid: { color: 'rgba(30,42,58,0.5)' } },
+                y: { beginAtZero: true, ticks: { color: '#7B8794', stepSize: 1 }, grid: { color: 'rgba(30,42,58,0.5)' } }
+            } : undefined
         }
     });
 }
 
-function logout() { auth.signOut(); }
+// Renderizar sección de estadísticas completa
+function renderEstadisticas() {
+    // Gráfico de barras: estudiantes por curso
+    const estPorCurso = getEstudiantesPorCursoData();
+    estPorCurso.label = 'Estudiantes';
+    renderChart('chart-est-curso', 'bar', estPorCurso);
 
-// Observador permanente de sesión
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        // --- SESIÓN INICIADA ---
-        const role = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'profesor';
-        App.currentUser = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL, role };
-        
-        // Guardar/Actualizar rol en la DB para referencia
-        if (db) db.ref('users/' + user.uid).update({ name: user.displayName, email: user.email, role });
+    // Gráfico de pastel: anotaciones por tipo
+    const tipos = ['positiva','negativa','tarea','observacion'];
+    const tipoLabelsMap = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea', observacion:'Observacion' };
+    const tipoColors = ['#10B981','#EF4444','#F59E0B','#3B82F6'];
+    const anotTipoData = {
+        labels: tipos.map(t => tipoLabelsMap[t]),
+        data: tipos.map(t => Object.values(anotaciones).filter(a => a.tipo === t).length),
+        bgColors: tipoColors,
+        label: 'Anotaciones'
+    };
+    renderChart('chart-anot-tipo', 'pie', anotTipoData);
 
-        // Mostrar App, Ocultar Login
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        document.getElementById('userName').textContent = user.displayName;
-        document.getElementById('mobileUser').textContent = user.displayName;
-        document.getElementById('userRole').textContent = role;
-        
-        // Cargar foto de perfil o inicial
-        if (user.photoURL) {
-            document.getElementById('userPhoto').src = user.photoURL;
-            document.getElementById('userPhoto').classList.remove('hidden');
-            document.getElementById('userInitialBox').classList.add('hidden');
-        } else {
-            document.getElementById('userInitial').textContent = user.displayName.charAt(0).toUpperCase();
-            document.getElementById('userInitialBox').classList.remove('hidden');
-            document.getElementById('userPhoto').classList.add('hidden');
+    // Top 3 estudiantes con más anotaciones positivas
+    const positivasPorEst = {};
+    Object.values(anotaciones).filter(a => a.tipo === 'positiva').forEach(a => {
+        positivasPorEst[a.estudianteId] = (positivasPorEst[a.estudianteId] || 0) + 1;
+    });
+    const top3 = Object.entries(positivasPorEst)
+        .sort((a,b) => b[1]-a[1])
+        .slice(0,3);
+
+    const rankClasses = ['gold','silver','bronze'];
+    const top3Container = document.getElementById('top3-container');
+    if (top3.length === 0) {
+        top3Container.innerHTML = '<div class="col-12"><p style="color:var(--muted);text-align:center;padding:20px;">No hay participaciones positivas registradas</p></div>';
+    } else {
+        top3Container.innerHTML = top3.map(([estId, count], i) => `
+            <div class="col-md-4">
+                <div class="podium-item">
+                    <div class="podium-rank ${rankClasses[i]}">${i+1}</div>
+                    <div style="font-weight:600;margin-top:6px;font-size:0.95rem;">${getEstudianteNombre(estId)}</div>
+                    <div style="color:var(--accent);font-weight:700;font-size:1.4rem;margin-top:4px;">${count}</div>
+                    <div style="color:var(--muted);font-size:0.78rem;">participaciones positivas</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Porcentaje de estudiantes con al menos una observación
+    const totalEst = Object.keys(estudiantes).length;
+    const conObs = new Set(Object.values(anotaciones).filter(a => a.tipo === 'observacion').map(a => a.estudianteId)).size;
+    const pct = totalEst > 0 ? Math.round((conObs / totalEst) * 100) : 0;
+    document.getElementById('pct-observacion').textContent = pct + '%';
+
+    // Total positivas
+    const totalPos = Object.values(anotaciones).filter(a => a.tipo === 'positiva').length;
+    document.getElementById('total-positivas').textContent = totalPos;
+
+    // Total tareas pendientes
+    const totalTareas = Object.values(anotaciones).filter(a => a.tipo === 'tarea').length;
+    document.getElementById('total-tareas').textContent = totalTareas;
+}
+
+// =====================================================
+// EXPORTACION A PDF
+// =====================================================
+async function exportPDF() {
+    showToast('Generando PDF, espera un momento...', 'info');
+
+    // Construir contenido HTML para el PDF
+    const pdfDiv = document.getElementById('pdf-content');
+    const tipoLabels = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea pendiente', observacion:'Observacion' };
+
+    let html = `
+        <h2 style="margin-bottom:4px;">Reporte de Gestion Escolar</h2>
+        <p style="color:#666;font-size:0.85rem;margin-bottom:24px;">Generado el ${new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'long',year:'numeric'})}</p>
+    `;
+
+    // Resumen general
+    html += `<table><thead><tr><th>Metrica</th><th>Valor</th></tr></thead><tbody>
+        <tr><td>Total estudiantes</td><td>${Object.keys(estudiantes).length}</td></tr>
+        <tr><td>Total cursos</td><td>${Object.keys(cursos).length}</td></tr>
+        <tr><td>Total anotaciones</td><td>${Object.keys(anotaciones).length}</td></tr>
+    </tbody></table><br>`;
+
+    // Detalle por estudiante
+    Object.entries(estudiantes).sort((a,b) => {
+        return ((a[1].apellido||'')+(a[1].nombre||'')).localeCompare((b[1].apellido||'')+(b[1].nombre||''));
+    }).forEach(([id, e]) => {
+        const estAnots = Object.values(anotaciones).filter(a => a.estudianteId === id);
+        const posCount = estAnots.filter(a => a.tipo === 'positiva').length;
+        const negCount = estAnots.filter(a => a.tipo === 'negativa').length;
+        const tarCount = estAnots.filter(a => a.tipo === 'tarea').length;
+        const obsCount = estAnots.filter(a => a.tipo === 'observacion').length;
+
+        html += `<div class="student-block">
+            <h4>${e.nombre} ${e.apellido}</h4>
+            <small>Email: ${e.email || '-'} | Curso: ${getCursoNombre(e.cursoId)}</small>
+            <table>
+                <thead><tr><th>Resumen</th><th>Cantidad</th></tr></thead>
+                <tbody>
+                    <tr><td>Positivas</td><td>${posCount}</td></tr>
+                    <tr><td>Negativas</td><td>${negCount}</td></tr>
+                    <tr><td>Tareas pendientes</td><td>${tarCount}</td></tr>
+                    <tr><td>Observaciones</td><td>${obsCount}</td></tr>
+                    <tr style="font-weight:600;"><td>Total</td><td>${estAnots.length}</td></tr>
+                </tbody>
+            </table>`;
+
+        if (estAnots.length > 0) {
+            html += `<table style="margin-top:8px;">
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripcion</th></tr></thead>
+                <tbody>`;
+            estAnots.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).forEach(a => {
+                html += `<tr><td>${formatDate(a.fecha)}</td><td>${tipoLabels[a.tipo]||a.tipo}</td><td>${a.texto||''}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+        html += `</div>`;
+    });
+
+    pdfDiv.innerHTML = html;
+
+    // Esperar un poco para que el DOM se renderice
+    await new Promise(r => setTimeout(r, 300));
+
+    try {
+        const canvas = await html2canvas(pdfDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth - 20;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 20);
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pageHeight - 20);
         }
 
-        // Cargar datos de Firebase (Solo si no estaban ya cargados)
-        if (!App.useFirebase) await initFirebaseData();
-        
-    } else {
-        // --- SESIÓN CERRADA ---
-        App.currentUser = null;
-        App.courses = {}; App.students = {}; App.annotations = {};
-        document.getElementById('mainApp').classList.add('hidden');
-        document.getElementById('loginPage').classList.remove('hidden');
-    }
-});
-
-function isAdmin() { return App.currentUser && App.currentUser.role === 'admin'; }
-
-// ═══════════════ CARGA DE DATOS FIREBASE ═══════════════
-async function initFirebaseData() {
-    if (!db) { loadFromLocalStorage(); updateConnStatus(false); renderSection(); return; }
-    try {
-        const snap = await Promise.race([db.ref('courses').once('value'), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 6000))]);
-        App.useFirebase = true;
-        
-        // Semilla inicial si está vacío
-        const cSnap = await db.ref('courses').once('value');
-        if (!cSnap.exists() || Object.keys(cSnap.val() || {}).length === 0) await seedFirebase();
-
-        // Listeners en tiempo real
-        db.ref('courses').on('value', s => { App.courses = s.val() || {}; if (App.currentUser) renderSection(); });
-        db.ref('students').on('value', s => { App.students = s.val() || {}; if (App.currentUser) renderSection(); });
-        db.ref('annotations').on('value', s => { App.annotations = s.val() || {}; if (App.currentUser) renderSection(); });
-
-        updateConnStatus(true);
+        pdf.save('reporte_gestion_escolar.pdf');
+        showToast('PDF generado exitosamente', 'success');
     } catch (err) {
-        console.warn('Firebase no disponible, usando local:', err);
-        App.useFirebase = false; loadFromLocalStorage(); updateConnStatus(false); renderSection();
+        showToast('Error al generar PDF: ' + err.message, 'error');
     }
+
+    // Limpiar contenido oculto
+    pdfDiv.innerHTML = '';
 }
 
-async function seedFirebase() {
-    const c1 = db.ref('courses').push().key, c2 = db.ref('courses').push().key, c3 = db.ref('courses').push().key;
-    await db.ref('courses').set({ [c1]: { name: 'Matemáticas', description: 'Álgebra y cálculo' }, [c2]: { name: 'Ciencias', description: 'Física y biología' }, [c3]: { name: 'Historia', description: 'Historia universal' } });
-    const s1 = db.ref('students').push().key, s2 = db.ref('students').push().key, s3 = db.ref('students').push().key, s4 = db.ref('students').push().key, s5 = db.ref('students').push().key, s6 = db.ref('students').push().key;
-    await db.ref('students').set({ [s1]: { name: 'Ana', lastname: 'Martínez', email: 'ana@correo.com', courseId: c1 }, [s2]: { name: 'Carlos', lastname: 'López', email: 'carlos@correo.com', courseId: c1 }, [s3]: { name: 'María', lastname: 'González', email: 'maria@correo.com', courseId: c2 }, [s4]: { name: 'Pedro', lastname: 'Sánchez', email: 'pedro@correo.com', courseId: c2 }, [s5]: { name: 'Laura', lastname: 'Díaz', email: 'laura@correo.com', courseId: c3 }, [s6]: { name: 'Diego', lastname: 'Torres', email: 'diego@correo.com', courseId: c1 } });
-    await db.ref('annotations').set({ [genId()]: { studentId: s1, date: '2024-03-15', type: 'positive', text: 'Excelente participación' }, [genId()]: { studentId: s1, date: '2024-03-20', type: 'positive', text: 'Resolvió problema rápido' }, [genId()]: { studentId: s2, date: '2024-03-18', type: 'negative', text: 'No entregó tarea' }, [genId()]: { studentId: s3, date: '2024-04-02', type: 'positive', text: 'Buena labor en laboratorio' }, [genId()]: { studentId: s5, date: '2024-04-05', type: 'task', text: 'Preparar exposición' }, [genId()]: { studentId: s4, date: '2024-04-10', type: 'observation', text: 'Demuestra interés' }, [genId()]: { studentId: s6, date: '2024-04-12', type: 'positive', text: 'Ayudó a compañeros' } });
+// =====================================================
+// RESPALDO: EXPORTAR / IMPORTAR JSON
+// =====================================================
+function exportBackup() {
+    const data = { cursos, estudiantes, anotaciones, exportDate: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'respaldo_escolar_' + todayStr() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Respaldo exportado correctamente', 'success');
 }
 
-function loadFromLocalStorage() { App.courses = JSON.parse(localStorage.getItem('et_courses') || '{}'); App.students = JSON.parse(localStorage.getItem('et_students') || '{}'); App.annotations = JSON.parse(localStorage.getItem('et_annotations') || '{}'); if(Object.keys(App.courses).length===0) seedLocalStorage(); }
-function saveToLocalStorage() { localStorage.setItem('et_courses', JSON.stringify(App.courses)); localStorage.setItem('et_students', JSON.stringify(App.students)); localStorage.setItem('et_annotations', JSON.stringify(App.annotations)); }
-function seedLocalStorage() { const c1=genId(),c2=genId(),c3=genId(); App.courses={[c1]:{name:'Matemáticas',description:'Álgebra'},{c2]:{name:'Ciencias',description:'Física'},[c3]:{name:'Historia',description:'Universal'}}; App.students={[genId()]:{name:'Ana',lastname:'Martínez',email:'ana@correo.com',courseId:c1}}; saveToLocalStorage(); }
-function updateConnStatus(c) { const e=document.getElementById('connStatus'); e.className=c?'conn-badge conn-on':'conn-badge conn-off'; e.innerHTML=c?'<i class="fas fa-circle text-[6px]"></i> En línea':'<i class="fas fa-circle text-[6px]"></i> Local'; }
+async function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-// ═══════════════ CRUD OPERACIONES ═══════════════
-async function createCourse(n,d){const data={name:n,description:d};if(App.useFirebase){db.ref('courses').push().set(data)}else{App.courses[genId()]=data;saveToLocalStorage();renderSection();}}
-async function updateCourse(id,n,d){if(App.useFirebase){db.ref('courses/'+id).update({name:n,description:d})}else{App.courses[id]={...App.courses[id],name:n,description:d};saveToLocalStorage();renderSection();}}
-async function removeCourse(id,action,newCid){const cs=Object.entries(App.students).filter(([,s])=>s.courseId===id);if(App.useFirebase){const u={};u['courses/'+id]=null;if(action==='reassign'&&newCid){cs.forEach(([sid])=>u['students/'+sid+'/courseId']=newCid)}else if(action==='delete'){cs.forEach(([sid])=>{u['students/'+sid]=null;Object.entries(App.annotations).forEach(([aid,a])=>{if(a.studentId===sid)u['annotations/'+aid]=null})})}db.ref().update(u)}else{delete App.courses[id];if(action==='reassign'&&newCid)cs.forEach(([sid])=>App.students[sid].courseId=newCid);else if(action==='delete')cs.forEach(([sid])=>{delete App.students[sid];Object.entries(App.annotations).forEach(([aid,a])=>{if(a.studentId===sid)delete App.annotations[aid]})});saveToLocalStorage();renderSection();}}
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.cursos || !data.estudiantes || !data.anotaciones) {
+                showToast('Archivo de respaldo invalido', 'error');
+                return;
+            }
 
-async function createStudent(n,l,e,c){const data={name:n,lastname:l,email:e,courseId:c};if(App.useFirebase){db.ref('students').push().set(data)}else{App.students[genId()]=data;saveToLocalStorage();renderSection();}}
-async function updateStudent(id,n,l,e,c){if(App.useFirebase){db.ref('students/'+id).update({name:n,lastname:l,email:e,courseId:c})}else{App.students[id]={...App.students[id],name:n,lastname:l,email:e,courseId:c};saveToLocalStorage();renderSection();}}
-async function removeStudent(id){if(App.useFirebase){const u={['students/'+id]:null};Object.entries(App.annotations).forEach(([aid,a])=>{if(a.studentId===id)u['annotations/'+aid]=null});db.ref().update(u)}else{delete App.students[id];Object.entries(App.annotations).forEach(([aid,a])=>{if(a.studentId===id)delete App.annotations[aid]});saveToLocalStorage();renderSection();}}
+            if (!confirm('Se reemplazaran TODOS los datos actuales con el respaldo. Continuar?')) return;
 
-async function createAnnotation(sid,d,t,tx){const data={studentId:sid,date:d,type:t,text:tx};if(App.useFirebase){db.ref('annotations').push().set(data)}else{App.annotations[genId()]=data;saveToLocalStorage();renderSection();}}
-async function removeAnnotation(id){if(App.useFirebase){db.ref('annotations/'+id).remove()}else{delete App.annotations[id];saveToLocalStorage();renderSection();}}
+            // Sobrescribir datos en Firebase
+            const updates = {};
+            updates['cursos'] = data.cursos;
+            updates['estudiantes'] = data.estudiantes;
+            updates['anotaciones'] = data.anotaciones;
+            await db.ref().update(updates);
 
-// ═══════════════ HELPERS ═══════════════
-function getStudentName(id){const s=App.students[id];return s?`${s.name} ${s.lastname}`:'Desconocido';}
-function getCourseName(id){const c=App.courses[id];return c?c.name:'Sin curso';}
-function getStudentAnnotations(sid){return Object.entries(App.annotations).filter(([,a])=>a.studentId===sid);}
-function getCourseStudents(cid){return Object.entries(App.students).filter(([,s])=>s.courseId===cid);}
-function typeLabel(t){return{positive:'Participación +',negative:'Participación -',task:'Tarea pendiente',observation:'Observación'}[t]||t;}
-function typeBadge(t){return{positive:'badge-positive',negative:'badge-negative',task:'badge-task',observation:'badge-observation'}[t]||'';}
-function typeIcon(t){return{positive:'fa-thumbs-up',negative:'fa-thumbs-down',task:'fa-list-check',observation:'fa-eye'}[t]||'fa-note';}
-function formatDate(d){if(!d)return'';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+            showToast('Respaldo importado correctamente', 'success');
+        } catch (err) {
+            showToast('Error al importar: ' + err.message, 'error');
+        }
+    };
+    reader.readAsText(file);
+    // Resetear el input para permitir reimportar el mismo archivo
+    event.target.value = '';
+}
 
-// ═══════════════ TOAST & MODAL ═══════════════
-function toast(m,t='info'){const b=document.getElementById('toastBox'),e=document.createElement('div');e.className=`toast toast-${t}`;e.innerHTML=`<i class="fas ${{success:'fa-check-circle',error:'fa-times-circle',warning:'fa-exclamation-triangle',info:'fa-info-circle'}[t]||'fa-info-circle'}"></i> ${m}`;b.appendChild(e);setTimeout(()=>{e.classList.add('out');setTimeout(()=>e.remove(),300)},3000);}
-function showModal(h,w=false){document.getElementById('modalBox').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)hideModal()"><div class="modal-box ${w?'wide':''}">${h}</div></div>`;}
-function hideModal(){document.getElementById('modalBox').innerHTML='';}
+// =====================================================
+// INICIALIZACION
+// =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Crear partículas en la pantalla de ingreso
+    createParticles();
 
-// ═══════════════ SIDEBAR / NAV ═══════════════
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('hidden');}
-function setActiveNav(s){document.querySelectorAll('.nav-item[data-section]').forEach(e=>e.classList.toggle('active',e.dataset.section===s));}
-document.querySelectorAll('.nav-item[data-section]').forEach(el=>el.addEventListener('click',()=>{App.activeSection=el.dataset.section;setActiveNav(App.activeSection);renderSection();if(window.innerWidth<768)toggleSidebar();}));
-
-// ═══════════════ RENDER PRINCIPAL ═══════════════
-function renderSection(){const a=document.getElementById('contentArea');switch(App.activeSection){case'estudiantes':a.innerHTML=renderEstudiantes();break;case'cursos':a.innerHTML=renderCursos();break;case'anotaciones':a.innerHTML=renderAnotaciones();break;case'estadisticas':a.innerHTML=renderEstadisticas();setTimeout(renderCharts,50);break;}}
-
-// ── ESTUDIANTES ──
-function renderEstudiantes(){const ss=Object.entries(App.students),adm=isAdmin();const rows=ss.map(([id,s])=>{const an=getStudentAnnotations(id),pos=an.filter(([,a])=>a.type==='positive').length;return`<tr><td class="font-medium">${s.name} ${s.lastname}</td><td style="color:var(--muted)">${s.email}</td><td><span class="badge badge-observation">${getCourseName(s.courseId)}</span></td><td class="text-center"><span style="color:var(--success)">${pos}</span> / ${an.length}</td><td><div class="flex gap-2 justify-end"><button class="btn btn-ghost btn-sm" onclick="viewStudentDetail('${id}')" title="Ver"><i class="fas fa-eye"></i></button><button class="btn btn-ghost btn-sm" onclick="openAnnotationModal('${id}')" title="Anotar"><i class="fas fa-plus"></i></button>${adm?`<button class="btn btn-ghost btn-sm" onclick="openEditStudent('${id}')"><i class="fas fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${id}')"><i class="fas fa-trash"></i></button>`:''}</div></td></tr>`;}).join('');return`<div class="sec-fade"><div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><h2 class="text-2xl font-bold">Estudiantes</h2><p style="color:var(--muted)" class="text-sm mt-1">${ss.length} registrados</p></div><div class="flex gap-3"><div class="relative"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--muted)"></i><input id="searchSt" type="text" class="ipt pl-9" placeholder="Buscar..." style="width:180px" oninput="filterSt(this.value)"></div>${adm?`<button class="btn btn-primary" onclick="openAddStudent()"><i class="fas fa-plus"></i> Nuevo</button>`:''}</div></div><div class="card overflow-x-auto"><table class="dtable" id="stTable"><thead><tr><th>Nombre</th><th>Email</th><th>Curso</th><th class="text-center">Anotaciones</th><th class="text-right">Acciones</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="text-center py-8" style="color:var(--muted)">Sin estudiantes</td></tr>'}</tbody></table></div></div>`;}
-function filterSt(q){document.querySelectorAll('#stTable tbody tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none');}
-
-function openAddStudent(){const o=Object.entries(App.courses).map(([id,c])=>`<option value="${id}">${c.name}</option>`).join('');showModal(`<h3 class="text-lg font-bold mb-5">Nuevo Estudiante</h3><form id="frmS" class="space-y-4"><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Apellido</label><input name="lastname" class="ipt" required></div></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Email</label><input name="email" type="email" class="ipt" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Curso</label><select name="courseId" class="ipt" required><option value="">Seleccionar</option>${o}</select></div><div class="flex justify-end gap-3 pt-2"><button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>`);document.getElementById('frmS').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);await createStudent(f.get('name'),f.get('lastname'),f.get('email'),f.get('courseId'));hideModal();toast('Estudiante creado','success');};}
-function openEditStudent(id){const s=App.students[id];if(!s)return;const o=Object.entries(App.courses).map(([cid,c])=>`<option value="${cid}" ${cid===s.courseId?'selected':''}>${c.name}</option>`).join('');showModal(`<h3 class="text-lg font-bold mb-5">Editar Estudiante</h3><form id="frmS" class="space-y-4"><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" value="${s.name}" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Apellido</label><input name="lastname" class="ipt" value="${s.lastname}" required></div></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Email</label><input name="email" type="email" class="ipt" value="${s.email}" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Curso</label><select name="courseId" class="ipt" required><option value="">Seleccionar</option>${o}</select></div><div class="flex justify-end gap-3 pt-2"><button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button type="submit" class="btn btn-primary">Actualizar</button></div></form>`);document.getElementById('frmS').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);await updateStudent(id,f.get('name'),f.get('lastname'),f.get('email'),f.get('courseId'));hideModal();toast('Estudiante actualizado','success');};}
-function confirmDeleteStudent(id){const s=App.students[id];if(!s)return;showModal(`<h3 class="text-lg font-bold mb-3">Eliminar Estudiante</h3><p style="color:var(--muted)">Eliminar a <strong style="color:var(--fg)">${s.name} ${s.lastname}</strong> y sus anotaciones.</p><div class="flex justify-end gap-3 mt-5"><button class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button class="btn btn-danger" onclick="doDeleteStudent('${id}')">Eliminar</button></div>`);}
-async function doDeleteStudent(id){await removeStudent(id);hideModal();toast('Estudiante eliminado','success');}
-
-function viewStudentDetail(id){const s=App.students[id];if(!s)return;const anns=getStudentAnnotations(id).sort(([,a],[,b])=>b.date.localeCompare(a.date));const pc=anns.filter(([,a])=>a.type==='positive').length,nc=anns.filter(([,a])=>a.type==='negative').length,tc=anns.filter(([,a])=>a.type==='task').length,oc=anns.filter(([,a])=>a.type==='observation').length;const tl=anns.map(([,a])=>`<div class="timeline-item ${a.type}"><div class="flex items-center gap-2 mb-1"><span class="badge ${typeBadge(a.type)}"><i class="fas ${typeIcon(a.type)} mr-1"></i>${typeLabel(a.type)}</span><span class="text-xs" style="color:var(--muted)">${formatDate(a.date)}</span></div><p class="text-sm">${a.text}</p></div>`).join('');showModal(`<h3 class="text-lg font-bold mb-1">${s.name} ${s.lastname}</h3><p class="text-sm mb-1" style="color:var(--muted)">${s.email}</p><span class="badge badge-observation mb-4">${getCourseName(s.courseId)}</span><div class="grid grid-cols-4 gap-3 mb-5"><div class="text-center p-2 rounded-lg" style="background:rgba(16,185,129,0.1)"><p class="text-lg font-bold" style="color:#34d399">${pc}</p><p class="text-[0.65rem]" style="color:var(--muted)">+</p></div><div class="text-center p-2 rounded-lg" style="background:rgba(239,68,68,0.1)"><p class="text-lg font-bold" style="color:#f87171">${nc}</p><p class="text-[0.65rem]" style="color:var(--muted)">-</p></div><div class="text-center p-2 rounded-lg" style="background:rgba(245,158,11,0.1)"><p class="text-lg font-bold" style="color:#fbbf24">${tc}</p><p class="text-[0.65rem]" style="color:var(--muted)">Tareas</p></div><div class="text-center p-2 rounded-lg" style="background:rgba(59,130,246,0.1)"><p class="text-lg font-bold" style="color:#60a5fa">${oc}</p><p class="text-[0.65rem]" style="color:var(--muted)">Obs</p></div></div><h4 class="text-sm font-semibold mb-3" style="color:var(--muted)">Historial</h4><div class="max-h-60 overflow-y-auto pr-2">${tl||'<p class="text-sm" style="color:var(--muted)">Sin anotaciones</p>'}</div><div class="flex justify-end gap-3 mt-5"><button class="btn btn-primary" onclick="hideModal();openAnnotationModal('${id}')"><i class="fas fa-plus"></i> Agregar</button><button class="btn btn-ghost" onclick="hideModal()">Cerrar</button></div>`,true);}
-
-// ── CURSOS ──
-function renderCursos(){const cs=Object.entries(App.courses),adm=isAdmin();const cards=cs.map(([id,c])=>{const stC=getCourseStudents(id).length;return`<div class="card p-5 flex flex-col"><div class="flex items-start justify-between mb-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:rgba(13,148,136,0.12)"><i class="fas fa-book" style="color:var(--accent-light)"></i></div>${adm?`<div class="flex gap-1"><button class="btn btn-ghost btn-sm" onclick="openEditCourse('${id}')"><i class="fas fa-pen"></i></button><button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse('${id}')"><i class="fas fa-trash"></i></button></div>`:''}</div><h3 class="font-bold text-base mb-1">${c.name}</h3><p class="text-sm mb-3" style="color:var(--muted)">${c.description||'Sin descripción'}</p><div class="mt-auto flex items-center gap-2"><i class="fas fa-users text-xs" style="color:var(--muted)"></i><span class="text-sm font-medium">${stC} estudiante${stC!==1?'s':''}</span></div></div>`;}).join('');return`<div class="sec-fade"><div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><h2 class="text-2xl font-bold">Cursos</h2><p style="color:var(--muted)" class="text-sm mt-1">${cs.length} registrados</p></div>${adm?`<button class="btn btn-primary" onclick="openAddCourse()"><i class="fas fa-plus"></i> Nuevo</button>`:''}</div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${cards||'<div class="col-span-full text-center py-12" style="color:var(--muted)">Sin cursos</div>'}</div></div>`;}
-
-function openAddCourse(){showModal(`<h3 class="text-lg font-bold mb-5">Nuevo Curso</h3><form id="frmC" class="space-y-4"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="description" class="ipt" rows="2"></textarea></div><div class="flex justify-end gap-3 pt-2"><button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>`);document.getElementById('frmC').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);await createCourse(f.get('name'),f.get('description')||'');hideModal();toast('Curso creado','success');};}
-function openEditCourse(id){const c=App.courses[id];if(!c)return;showModal(`<h3 class="text-lg font-bold mb-5">Editar Curso</h3><form id="frmC" class="space-y-4"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" value="${c.name}" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="description" class="ipt" rows="2">${c.description||''}</textarea></div><div class="flex justify-end gap-3 pt-2"><button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button type="submit" class="btn btn-primary">Actualizar</button></div></form>`);document.getElementById('frmC').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);await updateCourse(id,f.get('name'),f.get('description')||'');hideModal();toast('Curso actualizado','success');};}
-function confirmDeleteCourse(id){const c=App.courses[id];if(!c)return;const stC=getCourseStudents(id).length;const others=Object.entries(App.courses).filter(([cid])=>cid!==id).map(([cid,co])=>`<option value="${cid}">${co.name}</option>`).join('');showModal(`<h3 class="text-lg font-bold mb-3">Eliminar Curso</h3><p style="color:var(--muted)">Eliminar <strong style="color:var(--fg)">${c.name}</strong>.</p>${stC>0?`<p class="text-sm mb-3 mt-2" style="color:var(--amber)"><i class="fas fa-exclamation-triangle mr-1"></i> Tiene ${stC} estudiantes.</p><div class="space-y-3 mb-4"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="delAction" value="reassign" checked> Reasignar a otro curso</label><div id="reassignDiv" class="pl-6"><select id="reassignCourse" class="ipt"><option value="">Seleccionar</option>${others}</select></div><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="delAction" value="delete"> <span style="color:var(--danger)">Eliminar estudiantes</span></label></div>`:''}<div class="flex justify-end gap-3 mt-5"><button class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button class="btn btn-danger" onclick="doDeleteCourse('${id}')">Eliminar</button></div>`);setTimeout(()=>{document.querySelectorAll('input[name="delAction"]').forEach(r=>r.addEventListener('change',()=>{const d=document.getElementById('reassignDiv');if(d)d.style.display=r.value==='reassign'&&r.checked?'':'none';}));},50);}
-async function doDeleteCourse(id){const stC=getCourseStudents(id).length;let action='delete',newCid='';if(stC>0){const chk=document.querySelector('input[name="delAction"]:checked');action=chk?chk.value:'delete';if(action==='reassign'){newCid=document.getElementById('reassignCourse')?.value||'';if(!newCid){toast('Selecciona curso para reasignar','error');return;}}}await removeCourse(id,action,newCid);hideModal();toast('Curso eliminado','success');}
-
-// ── ANOTACIONES ──
-function renderAnotaciones(){const anns=Object.entries(App.annotations).sort(([,a],[,b])=>b.date.localeCompare(a.date));const list=anns.map(([id,a])=>`<div class="card p-4 flex items-start gap-4"><div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style="background:${a.type==='positive'?'rgba(16,185,129,0.12)':a.type==='negative'?'rgba(239,68,68,0.12)':a.type==='task'?'rgba(245,158,11,0.12)':'rgba(59,130,246,0.12)'}"><i class="fas ${typeIcon(a.type)}" style="color:${a.type==='positive'?'#34d399':a.type==='negative'?'#f87171':a.type==='task'?'#fbbf24':'#60a5fa'}"></i></div><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="font-semibold text-sm">${getStudentName(a.studentId)}</span><span class="badge ${typeBadge(a.type)}">${typeLabel(a.type)}</span><span class="text-xs ml-auto" style="color:var(--muted)">${formatDate(a.date)}</span></div><p class="text-sm" style="color:var(--muted)">${a.text}</p></div>${isAdmin()?`<button class="btn btn-danger btn-sm flex-shrink-0" onclick="confirmDeleteAnn('${id}')"><i class="fas fa-trash"></i></button>`:''}</div>`).join('');return`<div class="sec-fade"><div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><h2 class="text-2xl font-bold">Anotaciones</h2><p style="color:var(--muted)" class="text-sm mt-1">${anns.length} registradas</p></div><div class="flex gap-3"><select id="filterAnnType" class="ipt" style="width:auto" onchange="filterAnns()"><option value="">Todos</option><option value="positive">+</option><option value="negative">-</option><option value="task">Tareas</option><option value="observation">Obs</option></select><button class="btn btn-primary" onclick="openAnnotationModal()"><i class="fas fa-plus"></i> Nueva</button></div></div><div class="space-y-3" id="annList">${list||'<div class="text-center py-12" style="color:var(--muted)">Sin anotaciones</div>'}</div></div>`;}
-function filterAnns(){const t=document.getElementById('filterAnnType')?.value||'';const anns=Object.entries(App.annotations).filter(([,a])=>!t||a.type===t).sort(([,a],[,b])=>b.date.localeCompare(a.date));const list=anns.map(([id,a])=>`<div class="card p-4 flex items-start gap-4"><div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style="background:${a.type==='positive'?'rgba(16,185,129,0.12)':a.type==='negative'?'rgba(239,68,68,0.12)':a.type==='task'?'rgba(245,158,11,0.12)':'rgba(59,130,246,0.12)'}"><i class="fas ${typeIcon(a.type)}" style="color:${a.type==='positive'?'#34d399':a.type==='negative'?'#f87171':a.type==='task'?'#fbbf24':'#60a5fa'}"></i></div><div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1 flex-wrap"><span class="font-semibold text-sm">${getStudentName(a.studentId)}</span><span class="badge ${typeBadge(a.type)}">${typeLabel(a.type)}</span><span class="text-xs ml-auto" style="color:var(--muted)">${formatDate(a.date)}</span></div><p class="text-sm" style="color:var(--muted)">${a.text}</p></div></div>`).join('');document.getElementById('annList').innerHTML=list||'<div class="text-center py-12" style="color:var(--muted)">Sin resultados</div>';}
-
-function openAnnotationModal(sid){const opts=Object.entries(App.students).map(([id,s])=>`<option value="${id}" ${id===sid?'selected':''}>${s.name} ${s.lastname}</option>`).join('');const today=new Date().toISOString().split('T')[0];showModal(`<h3 class="text-lg font-bold mb-5">Nueva Anotación</h3><form id="frmA" class="space-y-4"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Estudiante</label><select name="studentId" class="ipt" required><option value="">Seleccionar</option>${opts}</select></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Fecha</label><input name="date" type="date" class="ipt" value="${today}" required></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Tipo</label><select name="type" class="ipt" required><option value="positive">+</option><option value="negative">-</option><option value="task">Tarea</option><option value="observation">Observación</option></select></div></div><div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="text" class="ipt" rows="3" required></textarea></div><div class="flex justify-end gap-3 pt-2"><button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form>`);document.getElementById('frmA').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);if(!f.get('studentId')){toast('Selecciona estudiante','error');return;}await createAnnotation(f.get('studentId'),f.get('date'),f.get('type'),f.get('text'));hideModal();toast('Anotación registrada','success');};}
-function confirmDeleteAnn(id){showModal(`<h3 class="text-lg font-bold mb-3">Eliminar Anotación</h3><p style="color:var(--muted)">Esta acción no se puede deshacer.</p><div class="flex justify-end gap-3 mt-5"><button class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button class="btn btn-danger" onclick="doDeleteAnn('${id}')">Eliminar</button></div>`);}
-async function doDeleteAnn(id){await removeAnnotation(id);hideModal();toast('Anotación eliminada','success');}
-
-// ── ESTADÍSTICAS ──
-function renderEstadisticas(){const ts=Object.keys(App.students).length,tc=Object.keys(App.courses).length,ta=Object.keys(App.annotations).length;const sw=new Set(Object.values(App.annotations).map(a=>a.studentId)).size;const op=ts>0?Math.round((sw/ts)*100):0;const pc={};Object.values(App.annotations).forEach(a=>{if(a.type==='positive')pc[a.studentId]=(pc[a.studentId]||0)+1;});const top3=Object.entries(pc).sort(([,a],[,b])=>b-a).slice(0,3);const t3h=top3.map(([sid,count],i)=>`<div class="flex items-center gap-3 p-3 rounded-lg" style="background:rgba(13,148,136,${0.08-i*0.02})"><span class="text-lg">${['🏆','🥈','🥉'][i]||''}</span><div class="flex-1"><p class="font-semibold text-sm">${getStudentName(sid)}</p><p class="text-xs" style="color:var(--muted)">${getCourseName(App.students[sid]?.courseId)}</p></div><span class="font-bold text-lg" style="color:var(--success)">${count}</span></div>`).join('');return`<div class="sec-fade"><div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><h2 class="text-2xl font-bold">Estadísticas</h2></div><button class="btn btn-amber" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card stat-card t p-5"><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Estudiantes</p><p class="text-3xl font-bold" style="color:var(--accent-light)">${ts}</p></div><div class="card stat-card a p-5"><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Cursos</p><p class="text-3xl font-bold" style="color:var(--amber-light)">${tc}</p></div><div class="card stat-card r p-5"><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Anotaciones</p><p class="text-3xl font-bold" style="color:#f87171">${ta}</p></div><div class="card stat-card b p-5"><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Con observaciones</p><p class="text-3xl font-bold" style="color:#60a5fa">${op}%</p></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6"><div class="card p-5"><h3 class="font-bold mb-4">Estudiantes por Curso</h3><div style="max-height:280px;display:flex;justify-content:center"><canvas id="chart1"></canvas></div></div><div class="card p-5"><h3 class="font-bold mb-4">Anotaciones por Tipo</h3><div style="max-height:280px;display:flex;justify-content:center"><canvas id="chart2"></canvas></div></div></div><div class="card p-5"><h3 class="font-bold mb-4">Top 3 Participaciones Positivas</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-3">${t3h||'<p class="text-sm" style="color:var(--muted)">Sin datos</p>'}</div></div></div>`;}
-
-function renderCharts(){Object.values(App.charts).forEach(c=>c.destroy());App.charts={};const cd=Object.entries(App.courses).map(([id,c])=>({name:c.name,count:getCourseStudents(id).length}));const ctx1=document.getElementById('chart1');if(ctx1){App.charts.c1=new Chart(ctx1,{type:'doughnut',data:{labels:cd.map(d=>d.name),datasets:[{data:cd.map(d=>d.count),backgroundColor:['#0d9488','#f59e0b','#ef4444','#3b82f6','#8b5cf6'],borderColor:'#161e2e',borderWidth:3}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{family:'DM Sans'}}}}}});}const tc={positive:0,negative:0,task:0,observation:0};Object.values(App.annotations).forEach(a=>{if(tc.hasOwnProperty(a.type))tc[a.type]++;});const ctx2=document.getElementById('chart2');if(ctx2){App.charts.c2=new Chart(ctx2,{type:'bar',data:{labels:['Positivas','Negativas','Tareas','Obs'],datasets:[{data:[tc.positive,tc.negative,tc.task,tc.observation],backgroundColor:['rgba(16,185,129,0.6)','rgba(239,68,68,0.6)','rgba(245,158,11,0.6)','rgba(59,130,246,0.6)'],borderColor:['#10b981','#ef4444','#f59e0b','#3b82f6'],borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#94a3b8',stepSize:1},grid:{color:'rgba(31,45,66,0.5)'}},x:{ticks:{color:'#94a3b8'},grid:{display:false}}}}});}}
-
-// ═══════════════ PDF ═══════════════
-async function generatePDF(){toast('Generando PDF...','info');const a=document.getElementById('pdfArea');let h=`<div style="text-align:center;margin-bottom:28px;border-bottom:3px solid #0d9488;padding-bottom:16px"><h1 style="font-size:24px;color:#0d9488;margin:0">EduTrack - Reporte</h1><p style="color:#64748b;font-size:12px;margin-top:6px">Generado: ${new Date().toLocaleDateString('es-ES')}</p></div><h2 style="font-size:16px;color:#1e293b;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin-bottom:12px">Resumen</h2><p style="font-size:13px;color:#475569">Estudiantes: <strong>${Object.keys(App.students).length}</strong> | Cursos: <strong>${Object.keys(App.courses).length}</strong> | Anotaciones: <strong>${Object.keys(App.annotations).length}</strong></p><br>`;Object.entries(App.courses).forEach(([cid,c])=>{const st=getCourseStudents(cid);h+=`<h2 style="font-size:14px;color:#0d9488;margin-top:18px;margin-bottom:8px">${c.name}</h2>`;if(st.length===0){h+=`<p style="font-size:12px;color:#94a3b8">Sin estudiantes</p>`;}else{h+=`<table><thead><tr><th>Nombre</th><th>Email</th><th>+</th><th>-</th><th>Tareas</th><th>Obs</th></tr></thead><tbody>`;st.forEach(([sid,s])=>{const an=getStudentAnnotations(sid);h+=`<tr><td>${s.name} ${s.lastname}</td><td>${s.email}</td><td style="color:#059669">${an.filter(([,a])=>a.type==='positive').length}</td><td style="color:#dc2626">${an.filter(([,a])=>a.type==='negative').length}</td><td style="color:#d97706">${an.filter(([,a])=>a.type==='task').length}</td><td style="color:#2563eb">${an.filter(([,a])=>a.type==='observation').length}</td></tr>`;});h+=`</tbody></table>`;}});a.innerHTML=h;try{await new Promise(r=>setTimeout(r,200));const canvas=await html2canvas(a,{scale:2,backgroundColor:'#ffffff'});const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');const imgW=210,pageH=297,imgH=(canvas.height*imgW)/canvas.width;let heightLeft=imgH,position=0;pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,position,imgW,imgH);heightLeft-=pageH;while(heightLeft>0){position=heightLeft-imgH;pdf.addPage();pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,position,imgW,imgH);heightLeft-=pageH;}pdf.save('EduTrack_Reporte.pdf');a.innerHTML='';toast('PDF generado','success');}catch(e){a.innerHTML='';toast('Error al generar PDF','error');}}
-
-// ═══════════════ BACKUP ═══════════════
-function exportBackup(){const d={exportDate:new Date().toISOString(),courses:App.courses,students:App.students,annotations:App.annotations};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`edutrack_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);toast('Respaldo exportado','success');}
-function importBackup(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const d=JSON.parse(e.target.result);if(!d.courses||!d.students){toast('Archivo inválido','error');return;}showModal(`<h3 class="text-lg font-bold mb-3">Importar Respaldo</h3><p style="color:var(--muted)">Se reemplazarán todos los datos.</p><div class="flex justify-end gap-3 mt-5"><button class="btn btn-ghost" onclick="hideModal()">Cancelar</button><button class="btn btn-primary" onclick="doImport()">Importar</button></div>`);window._imp=d;}catch(err){toast('Error al leer','error');}};reader.readAsText(file);event.target.value='';}
-async function doImport(){const d=window._imp;if(!d)return;if(App.useFirebase){await db.ref('courses').set(d.courses);await db.ref('students').set(d.students||{});await db.ref('annotations').set(d.annotations||{});}else{App.courses=d.courses;App.students=d.students||{};App.annotations=d.annotations||{};saveToLocalStorage();}delete window._imp;hideModal();renderSection();toast('Respaldo importado','success');}
-
-// ═══════════════ PARTÍCULAS LOGIN ═══════════════
-function createParticles(){const b=document.getElementById('particlesBox');if(!b)return;for(let i=0;i<18;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.bottom='-10px';const sz=Math.random()*3+1.5;p.style.width=p.style.height=sz+'px';p.style.background=Math.random()>0.5?'var(--accent)':'var(--amber)';p.style.animationDuration=(Math.random()*10+8)+'s';p.style.animationDelay=(Math.random()*10)+'s';b.appendChild(p);}}
-createParticles();
+    // Escuchar estado de autenticación (por si ya estaba autenticado)
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // Precargar datos de ejemplo si es la primera vez
+            preloadData();
+        }
+    });
+});
 </script>
 </body>
 </html>
