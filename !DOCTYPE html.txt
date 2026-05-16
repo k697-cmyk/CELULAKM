@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack - Sistema de Gestión Escolar</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- jsPDF + html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Firebase Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg: #0c1017;
+            --bg2: #111827;
+            --fg: #f1f5f9;
+            --muted: #7c8a9e;
+            --accent: #0d9488;
+            --accent-light: #2dd4bf;
+            --amber: #f59e0b;
+            --amber-light: #fbbf24;
+            --card: #161e2e;
+            --border: #1f2d42;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* ── Login ── */
+        .login-bg {
+            background:
+                radial-gradient(ellipse at 15% 50%, rgba(13,148,136,0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 20%, rgba(245,158,11,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 90%, rgba(13,148,136,0.06) 0%, transparent 50%),
+                var(--bg);
+        }
+
+        .login-card {
+            background: rgba(22,30,46,0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(13,148,136,0.15);
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(0) scale(0); opacity: 0; }
+            15%  { opacity: 0.8; transform: translateY(-10vh) scale(1); }
+            85%  { opacity: 0.6; }
+            100% { transform: translateY(-105vh) scale(0.3); opacity: 0; }
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+            z-index: 50;
+        }
+
+        .nav-item {
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { background: rgba(13,148,136,0.08); border-left-color: rgba(13,148,136,0.4); }
+        .nav-item.active { background: rgba(13,148,136,0.12); border-left-color: var(--accent); color: var(--accent-light); }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .card:hover { border-color: rgba(13,148,136,0.25); box-shadow: 0 0 24px rgba(13,148,136,0.04); }
+
+        /* ── Inputs ── */
+        .ipt {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--fg);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .ipt:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
+        .ipt::placeholder { color: var(--muted); opacity: 0.55; }
+
+        select.ipt {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%237c8a9e' viewBox='0 0 16 16'%3E%3Cpath d='M8 12L2 5h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        /* ── Botones ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            border: none; border-radius: 8px; padding: 9px 18px;
+            font-weight: 600; font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s ease; white-space: nowrap;
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 4px 14px rgba(13,148,136,0.25); }
+
+        .btn-amber { background: var(--amber); color: #0c1017; }
+        .btn-amber:hover { background: var(--amber-light); }
+
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-ghost {
+            background: transparent; color: var(--fg);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { border-color: var(--accent); background: rgba(13,148,136,0.05); }
+
+        .btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
+
+        /* ── Tabla ── */
+        .dtable { width: 100%; border-collapse: separate; border-spacing: 0; }
+
+        .dtable th {
+            background: rgba(13,148,136,0.08);
+            color: var(--accent-light);
+            font-weight: 600; text-align: left;
+            padding: 11px 14px; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+
+        .dtable td {
+            padding: 11px 14px; border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+
+        .dtable tbody tr:hover td { background: rgba(13,148,136,0.03); }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-flex; align-items: center;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 600;
+        }
+
+        .badge-positive    { background: rgba(16,185,129,0.14); color: #34d399; }
+        .badge-negative    { background: rgba(239,68,68,0.14);  color: #f87171; }
+        .badge-task        { background: rgba(245,158,11,0.14); color: #fbbf24; }
+        .badge-observation { background: rgba(59,130,246,0.14); color: #60a5fa; }
+        .badge-role        { background: rgba(13,148,136,0.14); color: var(--accent-light); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.18s ease;
+        }
+
+        .modal-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            max-width: 520px; width: 92%;
+            max-height: 85vh; overflow-y: auto;
+            animation: slideUp 0.25s ease;
+            padding: 28px;
+        }
+
+        .modal-box.wide { max-width: 700px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Toast ── */
+        #toastBox { position: fixed; top: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+
+        .toast {
+            padding: 12px 20px; border-radius: 8px; font-weight: 500;
+            font-size: 0.88rem; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            animation: toastIn 0.3s ease;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .toast.out { animation: toastOut 0.3s ease forwards; }
+
+        .toast-success { background: #065f46; color: #a7f3d0; border-left: 4px solid var(--success); }
+        .toast-error   { background: #7f1d1d; color: #fca5a5; border-left: 4px solid var(--danger); }
+        .toast-warning { background: #78350f; color: #fde68a; border-left: 4px solid var(--amber); }
+        .toast-info    { background: #1e3a5f; color: #93c5fd; border-left: 4px solid #3b82f6; }
+
+        @keyframes toastIn  { from { opacity: 0; transform: translateX(80px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(80px); } }
+
+        /* ── Stat cards ── */
+        .stat-card {
+            position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: -20px; right: -20px;
+            width: 80px; height: 80px; border-radius: 50%;
+            opacity: 0.06;
+        }
+        .stat-card.t::before { background: var(--accent); }
+        .stat-card.a::before { background: var(--amber); }
+        .stat-card.r::before { background: var(--danger); }
+        .stat-card.b::before { background: #3b82f6; }
+
+        /* ── PDF ── */
+        .pdf-area {
+            position: absolute; left: -9999px; top: 0;
+            width: 780px; background: #fff; color: #1e293b;
+            padding: 36px; font-family: 'DM Sans', sans-serif;
+        }
+        .pdf-area h2 { font-family: 'Space Grotesk', sans-serif; }
+        .pdf-area table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .pdf-area th, .pdf-area td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 0.82rem; text-align: left; }
+        .pdf-area th { background: #f1f5f9; font-weight: 600; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
+            .dtable { font-size: 0.8rem; }
+            .dtable th, .dtable td { padding: 8px 8px; }
+        }
+
+        /* ── Anotaciones timeline ── */
+        .timeline-item {
+            position: relative;
+            padding-left: 28px;
+            padding-bottom: 18px;
+            border-left: 2px solid var(--border);
+            margin-left: 8px;
+        }
+        .timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+        .timeline-item::before {
+            content: '';
+            position: absolute; left: -6px; top: 4px;
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 2px solid var(--accent);
+            background: var(--bg);
+        }
+        .timeline-item.positive::before  { border-color: var(--success); }
+        .timeline-item.negative::before  { border-color: var(--danger); }
+        .timeline-item.task::before      { border-color: var(--amber); }
+        .timeline-item.observation::before { border-color: #3b82f6; }
+
+        /* ── Spinner ── */
+        .spinner {
+            border: 3px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; width: 22px; height: 22px;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Conexión badge ── */
+        .conn-badge {
+            font-size: 0.68rem; padding: 3px 8px; border-radius: 4px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .conn-on  { background: rgba(16,185,129,0.12); color: #34d399; }
+        .conn-off { background: rgba(245,158,11,0.12); color: #fbbf24; }
+
+        /* Sección fade */
+        .sec-fade { animation: secFade 0.3s ease; }
+        @keyframes secFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ PÁGINA DE LOGIN ═══════════════ -->
+<div id="loginPage" class="login-bg min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div id="particlesBox" class="absolute inset-0 pointer-events-none"></div>
+
+    <div class="login-card rounded-2xl p-8 w-full max-w-sm relative z-10">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-4" style="background:rgba(13,148,136,0.12);">
+                <i class="fas fa-graduation-cap text-2xl" style="color:var(--accent-light)"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight" style="color:var(--fg)">EduTrack</h1>
+            <p class="text-sm mt-1" style="color:var(--muted)">Sistema de Gestión Escolar</p>
+        </div>
+
+        <div id="loginError" class="hidden mb-4 p-3 rounded-lg text-sm font-medium" style="background:rgba(239,68,68,0.12);color:#f87171;">
+            <i class="fas fa-exclamation-circle mr-1"></i> <span id="loginErrorMsg"></span>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color:var(--muted)">Usuario</label>
+                <input id="loginUser" type="text" class="ipt" placeholder="Ingresa tu usuario" autocomplete="username" required>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color:var(--muted)">Contraseña</label>
+                <input id="loginPass" type="password" class="ipt" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-full justify-center text-sm py-3">
+                <i class="fas fa-arrow-right-to-bracket"></i> Iniciar Sesión
+            </button>
+        </form>
+
+        <p class="text-center text-xs mt-6" style="color:var(--muted);opacity:0.6">
+            admin / admin &nbsp;&bull;&nbsp; profesor / 1234
+        </p>
+    </div>
+</div>
+
+<!-- ═══════════════ APLICACIÓN PRINCIPAL ═══════════════ -->
+<div id="mainApp" class="hidden min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar w-60 flex-shrink-0 flex flex-col h-screen sticky top-0">
+        <div class="p-5 border-b" style="border-color:var(--border)">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(13,148,136,0.15)">
+                    <i class="fas fa-graduation-cap" style="color:var(--accent-light)"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold leading-tight">EduTrack</h2>
+                    <span id="connStatus" class="conn-badge conn-off"><i class="fas fa-circle text-[6px]"></i> Conectando</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-3">
+            <div class="px-3 mb-2"><span class="text-[0.65rem] font-bold uppercase tracking-widest" style="color:var(--muted);opacity:0.5">Menú</span></div>
+            <div class="nav-item active flex items-center gap-3 px-5 py-2.5 text-sm" data-section="estudiantes">
+                <i class="fas fa-users w-5 text-center opacity-70"></i> Estudiantes
+            </div>
+            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="cursos">
+                <i class="fas fa-book w-5 text-center opacity-70"></i> Cursos
+            </div>
+            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="anotaciones">
+                <i class="fas fa-clipboard-list w-5 text-center opacity-70"></i> Anotaciones
+            </div>
+            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" data-section="estadisticas">
+                <i class="fas fa-chart-pie w-5 text-center opacity-70"></i> Estadísticas
+            </div>
+
+            <div class="px-3 mt-5 mb-2"><span class="text-[0.65rem] font-bold uppercase tracking-widest" style="color:var(--muted);opacity:0.5">Herramientas</span></div>
+            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" onclick="exportBackup()">
+                <i class="fas fa-download w-5 text-center opacity-70"></i> Exportar Respaldo
+            </div>
+            <div class="nav-item flex items-center gap-3 px-5 py-2.5 text-sm" onclick="document.getElementById('importFile').click()">
+                <i class="fas fa-upload w-5 text-center opacity-70"></i> Importar Respaldo
+            </div>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
+        </nav>
+
+        <div class="p-4 border-t" style="border-color:var(--border)">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(13,148,136,0.18);color:var(--accent-light)">
+                    <span id="userInitial">A</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="userName" class="text-sm font-semibold truncate">Admin</p>
+                    <span id="userRole" class="badge badge-role">admin</span>
+                </div>
+            </div>
+            <button onclick="logout()" class="btn btn-ghost btn-sm w-full justify-center">
+                <i class="fas fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Overlay móvil -->
+    <div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Contenido principal -->
+    <main class="flex-1 min-h-screen overflow-y-auto">
+        <!-- Header móvil -->
+        <header class="md:hidden flex items-center gap-3 p-4 border-b" style="border-color:var(--border);background:var(--card)">
+            <button onclick="toggleSidebar()" class="btn btn-ghost btn-sm"><i class="fas fa-bars"></i></button>
+            <h2 class="text-sm font-bold">EduTrack</h2>
+            <span id="mobileUser" class="ml-auto text-xs font-medium" style="color:var(--muted)">Admin</span>
+        </header>
+
+        <div class="p-5 md:p-8">
+            <div id="contentArea"></div>
+        </div>
+    </main>
+</div>
+
+<!-- Contenedor de toasts -->
+<div id="toastBox"></div>
+
+<!-- Contenedor de modales -->
+<div id="modalBox"></div>
+
+<!-- Área oculta para PDF -->
+<div id="pdfArea" class="pdf-area"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   EduTrack - Sistema de Gestión Escolar
+   Aplicación completa en un solo archivo HTML
+   Persistencia: Firebase Realtime Database + localStorage respaldo
+   ══════════════════════════════════════════════════════════════ */
+
+// ── Estado global ──
+const App = {
+    currentUser: null,
+    courses: {},
+    students: {},
+    annotations: {},
+    activeSection: 'estudiantes',
+    charts: {},
+    useFirebase: false,
+    firebaseReady: false
+};
+
+// ── Generar ID único ──
+function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+}
+
+// ═══════════════ FIREBASE ═══════════════
+const firebaseConfig = {
+    apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
+    authDomain: "celulakmt.firebaseapp.com",
+    databaseURL: "https://celulakmt-default-rtdb.firebaseio.com",
+    projectId: "celulakmt",
+    storageBucket: "celulakmt.firebasestorage.app",
+    messagingSenderId: "623088700057",
+    appId: "1:623088700057:web:fffb8fccbae5ff6d834608",
+    measurementId: "G-CY1HY229XX"
+};
+
+let db;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.warn('Error al inicializar Firebase:', e);
+}
+
+// Intentar conectar a Firebase y cargar datos
+async function initFirebase() {
+    if (!db) return false;
+    try {
+        // Intentar leer con timeout
+        const snap = await Promise.race([
+            db.ref('users').once('value'),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))
+        ]);
+
+        App.useFirebase = true;
+        App.firebaseReady = true;
+
+        // Si no hay datos, sembrar iniciales
+        if (!snap.exists() || Object.keys(snap.val() || {}).length === 0) {
+            await seedFirebase();
+        }
+
+        // Cargar datos
+        const [cSnap, sSnap, aSnap, uSnap] = await Promise.all([
+            db.ref('courses').once('value'),
+            db.ref('students').once('value'),
+            db.ref('annotations').once('value'),
+            db.ref('users').once('value')
+        ]);
+
+        App.courses = cSnap.val() || {};
+        App.students = sSnap.val() || {};
+        App.annotations = aSnap.val() || {};
+
+        // Escuchar cambios en tiempo real
+        db.ref('courses').on('value', s => { App.courses = s.val() || {}; if (App.currentUser) renderSection(); });
+        db.ref('students').on('value', s => { App.students = s.val() || {}; if (App.currentUser) renderSection(); });
+        db.ref('annotations').on('value', s => { App.annotations = s.val() || {}; if (App.currentUser) renderSection(); });
+
+        updateConnStatus(true);
+        return true;
+    } catch (err) {
+        console.warn('Firebase no disponible, usando localStorage:', err.message);
+        App.useFirebase = false;
+        loadFromLocalStorage();
+        updateConnStatus(false);
+        return false;
+    }
+}
+
+// Semilla de datos iniciales en Firebase
+async function seedFirebase() {
+    const c1 = db.ref('courses').push().key;
+    const c2 = db.ref('courses').push().key;
+    const c3 = db.ref('courses').push().key;
+
+    await db.ref('users').set({
+        admin: { password: 'admin', role: 'admin', name: 'Administrador' },
+        profesor: { password: '1234', role: 'profesor', name: 'Profesor García' }
+    });
+
+    await db.ref('courses').set({
+        [c1]: { name: 'Matemáticas', description: 'Álgebra, geometría y cálculo' },
+        [c2]: { name: 'Ciencias', description: 'Física, química y biología' },
+        [c3]: { name: 'Historia', description: 'Historia universal y contemporánea' }
+    });
+
+    const s1 = db.ref('students').push().key;
+    const s2 = db.ref('students').push().key;
+    const s3 = db.ref('students').push().key;
+    const s4 = db.ref('students').push().key;
+    const s5 = db.ref('students').push().key;
+    const s6 = db.ref('students').push().key;
+
+    await db.ref('students').set({
+        [s1]: { name: 'Ana', lastname: 'Martínez', email: 'ana.martinez@correo.com', courseId: c1 },
+        [s2]: { name: 'Carlos', lastname: 'López', email: 'carlos.lopez@correo.com', courseId: c1 },
+        [s3]: { name: 'María', lastname: 'González', email: 'maria.gonzalez@correo.com', courseId: c2 },
+        [s4]: { name: 'Pedro', lastname: 'Sánchez', email: 'pedro.sanchez@correo.com', courseId: c2 },
+        [s5]: { name: 'Laura', lastname: 'Díaz', email: 'laura.diaz@correo.com', courseId: c3 },
+        [s6]: { name: 'Diego', lastname: 'Torres', email: 'diego.torres@correo.com', courseId: c1 }
+    });
+
+    const an1 = db.ref('annotations').push().key;
+    const an2 = db.ref('annotations').push().key;
+    const an3 = db.ref('annotations').push().key;
+    const an4 = db.ref('annotations').push().key;
+    const an5 = db.ref('annotations').push().key;
+    const an6 = db.ref('annotations').push().key;
+    const an7 = db.ref('annotations').push().key;
+
+    await db.ref('annotations').set({
+        [an1]: { studentId: s1, date: '2024-03-15', type: 'positive', text: 'Excelente participación en clase de álgebra' },
+        [an2]: { studentId: s1, date: '2024-03-20', type: 'positive', text: 'Resolvió el problema del día rápidamente' },
+        [an3]: { studentId: s2, date: '2024-03-18', type: 'negative', text: 'No entregó la tarea asignada' },
+        [an4]: { studentId: s3, date: '2024-04-02', type: 'positive', text: 'Muy buena labor en el experimento de laboratorio' },
+        [an5]: { studentId: s5, date: '2024-04-05', type: 'task', text: 'Preparar exposición sobre la Revolución Francesa' },
+        [an6]: { studentId: s4, date: '2024-04-10', type: 'observation', text: 'Demuestra mucha curiosidad e interés en la materia' },
+        [an7]: { studentId: s6, date: '2024-04-12', type: 'positive', text: 'Ayudó a sus compañeros a entender fracciones' }
+    });
+}
+
+// ── localStorage ──
+function loadFromLocalStorage() {
+    App.courses = JSON.parse(localStorage.getItem('et_courses') || '{}');
+    App.students = JSON.parse(localStorage.getItem('et_students') || '{}');
+    App.annotations = JSON.parse(localStorage.getItem('et_annotations') || '{}');
+    // Si está vacío, sembrar datos
+    if (Object.keys(App.courses).length === 0) seedLocalStorage();
+}
+
+function saveToLocalStorage() {
+    localStorage.setItem('et_courses', JSON.stringify(App.courses));
+    localStorage.setItem('et_students', JSON.stringify(App.students));
+    localStorage.setItem('et_annotations', JSON.stringify(App.annotations));
+}
+
+function seedLocalStorage() {
+    const c1 = genId(), c2 = genId(), c3 = genId();
+    App.courses = {
+        [c1]: { name: 'Matemáticas', description: 'Álgebra, geometría y cálculo' },
+        [c2]: { name: 'Ciencias', description: 'Física, química y biología' },
+        [c3]: { name: 'Historia', description: 'Historia universal y contemporánea' }
+    };
+    const s1 = genId(), s2 = genId(), s3 = genId(), s4 = genId(), s5 = genId(), s6 = genId();
+    App.students = {
+        [s1]: { name: 'Ana', lastname: 'Martínez', email: 'ana.martinez@correo.com', courseId: c1 },
+        [s2]: { name: 'Carlos', lastname: 'López', email: 'carlos.lopez@correo.com', courseId: c1 },
+        [s3]: { name: 'María', lastname: 'González', email: 'maria.gonzalez@correo.com', courseId: c2 },
+        [s4]: { name: 'Pedro', lastname: 'Sánchez', email: 'pedro.sanchez@correo.com', courseId: c2 },
+        [s5]: { name: 'Laura', lastname: 'Díaz', email: 'laura.diaz@correo.com', courseId: c3 },
+        [s6]: { name: 'Diego', lastname: 'Torres', email: 'diego.torres@correo.com', courseId: c1 }
+    };
+    const a1 = genId(), a2 = genId(), a3 = genId(), a4 = genId(), a5 = genId(), a6 = genId(), a7 = genId();
+    App.annotations = {
+        [a1]: { studentId: s1, date: '2024-03-15', type: 'positive', text: 'Excelente participación en clase de álgebra' },
+        [a2]: { studentId: s1, date: '2024-03-20', type: 'positive', text: 'Resolvió el problema del día rápidamente' },
+        [a3]: { studentId: s2, date: '2024-03-18', type: 'negative', text: 'No entregó la tarea asignada' },
+        [a4]: { studentId: s3, date: '2024-04-02', type: 'positive', text: 'Muy buena labor en el experimento de laboratorio' },
+        [a5]: { studentId: s5, date: '2024-04-05', type: 'task', text: 'Preparar exposición sobre la Revolución Francesa' },
+        [a6]: { studentId: s4, date: '2024-04-10', type: 'observation', text: 'Demuestra mucha curiosidad e interés en la materia' },
+        [a7]: { studentId: s6, date: '2024-04-12', type: 'positive', text: 'Ayudó a sus compañeros a entender fracciones' }
+    };
+    saveToLocalStorage();
+}
+
+function updateConnStatus(connected) {
+    const el = document.getElementById('connStatus');
+    if (connected) {
+        el.className = 'conn-badge conn-on';
+        el.innerHTML = '<i class="fas fa-circle text-[6px]"></i> En línea';
+    } else {
+        el.className = 'conn-badge conn-off';
+        el.innerHTML = '<i class="fas fa-circle text-[6px]"></i> Local';
+    }
+}
+
+// ═══════════════ AUTENTICACIÓN ═══════════════
+const USERS = {
+    admin: { password: 'admin', role: 'admin', name: 'Administrador' },
+    profesor: { password: '1234', role: 'profesor', name: 'Profesor García' }
+};
+
+function login(username, password) {
+    const u = USERS[username];
+    if (!u || u.password !== password) return null;
+    return { username, ...u };
+}
+
+function logout() {
+    App.currentUser = null;
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('loginPage').classList.remove('hidden');
+    document.getElementById('loginForm').reset();
+    document.getElementById('loginError').classList.add('hidden');
+}
+
+function isAdmin() { return App.currentUser && App.currentUser.role === 'admin'; }
+
+// ═══════════════ CRUD CURSOS ═══════════════
+async function createCourse(name, description) {
+    const data = { name, description };
+    if (App.useFirebase) {
+        const ref = db.ref('courses').push();
+        await ref.set(data);
+    } else {
+        App.courses[genId()] = data;
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+async function updateCourse(id, name, description) {
+    const data = { name, description };
+    if (App.useFirebase) {
+        await db.ref('courses/' + id).update(data);
+    } else {
+        App.courses[id] = { ...App.courses[id], ...data };
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+async function removeCourse(id, action, newCourseId) {
+    // Obtener estudiantes del curso
+    const courseStudents = Object.entries(App.students).filter(([, s]) => s.courseId === id);
+
+    if (App.useFirebase) {
+        const updates = {};
+        // Eliminar curso
+        updates['courses/' + id] = null;
+
+        if (action === 'reassign' && newCourseId) {
+            // Reasignar estudiantes
+            courseStudents.forEach(([sid]) => {
+                updates['students/' + sid + '/courseId'] = newCourseId;
+            });
+        } else if (action === 'delete') {
+            // Eliminar estudiantes y sus anotaciones
+            courseStudents.forEach(([sid]) => {
+                updates['students/' + sid] = null;
+                // Eliminar anotaciones de esos estudiantes
+                Object.entries(App.annotations).forEach(([aid, a]) => {
+                    if (a.studentId === sid) updates['annotations/' + aid] = null;
+                });
+            });
+        }
+
+        await db.ref().update(updates);
+    } else {
+        delete App.courses[id];
+        if (action === 'reassign' && newCourseId) {
+            courseStudents.forEach(([sid]) => {
+                App.students[sid].courseId = newCourseId;
+            });
+        } else if (action === 'delete') {
+            courseStudents.forEach(([sid]) => {
+                delete App.students[sid];
+                // Eliminar anotaciones
+                Object.entries(App.annotations).forEach(([aid, a]) => {
+                    if (a.studentId === sid) delete App.annotations[aid];
+                });
+            });
+        }
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+// ═══════════════ CRUD ESTUDIANTES ═══════════════
+async function createStudent(name, lastname, email, courseId) {
+    const data = { name, lastname, email, courseId };
+    if (App.useFirebase) {
+        const ref = db.ref('students').push();
+        await ref.set(data);
+    } else {
+        App.students[genId()] = data;
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+async function updateStudent(id, name, lastname, email, courseId) {
+    const data = { name, lastname, email, courseId };
+    if (App.useFirebase) {
+        await db.ref('students/' + id).update(data);
+    } else {
+        App.students[id] = { ...App.students[id], ...data };
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+async function removeStudent(id) {
+    if (App.useFirebase) {
+        const updates = { ['students/' + id]: null };
+        Object.entries(App.annotations).forEach(([aid, a]) => {
+            if (a.studentId === id) updates['annotations/' + aid] = null;
+        });
+        await db.ref().update(updates);
+    } else {
+        delete App.students[id];
+        Object.entries(App.annotations).forEach(([aid, a]) => {
+            if (a.studentId === id) delete App.annotations[aid];
+        });
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+// ═══════════════ CRUD ANOTACIONES ═══════════════
+async function createAnnotation(studentId, date, type, text) {
+    const data = { studentId, date, type, text };
+    if (App.useFirebase) {
+        const ref = db.ref('annotations').push();
+        await ref.set(data);
+    } else {
+        App.annotations[genId()] = data;
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+async function removeAnnotation(id) {
+    if (App.useFirebase) {
+        await db.ref('annotations/' + id).remove();
+    } else {
+        delete App.annotations[id];
+        saveToLocalStorage();
+        renderSection();
+    }
+}
+
+// ═══════════════ HELPERS ═══════════════
+function getStudentName(id) {
+    const s = App.students[id];
+    return s ? `${s.name} ${s.lastname}` : 'Desconocido';
+}
+
+function getCourseName(id) {
+    const c = App.courses[id];
+    return c ? c.name : 'Sin curso';
+}
+
+function getStudentAnnotations(sid) {
+    return Object.entries(App.annotations).filter(([, a]) => a.studentId === sid);
+}
+
+function getCourseStudents(cid) {
+    return Object.entries(App.students).filter(([, s]) => s.courseId === cid);
+}
+
+function typeLabel(t) {
+    const map = { positive: 'Participación +', negative: 'Participación -', task: 'Tarea pendiente', observation: 'Observación' };
+    return map[t] || t;
+}
+
+function typeBadge(t) {
+    const map = { positive: 'badge-positive', negative: 'badge-negative', task: 'badge-task', observation: 'badge-observation' };
+    return map[t] || '';
+}
+
+function typeIcon(t) {
+    const map = { positive: 'fa-thumbs-up', negative: 'fa-thumbs-down', task: 'fa-list-check', observation: 'fa-eye' };
+    return map[t] || 'fa-note';
+}
+
+function formatDate(d) {
+    if (!d) return '';
+    const parts = d.split('-');
+    if (parts.length !== 3) return d;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+// ═══════════════ TOAST ═══════════════
+function toast(msg, type = 'info') {
+    const box = document.getElementById('toastBox');
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    el.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+    box.appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ═══════════════ MODAL ═══════════════
+function showModal(html, wide = false) {
+    const box = document.getElementById('modalBox');
+    box.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)hideModal()"><div class="modal-box ${wide ? 'wide' : ''}">${html}</div></div>`;
+}
+
+function hideModal() {
+    document.getElementById('modalBox').innerHTML = '';
+}
+
+// ═══════════════ SIDEBAR / NAV ═══════════════
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebarOverlay');
+    sb.classList.toggle('open');
+    ov.classList.toggle('hidden');
+}
+
+function setActiveNav(section) {
+    document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+        el.classList.toggle('active', el.dataset.section === section);
+    });
+}
+
+// ═══════════════ RENDERIZADO PRINCIPAL ═══════════════
+function renderSection() {
+    const area = document.getElementById('contentArea');
+    switch (App.activeSection) {
+        case 'estudiantes': area.innerHTML = renderEstudiantes(); break;
+        case 'cursos': area.innerHTML = renderCursos(); break;
+        case 'anotaciones': area.innerHTML = renderAnotaciones(); break;
+        case 'estadisticas': area.innerHTML = renderEstadisticas();(); break;
+    }
+    area.querySelector('.sec-fade')?.offsetHeight; // Forzar reflow para animación
+}
+
+// ── ESTUDIANTES ──
+function renderEstudiantes() {
+    const students = Object.entries(App.students);
+    const courseOptions = Object.entries(App.courses).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join('');
+    const adminBtns = isAdmin();
+
+    const rows = students.map(([id, s]) => {
+        const annCount = getStudentAnnotations(id).length;
+        const posCount = getStudentAnnotations(id).filter(([, a]) => a.type === 'positive').length;
+        return `<tr>
+            <td class="font-medium">${s.name} ${s.lastname}</td>
+            <td style="color:var(--muted)">${s.email}</td>
+            <td><span class="badge badge-observation">${getCourseName(s.courseId)}</span></td>
+            <td class="text-center"><span style="color:var(--success)">${posCount}</span> / ${annCount}</td>
+            <td>
+                <div class="flex gap-2 justify-end">
+                    <button class="btn btn-ghost btn-sm" onclick="viewStudentDetail('${id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-ghost btn-sm" onclick="openAnnotationModal('${id}')" title="Agregar anotación"><i class="fas fa-plus"></i></button>
+                    ${adminBtns ? `<button class="btn btn-ghost btn-sm" onclick="openEditStudent('${id}')" title="Editar"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${id}')" title="Eliminar"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    return `<div class="sec-fade">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">Estudiantes</h2>
+                <p style="color:var(--muted)" class="text-sm mt-1">${students.length} estudiantes registrados</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color:var(--muted)"></i>
+                    <input id="searchStudent" type="text" class="ipt pl-9" placeholder="Buscar..." style="width:200px" oninput="filterStudents(this.value)">
+                </div>
+                ${adminBtns ? `<button class="btn btn-primary" onclick="openAddStudent()"><i class="fas fa-plus"></i> Nuevo Estudiante</button>` : ''}
+            </div>
+        </div>
+        <div class="card overflow-x-auto">
+            <table class="dtable" id="studentsTable">
+                <thead><tr><th>Nombre</th><th>Email</th><th>Curso</th><th class="text-center">Anotaciones (+/total)</th><th class="text-right">Acciones</th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="5" class="text-center py-8" style="color:var(--muted)">No hay estudiantes registrados</td></tr>'}</tbody>
+            </table>
+        </div>
+    </div>`;
+}
+
+function filterStudents(q) {
+    const rows = document.querySelectorAll('#studentsTable tbody tr');
+    const query = q.toLowerCase();
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
+function openAddStudent() {
+    const courseOpts = Object.entries(App.courses).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join('');
+    showModal(`
+        <h3 class="text-lg font-bold mb-5">Nuevo Estudiante</h3>
+        <form id="frmStudent" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" required></div>
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Apellido</label><input name="lastname" class="ipt" required></div>
+            </div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Email</label><input name="email" type="email" class="ipt" required></div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Curso</label><select name="courseId" class="ipt" required><option value="">Seleccionar curso</option>${courseOpts}</select></div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    `);
+    document.getElementById('frmStudent').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        await createStudent(f.get('name'), f.get('lastname'), f.get('email'), f.get('courseId'));
+        hideModal();
+        toast('Estudiante creado correctamente', 'success');
+    };
+}
+
+function openEditStudent(id) {
+    const s = App.students[id];
+    if (!s) return;
+    const courseOpts = Object.entries(App.courses).map(([cid, c]) => `<option value="${cid}" ${cid === s.courseId ? 'selected' : ''}>${c.name}</option>`).join('');
+    showModal(`
+        <h3 class="text-lg font-bold mb-5">Editar Estudiante</h3>
+        <form id="frmStudent" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" value="${s.name}" required></div>
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Apellido</label><input name="lastname" class="ipt" value="${s.lastname}" required></div>
+            </div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Email</label><input name="email" type="email" class="ipt" value="${s.email}" required></div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Curso</label><select name="courseId" class="ipt" required><option value="">Seleccionar curso</option>${courseOpts}</select></div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    `);
+    document.getElementById('frmStudent').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        await updateStudent(id, f.get('name'), f.get('lastname'), f.get('email'), f.get('courseId'));
+        hideModal();
+        toast('Estudiante actualizado', 'success');
+    };
+}
+
+function confirmDeleteStudent(id) {
+    const s = App.students[id];
+    if (!s) return;
+    const annCount = getStudentAnnotations(id).length;
+    showModal(`
+        <h3 class="text-lg font-bold mb-3">Eliminar Estudiante</h3>
+        <p class="mb-2" style="color:var(--muted)">Estás a punto de eliminar a <strong style="color:var(--fg)">${s.name} ${s.lastname}</strong>.</p>
+        ${annCount > 0 ? `<p class="text-sm mb-4" style="color:var(--amber)"><i class="fas fa-exclamation-triangle mr-1"></i> Se eliminarán también ${annCount} anotaciones asociadas.</p>` : ''}
+        <div class="flex justify-end gap-3 mt-5">
+            <button class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+            <button class="btn btn-danger" onclick="doDeleteStudent('${id}')">Eliminar</button>
+        </div>
+    `);
+}
+
+async function doDeleteStudent(id) {
+    await removeStudent(id);
+    hideModal();
+    toast('Estudiante eliminado', 'success');
+}
+
+function viewStudentDetail(id) {
+    const s = App.students[id];
+    if (!s) return;
+    const anns = getStudentAnnotations(id).sort(([,a],[,b]) => b.date.localeCompare(a.date));
+    const posCount = anns.filter(([,a]) => a.type === 'positive').length;
+    const negCount = anns.filter(([,a]) => a.type === 'negative').length;
+    const taskCount = anns.filter(([,a]) => a.type === 'task').length;
+    const obsCount = anns.filter(([,a]) => a.type === 'observation').length;
+
+    const timeline = anns.map(([, a]) => `
+        <div class="timeline-item ${a.type}">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="badge ${typeBadge(a.type)}"><i class="fas ${typeIcon(a.type)} mr-1"></i>${typeLabel(a.type)}</span>
+                <span class="text-xs" style="color:var(--muted)">${formatDate(a.date)}</span>
+            </div>
+            <p class="text-sm">${a.text}</p>
+        </div>
+    `).join('');
+
+    showModal(`
+        <h3 class="text-lg font-bold mb-1">${s.name} ${s.lastname}</h3>
+        <p class="text-sm mb-1" style="color:var(--muted)">${s.email}</p>
+        <span class="badge badge-observation mb-4">${getCourseName(s.courseId)}</span>
+
+        <div class="grid grid-cols-4 gap-3 mb-5">
+            <div class="text-center p-2 rounded-lg" style="background:rgba(16,185,129,0.1)"><p class="text-lg font-bold" style="color:#34d399">${posCount}</p><p class="text-[0.65rem]" style="color:var(--muted)">Positivas</p></div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(239,68,68,0.1)"><p class="text-lg font-bold" style="color:#f87171">${negCount}</p><p class="text-[0.65rem]" style="color:var(--muted)">Negativas</p></div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(245,158,11,0.1)"><p class="text-lg font-bold" style="color:#fbbf24">${taskCount}</p><p class="text-[0.65rem]" style="color:var(--muted)">Tareas</p></div>
+            <div class="text-center p-2 rounded-lg" style="background:rgba(59,130,246,0.1)"><p class="text-lg font-bold" style="color:#60a5fa">${obsCount}</p><p class="text-[0.65rem]" style="color:var(--muted)">Observaciones</p></div>
+        </div>
+
+        <h4 class="text-sm font-semibold mb-3" style="color:var(--muted)">Historial de Anotaciones</h4>
+        <div class="max-h-60 overflow-y-auto pr-2">
+            ${timeline || '<p class="text-sm" style="color:var(--muted)">Sin anotaciones registradas</p>'}
+        </div>
+
+        <div class="flex justify-end gap-3 mt-5">
+            <button class="btn btn-primary" onclick="hideModal();openAnnotationModal('${id}')"><i class="fas fa-plus"></i> Agregar Anotación</button>
+            <button class="btn btn-ghost" onclick="hideModal()">Cerrar</button>
+        </div>
+    `, true);
+}
+
+// ── CURSOS ──
+function renderCursos() {
+    const courses = Object.entries(App.courses);
+    const adminBtns = isAdmin();
+
+    const cards = courses.map(([id, c]) => {
+        const stCount = getCourseStudents(id).length;
+        return `<div class="card p-5 flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:rgba(13,148,136,0.12)">
+                    <i class="fas fa-book" style="color:var(--accent-light)"></i>
+                </div>
+                ${adminBtns ? `<div class="flex gap-1">
+                    <button class="btn btn-ghost btn-sm" onclick="openEditCourse('${id}')" title="Editar"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse('${id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </div>` : ''}
+            </div>
+            <h3 class="font-bold text-base mb-1">${c.name}</h3>
+            <p class="text-sm mb-3" style="color:var(--muted)">${c.description || 'Sin descripción'}</p>
+            <div class="mt-auto flex items-center gap-2">
+                <i class="fas fa-users text-xs" style="color:var(--muted)"></i>
+                <span class="text-sm font-medium">${stCount} estudiante${stCount !== 1 ? 's' : ''}</span>
+            </div>
+        </div>`;
+    }).join('');
+
+    return `<div class="sec-fade">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">Cursos</h2>
+                <p style="color:var(--muted)" class="text-sm mt-1">${courses.length} cursos registrados</p>
+            </div>
+            ${adminBtns ? `<button class="btn btn-primary" onclick="openAddCourse()"><i class="fas fa-plus"></i> Nuevo Curso</button>` : ''}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${cards || '<div class="col-span-full text-center py-12" style="color:var(--muted)">No hay cursos registrados</div>'}
+        </div>
+    </div>`;
+}
+
+function openAddCourse() {
+    showModal(`
+        <h3 class="text-lg font-bold mb-5">Nuevo Curso</h3>
+        <form id="frmCourse" class="space-y-4">
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" required></div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="description" class="ipt" rows="2"></textarea></div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    `);
+    document.getElementById('frmCourse').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        await createCourse(f.get('name'), f.get('description') || '');
+        hideModal();
+        toast('Curso creado correctamente', 'success');
+    };
+}
+
+function openEditCourse(id) {
+    const c = App.courses[id];
+    if (!c) return;
+    showModal(`
+        <h3 class="text-lg font-bold mb-5">Editar Curso</h3>
+        <form id="frmCourse" class="space-y-4">
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Nombre</label><input name="name" class="ipt" value="${c.name}" required></div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="description" class="ipt" rows="2">${c.description || ''}</textarea></div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    `);
+    document.getElementById('frmCourse').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        await updateCourse(id, f.get('name'), f.get('description') || '');
+        hideModal();
+        toast('Curso actualizado', 'success');
+    };
+}
+
+function confirmDeleteCourse(id) {
+    const c = App.courses[id];
+    if (!c) return;
+    const stCount = getCourseStudents(id).length;
+    const otherCourses = Object.entries(App.courses).filter(([cid]) => cid !== id);
+    const otherOpts = otherCourses.map(([cid, co]) => `<option value="${cid}">${co.name}</option>`).join('');
+
+    showModal(`
+        <h3 class="text-lg font-bold mb-3">Eliminar Curso</h3>
+        <p class="mb-2" style="color:var(--muted)">Estás a punto de eliminar el curso <strong style="color:var(--fg)">${c.name}</strong>.</p>
+        ${stCount > 0 ? `
+            <p class="text-sm mb-3" style="color:var(--amber)"><i class="fas fa-exclamation-triangle mr-1"></i> Este curso tiene ${stCount} estudiante${stCount > 1 ? 's' : ''}.</p>
+            <div class="space-y-3 mb-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="delAction" value="reassign" checked class="accent-[var(--accent)]">
+                    <span class="text-sm">Reasignar estudiantes a otro curso</span>
+                </label>
+                <div id="reassignDiv" class="pl-6">
+                    <select id="reassignCourse" class="ipt"><option value="">Seleccionar curso</option>${otherOpts}</select>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="delAction" value="delete" class="accent-[var(--accent)]">
+                    <span class="text-sm" style="color:var(--danger)">Eliminar estudiantes y sus anotaciones</span>
+                </label>
+            </div>
+        ` : ''}
+        <div class="flex justify-end gap-3 mt-5">
+            <button class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+            <button class="btn btn-danger" onclick="doDeleteCourse('${id}')">Eliminar Curso</button>
+        </div>
+    `);
+
+    // Toggle reassign select visibility
+    setTimeout(() => {
+        document.querySelectorAll('input[name="delAction"]').forEach(r => {
+            r.addEventListener('change', () => {
+                const div = document.getElementById('reassignDiv');
+                if (div) div.style.display = r.value === 'reassign' && r.checked ? '' : 'none';
+            });
+        });
+    }, 50);
+}
+
+async function doDeleteCourse(id) {
+    const stCount = getCourseStudents(id).length;
+    let action = 'delete';
+    let newCourseId = '';
+
+    if (stCount > 0) {
+        const checked = document.querySelector('input[name="delAction"]:checked');
+        action = checked ? checked.value : 'delete';
+        if (action === 'reassign') {
+            newCourseId = document.getElementById('reassignCourse')?.value || '';
+            if (!newCourseId) {
+                toast('Selecciona un curso para reasignar', 'error');
+                return;
+            }
+        }
+    }
+
+    await removeCourse(id, action, newCourseId);
+    hideModal();
+    toast('Curso eliminado correctamente', 'success');
+}
+
+// ── ANOTACIONES ──
+function renderAnotaciones() {
+    const anns = Object.entries(App.annotations).sort(([,a],[,b]) => b.date.localeCompare(a.date));
+    const studentOpts = Object.entries(App.students).map(([id, s]) => `<option value="${id}">${s.name} ${s.lastname}</option>`).join('');
+
+    const list = anns.map(([id, a]) => `
+        <div class="card p-4 flex items-start gap-4">
+            <div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style="background:${a.type === 'positive' ? 'rgba(16,185,129,0.12)' : a.type === 'negative' ? 'rgba(239,68,68,0.12)' : a.type === 'task' ? 'rgba(245,158,11,0.12)' : 'rgba(59,130,246,0.12)'}">
+                <i class="fas ${typeIcon(a.type)}" style="color:${a.type === 'positive' ? '#34d399' : a.type === 'negative' ? '#f87171' : a.type === 'task' ? '#fbbf24' : '#60a5fa'}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="font-semibold text-sm">${getStudentName(a.studentId)}</span>
+                    <span class="badge ${typeBadge(a.type)}">${typeLabel(a.type)}</span>
+                    <span class="text-xs ml-auto" style="color:var(--muted)">${formatDate(a.date)}</span>
+                </div>
+                <p class="text-sm" style="color:var(--muted)">${a.text}</p>
+            </div>
+            ${isAdmin() ? `<button class="btn btn-danger btn-sm flex-shrink-0" onclick="confirmDeleteAnnotation('${id}')" title="Eliminar"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
+    `).join('');
+
+    return `<div class="sec-fade">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">Anotaciones</h2>
+                <p style="color:var(--muted)" class="text-sm mt-1">${anns.length} anotaciones registradas</p>
+            </div>
+            <div class="flex gap-3">
+                <select id="filterAnnType" class="ipt" style="width:auto" onchange="filterAnnotations()">
+                    <option value="">Todos los tipos</option>
+                    <option value="positive">Participación +</option>
+                    <option value="negative">Participación -</option>
+                    <option value="task">Tarea pendiente</option>
+                    <option value="observation">Observación</option>
+                </select>
+                <button class="btn btn-primary" onclick="openAnnotationModal()"><i class="fas fa-plus"></i> Nueva Anotación</button>
+            </div>
+        </div>
+        <div class="space-y-3" id="annotationsList">
+            ${list || '<div class="text-center py-12" style="color:var(--muted)">No hay anotaciones registradas</div>'}
+        </div>
+    </div>`;
+}
+
+function filterAnnotations() {
+    // Re-render con filtro
+    const type = document.getElementById('filterAnnType')?.value || '';
+    const anns = Object.entries(App.annotations)
+        .filter(([, a]) => !type || a.type === type)
+        .sort(([,a],[,b]) => b.date.localeCompare(a.date));
+
+    const list = anns.map(([id, a]) => `
+        <div class="card p-4 flex items-start gap-4">
+            <div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style="background:${a.type === 'positive' ? 'rgba(16,185,129,0.12)' : a.type === 'negative' ? 'rgba(239,68,68,0.12)' : a.type === 'task' ? 'rgba(245,158,11,0.12)' : 'rgba(59,130,246,0.12)'}">
+                <i class="fas ${typeIcon(a.type)}" style="color:${a.type === 'positive' ? '#34d399' : a.type === 'negative' ? '#f87171' : a.type === 'task' ? '#fbbf24' : '#60a5fa'}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="font-semibold text-sm">${getStudentName(a.studentId)}</span>
+                    <span class="badge ${typeBadge(a.type)}">${typeLabel(a.type)}</span>
+                    <span class="text-xs ml-auto" style="color:var(--muted)">${formatDate(a.date)}</span>
+                </div>
+                <p class="text-sm" style="color:var(--muted)">${a.text}</p>
+            </div>
+            ${isAdmin() ? `<button class="btn btn-danger btn-sm flex-shrink-0" onclick="confirmDeleteAnnotation('${id}')" title="Eliminar"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
+    `).join('');
+
+    const container = document.getElementById('annotationsList');
+    if (container) {
+        container.innerHTML = list || '<div class="text-center py-12" style="color:var(--muted)">No hay anotaciones con este filtro</div>';
+    }
+}
+
+function openAnnotationModal(studentId) {
+    const studentOpts = Object.entries(App.students).map(([id, s]) => `<option value="${id}" ${id === studentId ? 'selected' : ''}>${s.name} ${s.lastname}</option>`).join('');
+    const today = new Date().toISOString().split('T')[0];
+
+    showModal(`
+        <h3 class="text-lg font-bold mb-5">Nueva Anotación</h3>
+        <form id="frmAnnotation" class="space-y-4">
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Estudiante</label><select name="studentId" class="ipt" required><option value="">Seleccionar estudiante</option>${studentOpts}</select></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Fecha</label><input name="date" type="date" class="ipt" value="${today}" required></div>
+                <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Tipo</label>
+                    <select name="type" class="ipt" required>
+                        <option value="positive">Participación +</option>
+                        <option value="negative">Participación -</option>
+                        <option value="task">Tarea pendiente</option>
+                        <option value="observation">Observación general</option>
+                    </select>
+                </div>
+            </div>
+            <div><label class="block text-xs font-semibold mb-1" style="color:var(--muted)">Descripción</label><textarea name="text" class="ipt" rows="3" required></textarea></div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    `);
+    document.getElementById('frmAnnotation').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        if (!f.get('studentId')) { toast('Selecciona un estudiante', 'error'); return; }
+        await createAnnotation(f.get('studentId'), f.get('date'), f.get('type'), f.get('text'));
+        hideModal();
+        toast('Anotación registrada', 'success');
+    };
+}
+
+function confirmDeleteAnnotation(id) {
+    showModal(`
+        <h3 class="text-lg font-bold mb-3">Eliminar Anotación</h3>
+        <p style="color:var(--muted)">Esta acción no se puede deshacer.</p>
+        <div class="flex justify-end gap-3 mt-5">
+            <button class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+            <button class="btn btn-danger" onclick="doDeleteAnnotation('${id}')">Eliminar</button>
+        </div>
+    `);
+}
+
+async function doDeleteAnnotation(id) {
+    await removeAnnotation(id);
+    hideModal();
+    toast('Anotación eliminada', 'success');
+}
+
+// ── ESTADÍSTICAS ──
+function renderEstadisticas() {
+    const totalStudents = Object.keys(App.students).length;
+    const totalCourses = Object.keys(App.courses).length;
+    const totalAnnotations = Object.keys(App.annotations).length;
+    const studentsWithObs = new Set(Object.values(App.annotations).map(a => a.studentId)).size;
+    const obsPercent = totalStudents > 0 ? Math.round((studentsWithObs / totalStudents) * 100) : 0;
+
+    // Top 3 estudiantes con más anotaciones positivas
+    const positiveCounts = {};
+    Object.entries(App.annotations).forEach(([, a]) => {
+        if (a.type === 'positive') {
+            positiveCounts[a.studentId] = (positiveCounts[a.studentId] || 0) + 1;
+        }
+    });
+    const top3 = Object.entries(positiveCounts)
+        .sort(([,a],[,b]) => b - a)
+        .slice(0, 3);
+
+    const top3Html = top3.map(([sid, count], i) => {
+        const medals = ['<i class="fas fa-trophy" style="color:#fbbf24"></i>', '<i class="fas fa-medal" style="color:#94a3b8"></i>', '<i class="fas fa-award" style="color:#b45309"></i>'];
+        return `<div class="flex items-center gap-3 p-3 rounded-lg" style="background:rgba(13,148,136,${0.08 - i * 0.02})">
+            <span class="text-lg">${medals[i] || ''}</span>
+            <div class="flex-1">
+                <p class="font-semibold text-sm">${getStudentName(sid)}</p>
+                <p class="text-xs" style="color:var(--muted)">${getCourseName(App.students[sid]?.courseId)}</p>
+            </div>
+            <span class="font-bold text-lg" style="color:var(--success)">${count}</span>
+        </div>`;
+    }).join('');
+
+    return `<div class="sec-fade">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">Estadísticas</h2>
+                <p style="color:var(--muted)" class="text-sm mt-1">Resumen general del sistema</p>
+            </div>
+            <button class="btn btn-amber" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+        </div>
+
+        <!-- Tarjetas resumen -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card stat-card t p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Estudiantes</p>
+                <p class="text-3xl font-bold" style="color:var(--accent-light)">${totalStudents}</p>
+            </div>
+            <div class="card stat-card a p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Cursos</p>
+                <p class="text-3xl font-bold" style="color:var(--amber-light)">${totalCourses}</p>
+            </div>
+            <div class="card stat-card r p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Anotaciones</p>
+                <p class="text-3xl font-bold" style="color:#f87171">${totalAnnotations}</p>
+            </div>
+            <div class="card stat-card b p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--muted)">Con observaciones</p>
+                <p class="text-3xl font-bold" style="color:#60a5fa">${obsPercent}%</p>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="card p-5">
+                <h3 class="font-bold mb-4">Estudiantes por Curso</h3>
+                <div style="max-height:280px;display:flex;justify-content:center"><canvas id="chartCourseStudents"></canvas></div>
+            </div>
+            <div class="card p-5">
+                <h3 class="font-bold mb-4">Anotaciones por Tipo</h3>
+                <div style="max-height:280px;display:flex;justify-content:center"><canvas id="chartAnnotationTypes"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Top 3 -->
+        <div class="card p-5">
+            <h3 class="font-bold mb-4">Top 3 Estudiantes con más Participaciones Positivas</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                ${top3Html || '<p class="text-sm" style="color:var(--muted)">No hay participaciones positivas registradas</p>'}
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderCharts() {
+    // Destruir gráficos existentes
+    Object.values(App.charts).forEach(c => c.destroy());
+    App.charts = {};
+
+    // Estudiantes por curso
+    const courseData = Object.entries(App.courses).map(([id, c]) => ({
+        name: c.name,
+        count: getCourseStudents(id).length
+    }));
+
+    const ctx1 = document.getElementById('chartCourseStudents');
+    if (ctx1) {
+        App.charts.courseStudents = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: courseData.map(d => d.name),
+                datasets: [{
+                    data: courseData.map(d => d.count),
+                    backgroundColor: ['#0d9488', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899'],
+                    borderColor: '#161e2e',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'DM Sans', size: 12 }, padding: 16 } }
+                }
+            }
+        });
+    }
+
+    // Anotaciones por tipo
+    const typeCounts = { positive: 0, negative: 0, task: 0, observation: 0 };
+    Object.values(App.annotations).forEach(a => { if (typeCounts.hasOwnProperty(a.type)) typeCounts[a.type]++; });
+
+    const ctx2 = document.getElementById('chartAnnotationTypes');
+    if (ctx2) {
+        App.charts.annotationTypes = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Positivas', 'Negativas', 'Tareas', 'Observaciones'],
+                datasets: [{
+                    data: [typeCounts.positive, typeCounts.negative, typeCounts.task, typeCounts.observation],
+                    backgroundColor: ['rgba(16,185,129,0.6)', 'rgba(239,68,68,0.6)', 'rgba(245,158,11,0.6)', 'rgba(59,130,246,0.6)'],
+                    borderColor: ['#10b981', '#ef4444', '#f59e0b', '#3b82f6'],
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#94a3b8', stepSize: 1, font: { family: 'DM Sans' } }, grid: { color: 'rgba(31,45,66,0.5)' } },
+                    x: { ticks: { color: '#94a3b8', font: { family: 'DM Sans', size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+}
+
+// ═══════════════ PDF ═══════════════
+async function generatePDF() {
+    toast('Generando PDF...', 'info');
+
+    // Construir contenido HTML para el PDF
+    const area = document.getElementById('pdfArea');
+    let html = `
+        <div style="text-align:center;margin-bottom:28px;border-bottom:3px solid #0d9488;padding-bottom:16px">
+            <h1 style="font-size:24px;color:#0d9488;margin:0">EduTrack - Reporte de Estudiantes</h1>
+            <p style="color:#64748b;font-size:12px;margin-top:6px">Generado el ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+        <h2 style="font-size:16px;color:#1e293b;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin-bottom:12px">Resumen General</h2>
+        <p style="font-size:13px;color:#475569">Total de estudiantes: <strong>${Object.keys(App.students).length}</strong> | Total de cursos: <strong>${Object.keys(App.courses).length}</strong> | Total de anotaciones: <strong>${Object.keys(App.annotations).length}</strong></p>
+        <br>
+    `;
+
+    // Por cada curso
+    Object.entries(App.courses).forEach(([cid, c]) => {
+        const stList = getCourseStudents(cid);
+        html += `<h2 style="font-size:14px;color:#0d9488;margin-top:18px;margin-bottom:8px">${c.name}</h2>`;
+        if (stList.length === 0) {
+            html += `<p style="font-size:12px;color:#94a3b8;font-style:italic">Sin estudiantes inscritos</p>`;
+        } else {
+            html += `<table><thead><tr><th>Nombre</th><th>Email</th><th>Positivas</th><th>Negativas</th><th>Tareas</th><th>Observaciones</th></tr></thead><tbody>`;
+            stList.forEach(([sid, s]) => {
+                const anns = getStudentAnnotations(sid);
+                const pos = anns.filter(([,a]) => a.type === 'positive').length;
+                const neg = anns.filter(([,a]) => a.type === 'negative').length;
+                const task = anns.filter(([,a]) => a.type === 'task').length;
+                const obs = anns.filter(([,a]) => a.type === 'observation').length;
+                html += `<tr><td>${s.name} ${s.lastname}</td><td>${s.email}</td><td style="color:#059669">${pos}</td><td style="color:#dc2626">${neg}</td><td style="color:#d97706">${task}</td><td style="color:#2563eb">${obs}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+        }
+    });
+
+    area.innerHTML = html;
+
+    try {
+        // Esperar un poco para que el contenido se renderice
+        await new Promise(r => setTimeout(r, 200));
+
+        const canvas = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        const imgWidth = 210;
+        const pageHeight = 297;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save('EduTrack_Reporte.pdf');
+        area.innerHTML = '';
+        toast('PDF generado correctamente', 'success');
+    } catch (err) {
+        console.error('Error al generar PDF:', err);
+        area.innerHTML = '';
+        toast('Error al generar PDF', 'error');
+    }
+}
+
+// ═══════════════ EXPORTAR / IMPORTAR RESPALDO ═══════════════
+function exportBackup() {
+    const data = {
+        exportDate: new Date().toISOString(),
+        courses: App.courses,
+        students: App.students,
+        annotations: App.annotations
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `edutrack_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Respaldo exportado correctamente', 'success');
+}
+
+function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.courses || !data.students || !data.annotations) {
+                toast('Archivo de respaldo inválido', 'error');
+                return;
+            }
+
+            showModal(`
+                <h3 class="text-lg font-bold mb-3">Importar Respaldo</h3>
+                <p class="mb-2" style="color:var(--muted)">Se reemplazarán todos los datos actuales con los del archivo.</p>
+                <p class="text-sm mb-4" style="color:var(--amber)"><i class="fas fa-exclamation-triangle mr-1"></i> Esta acción no se puede deshacer.</p>
+                <div class="flex justify-end gap-3">
+                    <button class="btn btn-ghost" onclick="hideModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="doImportBackup()">Importar</button>
+                </div>
+            `);
+
+            window._pendingImport = data;
+        } catch (err) {
+            toast('Error al leer el archivo', 'error');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Resetear input
+}
+
+async function doImportBackup() {
+    const data = window._pendingImport;
+    if (!data) return;
+
+    if (App.useFirebase) {
+        await db.ref('courses').set(data.courses);
+        await db.ref('students').set(data.students);
+        await db.ref('annotations').set(data.annotations);
+    } else {
+        App.courses = data.courses;
+        App.students = data.students;
+        App.annotations = data.annotations;
+        saveToLocalStorage();
+    }
+
+    delete window._pendingImport;
+    hideModal();
+    renderSection();
+    toast('Respaldo importado correctamente', 'success');
+}
+
+// ═══════════════ PARTÍCULAS LOGIN ═══════════════
+function createParticles() {
+    const box = document.getElementById('particlesBox');
+    if (!box) return;
+    for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.bottom = '-10px';
+        const size = Math.random() * 3 + 1.5;
+        p.style.width = p.style.height = size + 'px';
+        p.style.background =
