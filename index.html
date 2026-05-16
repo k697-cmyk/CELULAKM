@@ -3,811 +3,1369 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CLLASKM – Administración Docente</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config={theme:{extend:{colors:{sRed:'#da251d',sBlack:'#0a0a0a',sDark:'#111111',sCard:'#1a1a1a',sBorder:'#2a2a2a',sMuted:'#777'},fontFamily:{display:['"Bebas Neue"','sans-serif'],body:['"Inter"','sans-serif']}}}}
-</script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>CLLASKM</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{'cll':'#0A0A0A','cll2':'#111111','cll3':'#161616','cll4':'#1E1E1E','cllb':'#252525','cllr':'#DC2626','cllr2':'#EF4444','cllm':'#6B7280'},fontFamily:{'goth':['"UnifrakturCook"','cursive'],'sans':['Inter','sans-serif']}}}}
+</script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#111}
-::-webkit-scrollbar-thumb{background:#da251d;border-radius:3px}
-body{background:#0a0a0a;color:#fff;font-family:'Inter',sans-serif;overflow-x:hidden}
-.nav-link.active{background:#da251d22;color:#da251d;border-left:3px solid #da251d}
-.nav-link:not(.active){border-left:3px solid transparent}
-.logo-box{background:#da251d;display:inline-block;padding:6px 18px;border:2px solid #fff;animation:logoPulse 3s ease-in-out infinite}
-@keyframes logoPulse{0%,100%{box-shadow:0 0 0 0 rgba(218,37,29,.4)}50%{box-shadow:0 0 20px 4px rgba(218,37,29,.2)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes slideRight{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
-@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-.anim-fadeUp{animation:fadeUp .4s ease both}
-.anim-fadeIn{animation:fadeIn .3s ease both}
-.anim-slideRight{animation:slideRight .4s ease both}
-.anim-scaleIn{animation:scaleIn .3s ease both}
-.stagger-1{animation-delay:.05s}.stagger-2{animation-delay:.1s}.stagger-3{animation-delay:.15s}.stagger-4{animation-delay:.2s}
-.card-hover{transition:all .2s ease}
-.card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(218,37,29,.15);border-color:#da251d44}
-.btn-red{background:#da251d;color:#fff;font-weight:700;transition:all .15s ease}
-.btn-red:hover{background:#b91c1c;transform:scale(1.02)}
-.btn-red:active{transform:scale(.98)}
-.btn-outline{border:1.5px solid #2a2a2a;color:#ccc;transition:all .15s ease}
-.btn-outline:hover{border-color:#da251d;color:#da251d}
-.record-btn{font-size:.7rem;padding:4px 10px;border-radius:4px;font-weight:600;transition:all .12s ease;border:1.5px solid #2a2a2a;background:transparent;color:#aaa;cursor:pointer;white-space:nowrap}
-.record-btn:hover{border-color:#da251d;color:#da251d;transform:scale(1.05)}
-.record-btn:active{transform:scale(.95);background:#da251d22}
-.toast{animation:toastIn .3s ease,toastOut .3s ease 2.7s both}
-@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
-@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
-.modal-enter{animation:scaleIn .25s ease}
-.cal-day{transition:all .15s ease}.cal-day:hover{background:#da251d22}
-.cal-day.has-records{background:#da251d33;border-color:#da251d}
-.cal-day.today{border:2px solid #da251d}
-input,textarea,select{background:#1a1a1a;border:1.5px solid #2a2a2a;color:#fff;border-radius:6px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:.875rem;transition:border-color .15s ease;outline:none;width:100%}
-input:focus,textarea:focus,select:focus{border-color:#da251d}
-.stat-card{position:relative;overflow:hidden}
-.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.07;background:#da251d}
-table{border-collapse:separate;border-spacing:0}
-th{background:#1a1a1a;color:#999;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
-td,th{padding:10px 14px;border-bottom:1px solid #2a2a2a;text-align:left}
-tr:hover td{background:#ffffff05}
-@media(max-width:1023px){#sidebar{transform:translateX(-100%)}#sidebar.open{transform:translateX(0)}}
-.pulse-dot{width:8px;height:8px;border-radius:50%;background:#da251d;animation:pulse 1.5s ease infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+*{scrollbar-width:thin;scrollbar-color:#252525 #0A0A0A}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0A0A0A}::-webkit-scrollbar-thumb{background:#252525;border-radius:3px}
+body{background:#0A0A0A;color:#fff;font-family:'Inter',sans-serif;overflow-x:hidden}
+.goth{font-family:'UnifrakturCook',cursive}
+.red-glow{text-shadow:0 0 20px rgba(220,38,38,0.5),0 0 40px rgba(220,38,38,0.2)}
+.red-box-glow{box-shadow:0 0 15px rgba(220,38,38,0.3),0 0 30px rgba(220,38,38,0.1)}
+.card-hover{transition:all .3s ease}.card-hover:hover{box-shadow:0 0 20px rgba(220,38,38,0.2);transform:translateY(-2px);border-color:#DC2626}
+.btn-cll{background:#DC2626;color:#fff;font-weight:600;padding:.5rem 1.25rem;transition:all .2s;border:none;cursor:pointer}
+.btn-cll:hover{background:#EF4444;box-shadow:0 0 20px rgba(220,38,38,0.4)}
+.btn-ghost{background:transparent;border:1px solid #252525;color:#fff;padding:.5rem 1.25rem;transition:all .2s;cursor:pointer}
+.btn-ghost:hover{border-color:#DC2626;color:#DC2626}
+.fade-in{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 5px rgba(220,38,38,0.3)}50%{box-shadow:0 0 20px rgba(220,38,38,0.6)}}
+.active-btn{animation:pulse-red 2s infinite}
+.sidebar-item{transition:all .2s;border-left:3px solid transparent}
+.sidebar-item:hover,.sidebar-item.active{background:rgba(220,38,38,0.1);border-left-color:#DC2626;color:#DC2626}
+.modal-overlay{background:rgba(0,0,0,0.8);backdrop-filter:blur(4px)}
+.toast-enter{animation:toastIn .3s ease}
+.toast-exit{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(100px)}}
+input,textarea,select{background:#161616;border:1px solid #252525;color:#fff;padding:.5rem .75rem;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:#DC2626}
+.reg-btn{padding:.35rem .75rem;font-size:.75rem;font-weight:600;border:1px solid #252525;background:#161616;color:#9CA3AF;cursor:pointer;transition:all .15s}
+.reg-btn:hover{border-color:#6B7280;color:#fff}
+.reg-btn.registered{background:#DC2626;border-color:#DC2626;color:#fff;animation:pulse-red 2s infinite}
+.sidebar-mobile{transform:translateX(-100%);transition:transform .3s ease}
+.sidebar-mobile.open{transform:translateX(0)}
+canvas#gameCanvas{image-rendering:pixelated}
 </style>
 </head>
 <body class="flex min-h-screen">
 
 <!-- Sidebar -->
-<aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-sDark border-r border-sBorder z-50 transition-transform duration-300 lg:translate-x-0 flex flex-col">
-<div class="p-5 border-b border-sBorder">
-<div class="logo-box cursor-pointer" onclick="navigateTo('dashboard')">
-<span class="font-display text-white text-2xl tracking-[.18em]">CLLASKM</span>
+<aside id="sidebar" class="fixed lg:static z-50 w-64 min-h-screen bg-cll2 border-r border-cllb flex flex-col sidebar-mobile lg:transform-none">
+<div class="p-6 border-b border-cllb">
+<h1 class="goth text-4xl text-cllr red-glow tracking-wide">CLLASKM</h1>
+<p class="text-[10px] text-cllm mt-1 tracking-[.3em] uppercase">Sistema Docente</p>
 </div>
-<p class="text-sMuted text-xs mt-2 tracking-wider">ADMINISTRACION DOCENTE</p>
-</div>
-<nav class="flex-1 p-3 space-y-1" id="nav-links">
-<a data-nav="dashboard" class="nav-link active flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-th-large w-5 text-center"></i><span>Dashboard</span></a>
-<a data-nav="courses" class="nav-link flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-graduation-cap w-5 text-center"></i><span>Cursos</span></a>
-<a data-nav="calendar" class="nav-link flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-calendar-alt w-5 text-center"></i><span>Calendario</span></a>
-<a data-nav="statistics" class="nav-link flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-chart-bar w-5 text-center"></i><span>Estadisticas</span></a>
-<a data-nav="reports" class="nav-link flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-file-pdf w-5 text-center"></i><span>Reportes</span></a>
-<a data-nav="config" class="nav-link flex items-center gap-3 px-4 py-3 rounded cursor-pointer text-sm font-medium"><i class="fas fa-cog w-5 text-center"></i><span>Configuracion</span></a>
+<nav class="flex-1 py-4" id="sidebar-nav">
+<div class="sidebar-item active flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="dashboard"><i class="fa-solid fa-grip w-5 text-center"></i>Dashboard</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="courses"><i class="fa-solid fa-graduation-cap w-5 text-center"></i>Cursos</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="calendar"><i class="fa-solid fa-calendar-days w-5 text-center"></i>Calendario</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="statistics"><i class="fa-solid fa-chart-bar w-5 text-center"></i>Estadísticas</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="reports"><i class="fa-solid fa-file-pdf w-5 text-center"></i>Reportes</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="game"><i class="fa-solid fa-gamepad w-5 text-center"></i>Modo Descanso</div>
+<div class="sidebar-item flex items-center gap-3 px-6 py-3 cursor-pointer text-sm" data-view="settings"><i class="fa-solid fa-gear w-5 text-center"></i>Configuración</div>
 </nav>
-<div class="p-4 border-t border-sBorder text-xs text-sMuted">
-<div class="flex items-center gap-2"><div class="pulse-dot"></div><span>En linea</span></div>
+<div class="p-6 border-t border-cllb">
+<p class="text-[10px] text-cllm tracking-widest">CLLASKM v1.0</p>
 </div>
 </aside>
 
-<!-- Overlay movil -->
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+<!-- Overlay mobile -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
-<!-- Contenido principal -->
-<div class="flex-1 lg:ml-64 min-h-screen flex flex-col">
-<header class="sticky top-0 z-30 bg-sBlack/85 backdrop-blur-lg border-b border-sBorder px-4 sm:px-6 py-4 flex items-center justify-between">
+<!-- Main -->
+<main class="flex-1 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-30 bg-cll/95 backdrop-blur-sm border-b border-cllb px-4 lg:px-8 py-4 flex items-center justify-between">
 <div class="flex items-center gap-4">
-<button onclick="toggleSidebar()" class="lg:hidden text-white text-xl"><i class="fas fa-bars"></i></button>
-<h1 id="page-title" class="font-display text-xl sm:text-2xl tracking-wider">DASHBOARD</h1>
+<button class="lg:hidden text-cllm hover:text-white" onclick="toggleSidebar()"><i class="fa-solid fa-bars text-xl"></i></button>
+<h2 id="page-title" class="goth text-2xl lg:text-3xl text-white">Dashboard</h2>
 </div>
-<div class="text-sMuted text-xs sm:text-sm" id="date-display"></div>
+<div class="flex items-center gap-3">
+<span id="auth-status" class="text-[10px] text-cllm tracking-wider uppercase"></span>
+<div class="w-2 h-2 rounded-full bg-green-500" id="conn-indicator"></div>
+</div>
 </header>
-<main id="content" class="flex-1 p-4 sm:p-6"></main>
-</div>
+
+<!-- Content -->
+<div id="content" class="flex-1 p-4 lg:p-8 fade-in"></div>
+</main>
 
 <!-- Modal -->
-<div id="modal-overlay" class="fixed inset-0 bg-black/75 z-[60] flex items-center justify-center p-4 hidden" onclick="event.target===this&&closeModal()">
-<div id="modal-content" class="bg-sDark border border-sBorder rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto modal-enter"></div>
+<div id="modal-overlay" class="fixed inset-0 z-50 modal-overlay flex items-center justify-center p-4 hidden">
+<div id="modal-box" class="bg-cll2 border border-cllb w-full max-w-lg max-h-[90vh] overflow-y-auto"></div>
 </div>
 
 <!-- Toasts -->
-<div id="toast-container" class="fixed bottom-6 right-6 z-[70] space-y-2 pointer-events-none"></div>
-
-<!-- Pantalla de carga -->
-<div id="loading-screen" class="fixed inset-0 bg-sBlack z-[100] flex flex-col items-center justify-center">
-<div class="logo-box mb-6"><span class="font-display text-white text-4xl tracking-[.2em]">CLLASKM</span></div>
-<div class="w-48 h-1 bg-sBorder rounded overflow-hidden"><div class="h-full bg-sRed rounded" style="animation:loadBar 1.5s ease forwards"></div></div>
-<style>@keyframes loadBar{0%{width:0}100%{width:100%}}</style>
-</div>
+<div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-2"></div>
 
 <script>
-/* =========================================
-   FIREBASE - Inicialización
-   ========================================= */
+// ============================================
+// FIREBASE CONFIG
+// ============================================
 const firebaseConfig={apiKey:"AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",authDomain:"celulakmt.firebaseapp.com",databaseURL:"https://celulakmt-default-rtdb.firebaseio.com",projectId:"celulakmt",storageBucket:"celulakmt.firebasestorage.app",messagingSenderId:"623088700057",appId:"1:623088700057:web:fffb8fccbae5ff6d834608",measurementId:"G-CY1HY229XX"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
-let authReady=false;
+const auth=firebase.auth();
 
-/* Autenticación anónima para permitir escrituras */
-firebase.auth().signInAnonymously().then(()=>{authReady=true;initApp()}).catch(e=>{console.error('Auth error:',e);authReady=true;initApp()});
+// Auth anónima
+let isAuth=false;
+auth.signInAnonymously().then(()=>{isAuth=true;document.getElementById('auth-status').textContent='Conectado'}).catch(e=>{console.warn('Auth fallida:',e.message);document.getElementById('auth-status').textContent='Sin escritura';document.getElementById('conn-indicator').className='w-2 h-2 rounded-full bg-yellow-500'});
+auth.onAuthStateChanged(u=>{if(u){isAuth=true}});
 
-/* =========================================
-   ESTADO GLOBAL
-   ========================================= */
+// ============================================
+// ESTADO GLOBAL
+// ============================================
 const state={
-    currentView:'dashboard',
-    courses:{},
-    students:{},
-    records:{},
-    observations:{},
-    customButtons:{},
-    selectedCourseId:null,
-    calendarDate:new Date(),
-    searchQuery:'',
-    charts:{}
+  view:'dashboard',
+  courses:{},
+  categories:{},
+  currentCourseId:null,
+  courseSubView:'students',
+  selectedDate:new Date().toISOString().split('T')[0],
+  calMonth:new Date().getMonth(),
+  calYear:new Date().getFullYear(),
+  records:{},
+  students:{},
+  observations:{},
+  charts:{},
+  gameInstance:null
 };
 
-/* =========================================
-   UTILIDADES
-   ========================================= */
+// ============================================
+// UTILIDADES
+// ============================================
 function uid(){return db.ref().push().key}
-function now(){const d=new Date();return{date:d.toISOString().split('T')[0],time:d.toTimeString().split(' ')[0],timestamp:d.getTime()}}
-function formatDate(ds){if(!ds)return'';const p=ds.split('-');return`${p[2]}/${p[1]}/${p[0]}`}
-function getCourse(id){return state.courses[id]||null}
-function getStudents(courseId){return Object.entries(state.students[courseId]||{}).sort((a,b)=>(a[1].listNumber||0)-(b[1].listNumber||0))}
-function getRecords(courseId,studentId){return Object.entries(state.records[courseId]?.[studentId]||[])}
-function getAllRecords(courseId){const r=[];Object.entries(state.records[courseId]||{}).forEach(([,sRecs])=>{Object.entries(sRecs||{}).forEach(([,rec])=>{r.push(rec)})});return r}
-function getObservations(courseId,studentId){return Object.entries(state.observations[courseId]?.[studentId]||{}).sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0))}
-function getStudentRecordCounts(courseId){
-    const counts={};
-    const btns=Object.values(state.customButtons).sort((a,b)=>(a.order||0)-(b.order||0));
-    getStudents(courseId).forEach(([sId,s])=>{counts[sId]={name:s.name,listNumber:s.listNumber,total:0,byType:{}};btns.forEach(b=>{counts[sId].byType[b.label]=0});getRecords(courseId,sId).forEach(([,r])=>{counts[sId].total++;if(counts[sId].byType[r.type]!==undefined)counts[sId].byType[r.type]++})});
-    return counts;
-}
+function today(){return new Date().toISOString().split('T')[0]}
+function nowTime(){return new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function formatDate(d){const p=d.split('-');const m=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${p[2]} ${m[parseInt(p[1])-1]} ${p[0]}`}
 
-/* =========================================
-   TOAST
-   ========================================= */
 function showToast(msg,type='success'){
-    const c=document.getElementById('toast-container');
-    const colors={success:'border-green-500 bg-green-500/10',error:'border-red-500 bg-red-500/10',info:'border-blue-500 bg-blue-500/10'};
-    const icons={success:'fa-check-circle text-green-400',error:'fa-exclamation-circle text-red-400',info:'fa-info-circle text-blue-400'};
-    const t=document.createElement('div');
-    t.className=`toast pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-lg border ${colors[type]||colors.success} backdrop-blur-sm`;
-    t.innerHTML=`<i class="fas ${icons[type]||icons.success}"></i><span class="text-sm font-medium">${msg}</span>`;
-    c.appendChild(t);
-    setTimeout(()=>t.remove(),3000);
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  const colors={success:'border-green-500 bg-green-500/10',error:'border-red-500 bg-red-500/10',info:'border-blue-500 bg-blue-500/10'};
+  t.className=`toast-enter border-l-4 ${colors[type]||colors.info} px-4 py-3 text-sm text-white`;
+  t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.classList.add('toast-exit');setTimeout(()=>t.remove(),300)},3000);
 }
 
-/* =========================================
-   MODAL
-   ========================================= */
-function openModal(html){
-    document.getElementById('modal-content').innerHTML=html;
-    document.getElementById('modal-overlay').classList.remove('hidden');
+function showModal(html){
+  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
 }
-function closeModal(){document.getElementById('modal-overlay').classList.add('hidden')}
+function hideModal(){document.getElementById('modal-overlay').classList.add('hidden')}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')hideModal()});
 
-/* =========================================
-   SIDEBAR
-   ========================================= */
 function toggleSidebar(){
-    const s=document.getElementById('sidebar');
-    const o=document.getElementById('sidebar-overlay');
-    s.classList.toggle('open');
-    o.classList.toggle('hidden');
+  const s=document.getElementById('sidebar');
+  const o=document.getElementById('sidebar-overlay');
+  s.classList.toggle('open');o.classList.toggle('hidden');
 }
 
-/* =========================================
-   NAVEGACIÓN
-   ========================================= */
-function navigateTo(view,params={}){
-    state.currentView=view;
-    if(params.courseId)state.selectedCourseId=params.courseId;
-    if(params.date)state.calendarDate=params.date;
-    state.searchQuery='';
-    /* Actualizar nav activo */
-    document.querySelectorAll('.nav-link').forEach(l=>{l.classList.toggle('active',l.dataset.nav===view)});
-    /* Cerrar sidebar en móvil */
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.add('hidden');
-    /* Destruir charts previos */
-    Object.values(state.charts).forEach(c=>{try{c.destroy()}catch(e){}});
-    state.charts={};
-    render();
+// ============================================
+// FIREBASE - OPERACIONES
+// ============================================
+async function fbGet(path){
+  try{const s=await db.ref(path).once('value');return s.val()}catch(e){console.error(e);return null}
+}
+async function fbSet(path,val){
+  if(!isAuth){showToast('Sin permisos de escritura. Habilita Anonymous Auth en Firebase.','error');return false}
+  try{await db.ref(path).set(val);return true}catch(e){console.error(e);showToast('Error al guardar: '+e.message,'error');return false}
+}
+async function fbRemove(path){
+  if(!isAuth){showToast('Sin permisos de escritura','error');return false}
+  try{await db.ref(path).remove();return true}catch(e){console.error(e);return false}
+}
+async function fbPush(path,val){
+  if(!isAuth){showToast('Sin permisos de escritura','error');return null}
+  try{const ref=db.ref(path).push();await ref.set(val);return ref.key}catch(e){console.error(e);return null}
 }
 
-/* =========================================
-   FIREBASE LISTENERS
-   ========================================= */
-function setupListeners(){
-    db.ref('courses').on('value',snap=>{state.courses=snap.val()||{};render()});
-    db.ref('students').on('value',snap=>{state.students=snap.val()||{};render()});
-    db.ref('records').on('value',snap=>{state.records=snap.val()||{};render()});
-    db.ref('observations').on('value',snap=>{state.observations=snap.val()||{};render()});
-    db.ref('customButtons').on('value',snap=>{
-        state.customButtons=snap.val()||{};
-        /* Crear botones por defecto si no existen */
-        if(Object.keys(state.customButtons).length===0){initDefaultButtons()}
-        render();
-    });
+// ============================================
+// CARGA DE DATOS
+// ============================================
+async function loadData(){
+  const[courses,categories]=await Promise.all([fbGet('courses'),fbGet('categories')]);
+  state.courses=courses||{};
+  state.categories=categories||{};
+  // Si no hay categorías, crear las por defecto
+  if(!categories){
+    const defs=['Participó','Expuso','Entregó tarea'];
+    for(let i=0;i<defs.length;i++){const id=uid();state.categories[id]={name:defs[i],order:i};fbSet('categories/'+id,state.categories[id])}
+  }
+  renderCurrentView();
 }
 
-function initDefaultButtons(){
-    const defaults=['Participo','Expuso','Entrego tarea'];
-    defaults.forEach((label,i)=>{db.ref('customButtons/'+uid()).set({label,order:i})});
+// ============================================
+// NAVEGACIÓN
+// ============================================
+function navigate(view,params={}){
+  // Destruir juego si existe
+  if(state.gameInstance){state.gameInstance.destroy();state.gameInstance=null}
+  // Destruir charts
+  Object.values(state.charts).forEach(c=>c.destroy());state.charts={};
+
+  state.view=view;
+  if(params.courseId)state.currentCourseId=params.courseId;
+  if(params.subView)state.courseSubView=params.subView;
+
+  // Actualizar sidebar
+  document.querySelectorAll('.sidebar-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.view===view||(view==='courseDetail'&&el.dataset.view==='courses'));
+  });
+
+  // Título
+  const titles={dashboard:'Dashboard',courses:'Cursos',calendar:'Calendario',statistics:'Estadísticas',reports:'Reportes',game:'Modo Descanso',settings:'Configuración',courseDetail:''};
+  if(view==='courseDetail'&&state.courses[state.currentCourseId]){
+    const c=state.courses[state.currentCourseId];
+    document.getElementById('page-title').textContent=c.name+' — '+c.paralelo;
+  }else{
+    document.getElementById('page-title').textContent=titles[view]||'CLLASKM';
+  }
+
+  renderCurrentView();
+  // Cerrar sidebar mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.add('hidden');
 }
 
-/* =========================================
-   CRUD - CURSOS
-   ========================================= */
-function createCourse(name,paralelo){
-    const id=uid();db.ref('courses/'+id).set({name,paralelo,createdAt:Date.now()});showToast('Curso creado');closeModal();return id;
+function renderCurrentView(){
+  const c=document.getElementById('content');
+  c.className='flex-1 p-4 lg:p-8 fade-in';
+  switch(state.view){
+    case'dashboard':renderDashboard(c);break;
+    case'courses':renderCourses(c);break;
+    case'courseDetail':renderCourseDetail(c);break;
+    case'calendar':renderCalendar(c);break;
+    case'statistics':renderStatistics(c);break;
+    case'reports':renderReports(c);break;
+    case'game':renderGame(c);break;
+    case'settings':renderSettings(c);break;
+    default:renderDashboard(c);
+  }
 }
-function updateCourse(id,name,paralelo){db.ref('courses/'+id).update({name,paralelo});showToast('Curso actualizado');closeModal()}
-function deleteCourse(id){
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">ELIMINAR CURSO</h3><p class="text-sMuted text-sm mb-6">Se eliminaran todos los estudiantes, registros y observaciones.</p><div class="flex gap-3 justify-end"><button onclick="closeModal()" class="btn-outline px-5 py-2 rounded text-sm">Cancelar</button><button onclick="confirmDeleteCourse('${id}')" class="btn-red px-5 py-2 rounded text-sm">Eliminar</button></div></div>`);
+
+// ============================================
+// DASHBOARD
+// ============================================
+async function renderDashboard(container){
+  const courses=state.courses;
+  const keys=Object.keys(courses);
+  let totalStudents=0,totalRecords=0;
+  // Cargar conteos
+  for(const k of keys){
+    const studs=await fbGet('students/'+k);
+    const recs=await fbGet('records/'+k);
+    const sc=studs?Object.keys(studs).length:0;
+    const rc=recs?Object.values(recs).reduce((a,v)=>{Object.values(v).forEach(r=>{a+=Object.keys(r).length});return a},0):0;
+    courses[k]._studentCount=sc;courses[k]._recordCount=rc;
+    totalStudents+=sc;totalRecords+=rc;
+  }
+  const todayRecs=await fbGet('records');
+  let todayCount=0;
+  if(todayRecs){Object.values(todayRecs).forEach(cv=>{const dv=cv[today()];if(dv)Object.values(dv).forEach(rv=>todayCount+=Object.keys(rv).length)})}
+
+  container.innerHTML=`
+  <div class="mb-8">
+    <h3 class="goth text-5xl lg:text-7xl text-white mb-2 red-glow">CLLASKM</h3>
+    <p class="text-cllm text-sm tracking-widest uppercase">Panel de control docente</p>
+  </div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
+    <div class="bg-cll3 border border-cllb p-4 lg:p-5 card-hover">
+      <p class="text-[10px] text-cllm tracking-widest uppercase mb-1">Cursos</p>
+      <p class="text-3xl font-bold">${keys.length}</p>
+    </div>
+    <div class="bg-cll3 border border-cllb p-4 lg:p-5 card-hover">
+      <p class="text-[10px] text-cllm tracking-widest uppercase mb-1">Estudiantes</p>
+      <p class="text-3xl font-bold">${totalStudents}</p>
+    </div>
+    <div class="bg-cll3 border border-cllb p-4 lg:p-5 card-hover">
+      <p class="text-[10px] text-cllm tracking-widest uppercase mb-1">Registros hoy</p>
+      <p class="text-3xl font-bold text-cllr">${todayCount}</p>
+    </div>
+    <div class="bg-cll3 border border-cllb p-4 lg:p-5 card-hover">
+      <p class="text-[10px] text-cllm tracking-widest uppercase mb-1">Total registros</p>
+      <p class="text-3xl font-bold">${totalRecords}</p>
+    </div>
+  </div>
+  <div class="flex items-center justify-between mb-6">
+    <h4 class="text-lg font-semibold">Mis Cursos</h4>
+    <button class="btn-cll text-sm" onclick="modalCreateCourse()"><i class="fa-solid fa-plus mr-2"></i>Crear Curso</button>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    ${keys.length===0?'<div class="col-span-full text-center py-16 text-cllm"><i class="fa-solid fa-graduation-cap text-4xl mb-4 block"></i><p>No hay cursos creados</p><p class="text-sm mt-1">Comienza creando tu primer curso</p></div>':''}
+    ${keys.map(k=>{const c=courses[k];return`
+    <div class="bg-cll3 border border-cllb p-5 card-hover cursor-pointer group" onclick="navigate('courseDetail',{courseId:'${k}'})">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h5 class="font-bold text-lg group-hover:text-cllr transition-colors">${c.name}</h5>
+          <p class="text-cllm text-sm">${c.paralelo}</p>
+        </div>
+        <i class="fa-solid fa-arrow-right text-cllm group-hover:text-cllr transition-colors"></i>
+      </div>
+      <div class="flex gap-4 text-xs text-cllm">
+        <span><i class="fa-solid fa-users mr-1"></i>${c._studentCount||0} estudiantes</span>
+        <span><i class="fa-solid fa-clipboard-check mr-1"></i>${c._recordCount||0} registros</span>
+      </div>
+    </div>`}).join('')}
+  </div>`;
 }
+
+// ============================================
+// CURSOS
+// ============================================
+function renderCourses(container){
+  const keys=Object.keys(state.courses);
+  container.innerHTML=`
+  <div class="flex items-center justify-between mb-6">
+    <p class="text-cllm text-sm">${keys.length} curso(s) registrado(s)</p>
+    <button class="btn-cll text-sm" onclick="modalCreateCourse()"><i class="fa-solid fa-plus mr-2"></i>Crear Curso</button>
+  </div>
+  <div class="space-y-3">
+    ${keys.length===0?'<div class="text-center py-20 text-cllm"><i class="fa-solid fa-folder-open text-4xl mb-4 block"></i><p>No hay cursos</p></div>':''}
+    ${keys.map(k=>{const c=state.courses[k];return`
+    <div class="bg-cll3 border border-cllb p-5 flex items-center justify-between card-hover">
+      <div class="cursor-pointer flex-1" onclick="navigate('courseDetail',{courseId:'${k}'})">
+        <h5 class="font-bold text-lg">${c.name}</h5>
+        <p class="text-cllm text-sm">${c.paralelo}</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn-ghost text-xs" onclick="event.stopPropagation();modalEditCourse('${k}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-ghost text-xs border-red-900 text-red-500 hover:bg-red-500 hover:text-white" onclick="event.stopPropagation();confirmDeleteCourse('${k}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+function modalCreateCourse(){
+  showModal(`
+  <div class="p-6">
+    <h3 class="goth text-2xl mb-6">Crear Curso</h3>
+    <div class="space-y-4">
+      <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre del curso</label><input id="mc-name" class="w-full" placeholder="Ej: Matemáticas"></div>
+      <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Paralelo</label><input id="mc-par" class="w-full" placeholder="Ej: A"></div>
+    </div>
+    <div class="flex justify-end gap-3 mt-6">
+      <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+      <button class="btn-cll text-sm" onclick="createCourse()">Crear</button>
+    </div>
+  </div>`);
+}
+async function createCourse(){
+  const name=document.getElementById('mc-name').value.trim();
+  const par=document.getElementById('mc-par').value.trim();
+  if(!name){showToast('Ingresa el nombre del curso','error');return}
+  const id=uid();
+  await fbSet('courses/'+id,{name,paralelo:par||'Único',createdAt:Date.now()});
+  state.courses[id]={name,paralelo:par||'Único',createdAt:Date.now()};
+  hideModal();showToast('Curso creado correctamente');renderCurrentView();
+}
+
+function modalEditCourse(id){
+  const c=state.courses[id];
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-6">Editar Curso</h3>
+  <div class="space-y-4">
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre</label><input id="me-name" class="w-full" value="${c.name}"></div>
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Paralelo</label><input id="me-par" class="w-full" value="${c.paralelo}"></div>
+  </div>
+  <div class="flex justify-end gap-3 mt-6">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="editCourse('${id}')">Guardar</button>
+  </div></div>`);
+}
+async function editCourse(id){
+  const name=document.getElementById('me-name').value.trim();
+  const par=document.getElementById('me-par').value.trim();
+  if(!name){showToast('Ingresa el nombre','error');return}
+  await fbSet('courses/'+id+'/name',name);
+  await fbSet('courses/'+id+'/paralelo',par||'Único');
+  state.courses[id].name=name;state.courses[id].paralelo=par||'Único';
+  hideModal();showToast('Curso actualizado');renderCurrentView();
+}
+
 function confirmDeleteCourse(id){
-    db.ref('courses/'+id).remove();
-    db.ref('students/'+id).remove();
-    db.ref('records/'+id).remove();
-    db.ref('observations/'+id).remove();
-    closeModal();showToast('Curso eliminado','info');navigateTo('dashboard');
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-4 text-cllr">Eliminar Curso</h3>
+  <p class="text-cllm mb-6">Se eliminará el curso <strong class="text-white">${state.courses[id].name}</strong> y todos sus datos asociados. Esta acción no se puede deshacer.</p>
+  <div class="flex justify-end gap-3">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="deleteCourse('${id}')">Eliminar</button>
+  </div></div>`);
+}
+async function deleteCourse(id){
+  await fbRemove('courses/'+id);await fbRemove('students/'+id);await fbRemove('records/'+id);await fbRemove('observations/'+id);
+  delete state.courses[id];hideModal();showToast('Curso eliminado');
+  if(state.view==='courseDetail')navigate('courses');else renderCurrentView();
 }
 
-/* =========================================
-   CRUD - ESTUDIANTES
-   ========================================= */
-function addStudent(courseId,listNumber,name){
-    const id=uid();db.ref('students/'+courseId+'/'+id).set({listNumber:parseInt(listNumber),name});showToast('Estudiante agregado');closeModal();
-}
-function updateStudent(courseId,sId,listNumber,name){
-    db.ref('students/'+courseId+'/'+sId).update({listNumber:parseInt(listNumber),name});showToast('Estudiante actualizado');closeModal();
-}
-function deleteStudent(courseId,sId){
-    db.ref('students/'+courseId+'/'+sId).remove();
-    db.ref('records/'+courseId+'/'+sId).remove();
-    db.ref('observations/'+courseId+'/'+sId).remove();
-    showToast('Estudiante eliminado','info');
+// ============================================
+// DETALLE DE CURSO
+// ============================================
+async function renderCourseDetail(container){
+  const cid=state.currentCourseId;
+  const course=state.courses[cid];
+  if(!course){navigate('courses');return}
+
+  // Cargar datos del curso
+  state.students[cid]=await fbGet('students/'+cid)||{};
+  state.records[cid]=await fbGet('records/'+cid)||{};
+  state.observations[cid]=await fbGet('observations/'+cid)||{};
+
+  const sub=state.courseSubView;
+  const tabs=[{id:'students',label:'Estudiantes',icon:'fa-users'},{id:'daily',label:'Registro Diario',icon:'fa-clipboard-check'},{id:'courseStats',label:'Estadísticas',icon:'fa-chart-pie'}];
+
+  container.innerHTML=`
+  <div class="flex gap-1 mb-6 border-b border-cllb overflow-x-auto">
+    ${tabs.map(t=>`<button class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${sub===t.id?'text-cllr border-b-2 border-cllr':'text-cllm hover:text-white'}" onclick="state.courseSubView='${t.id}';renderCurrentView()"><i class="fa-solid ${t.icon} mr-2"></i>${t.label}</button>`).join('')}
+  </div>
+  <div id="course-subcontent"></div>`;
+
+  const sc=document.getElementById('course-subcontent');
+  if(sub==='students')renderStudents(sc);
+  else if(sub==='daily')renderDailyRecord(sc);
+  else if(sub==='courseStats')renderCourseStats(sc);
 }
 
-/* =========================================
-   REGISTROS
-   ========================================= */
-function addRecord(courseId,studentId,type){
-    const t=now();db.ref('records/'+courseId+'/'+studentId+'/'+uid()).set({type,date:t.date,time:t.time,timestamp:t.timestamp});
-    showToast(`${type} registrado`);
+// ============================================
+// ESTUDIANTES
+// ============================================
+function renderStudents(container){
+  const cid=state.currentCourseId;
+  const studs=state.students[cid]||{};
+  const keys=Object.keys(studs).sort((a,b)=>(studs[a].listNumber||0)-(studs[b].listNumber||0));
+
+  container.innerHTML=`
+  <div class="flex items-center justify-between mb-4">
+    <p class="text-cllm text-sm">${keys.length} estudiante(s)</p>
+    <div class="flex gap-2">
+      <input id="search-student" class="text-sm" placeholder="Buscar..." oninput="filterStudents()">
+      <button class="btn-cll text-sm" onclick="modalAddStudent()"><i class="fa-solid fa-plus mr-1"></i>Agregar</button>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm" id="students-table">
+      <thead><tr class="border-b border-cllb text-cllm text-xs uppercase tracking-wider">
+        <th class="py-3 px-3 text-left w-16">N. Lista</th>
+        <th class="py-3 px-3 text-left">Nombre completo</th>
+        <th class="py-3 px-3 text-right w-32">Acciones</th>
+      </tr></thead>
+      <tbody id="students-tbody">
+        ${keys.length===0?'<tr><td colspan="3" class="py-12 text-center text-cllm"><i class="fa-solid fa-user-plus text-2xl mb-3 block"></i>Sin estudiantes registrados</td></tr>':''}
+        ${keys.map(k=>{const s=studs[k];return`
+        <tr class="border-b border-cllb/50 hover:bg-cll3/50 student-row" data-name="${s.name.toLowerCase()}">
+          <td class="py-3 px-3 font-mono text-cllm">${s.listNumber}</td>
+          <td class="py-3 px-3 font-medium">${s.name}</td>
+          <td class="py-3 px-3 text-right">
+            <button class="btn-ghost text-xs mr-1" onclick="modalObservations('${k}')"><i class="fa-solid fa-comment"></i></button>
+            <button class="btn-ghost text-xs mr-1" onclick="modalEditStudent('${k}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-ghost text-xs border-red-900 text-red-500" onclick="confirmDeleteStudent('${k}')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>`}).join('')}
+      </tbody>
+    </table>
+  </div>`;
 }
 
-/* =========================================
-   OBSERVACIONES
-   ========================================= */
-function addObservation(courseId,studentId,text){
-    if(!text.trim())return;const t=now();db.ref('observations/'+courseId+'/'+studentId+'/'+uid()).set({text:text.trim(),date:t.date,time:t.time,timestamp:t.timestamp});showToast('Observacion guardada');closeModal();
-}
-function openObservations(courseId,studentId,studentName){
-    const obs=getObservations(courseId,studentId);
-    let obsHtml=obs.length?obs.map(([,o])=>`<div class="border-b border-sBorder py-3 last:border-0"><p class="text-sm">${o.text}</p><span class="text-xs text-sMuted">${formatDate(o.date)} ${o.time||''}</span></div>`).join(''):'<p class="text-sMuted text-sm py-4 text-center">Sin observaciones</p>';
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-1">OBSERVACIONES</h3><p class="text-sMuted text-sm mb-4">${studentName}</p><div class="max-h-48 overflow-y-auto mb-4">${obsHtml}</div><textarea id="obs-text" placeholder="Escribir observacion..." rows="3" class="mb-4"></textarea><button onclick="addObservation('${courseId}','${studentId}',document.getElementById('obs-text').value)" class="btn-red w-full py-2 rounded text-sm">Guardar Observacion</button></div>`);
+function filterStudents(){
+  const q=document.getElementById('search-student').value.toLowerCase();
+  document.querySelectorAll('.student-row').forEach(r=>{r.style.display=r.dataset.name.includes(q)?'':'none'});
 }
 
-/* =========================================
-   BOTONES PERSONALIZADOS
-   ========================================= */
-function addCustomButton(label){
-    const id=uid();const order=Object.keys(state.customButtons).length;
-    db.ref('customButtons/'+id).set({label,order});showToast('Boton agregado');closeModal();
+function modalAddStudent(){
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-6">Agregar Estudiante</h3>
+  <div class="space-y-4">
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Número de lista</label><input id="ms-num" type="number" min="1" class="w-full" placeholder="1"></div>
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre completo</label><input id="ms-name" class="w-full" placeholder="Juan Pérez"></div>
+  </div>
+  <div class="flex justify-end gap-3 mt-6">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="addStudent()">Agregar</button>
+  </div></div>`);
 }
-function deleteCustomButton(id){db.ref('customButtons/'+id).remove();showToast('Boton eliminado','info')}
-
-/* =========================================
-   RENDER PRINCIPAL
-   ========================================= */
-let renderTimeout=null;
-function render(){
-    clearTimeout(renderTimeout);
-    renderTimeout=setTimeout(_render,50);
-}
-function _render(){
-    const viewTitles={dashboard:'DASHBOARD',courses:'CURSOS','course-detail':'CURSO',calendar:'CALENDARIO',statistics:'ESTADISTICAS',reports:'REPORTES',config:'CONFIGURACION'};
-    document.getElementById('page-title').textContent=viewTitles[state.currentView]||'CLLASKM';
-    const d=new Date();
-    document.getElementById('date-display').textContent=d.toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    const content=document.getElementById('content');
-    switch(state.currentView){
-        case 'dashboard':content.innerHTML=renderDashboard();break;
-        case 'courses':content.innerHTML=renderCourses();break;
-        case 'course-detail':content.innerHTML=renderCourseDetail();break;
-        case 'calendar':content.innerHTML=renderCalendar();break;
-        case 'statistics':content.innerHTML=renderStatistics();setTimeout(initCharts,100);break;
-        case 'reports':content.innerHTML=renderReports();break;
-        case 'config':content.innerHTML=renderConfig();break;
-        default:content.innerHTML=renderDashboard();
-    }
+async function addStudent(){
+  const num=parseInt(document.getElementById('ms-num').value)||0;
+  const name=document.getElementById('ms-name').value.trim();
+  if(!name){showToast('Ingresa el nombre del estudiante','error');return}
+  const cid=state.currentCourseId;const id=uid();
+  await fbSet('students/'+cid+'/'+id,{listNumber:num,name,createdAt:Date.now()});
+  if(!state.students[cid])state.students[cid]={};
+  state.students[cid][id]={listNumber:num,name,createdAt:Date.now()};
+  hideModal();showToast('Estudiante agregado');renderCurrentView();
 }
 
-/* =========================================
-   VISTA: DASHBOARD
-   ========================================= */
-function renderDashboard(){
-    const courseList=Object.entries(state.courses);
-    let totalStudents=0;let totalRecords=0;const today=now().date;
-    let todayRecords=0;
-    courseList.forEach(([cId])=>{
-        totalStudents+=Object.keys(state.students[cId]||{}).length;
-        const recs=state.records[cId]||{};
-        Object.values(recs).forEach(sRecs=>{Object.values(sRecs||{}).forEach(r=>{totalRecords++;if(r.date===today)todayRecords++})});
+function modalEditStudent(sid){
+  const s=state.students[state.currentCourseId][sid];
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-6">Editar Estudiante</h3>
+  <div class="space-y-4">
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">N. Lista</label><input id="me2-num" type="number" class="w-full" value="${s.listNumber}"></div>
+    <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre</label><input id="me2-name" class="w-full" value="${s.name}"></div>
+  </div>
+  <div class="flex justify-end gap-3 mt-6">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="editStudent('${sid}')">Guardar</button>
+  </div></div>`);
+}
+async function editStudent(sid){
+  const num=parseInt(document.getElementById('me2-num').value)||0;
+  const name=document.getElementById('me2-name').value.trim();
+  if(!name){showToast('Ingresa el nombre','error');return}
+  const cid=state.currentCourseId;
+  await fbSet('students/'+cid+'/'+sid,{...state.students[cid][sid],listNumber:num,name});
+  state.students[cid][sid]={...state.students[cid][sid],listNumber:num,name};
+  hideModal();showToast('Estudiante actualizado');renderCurrentView();
+}
+
+function confirmDeleteStudent(sid){
+  const s=state.students[state.currentCourseId][sid];
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-4 text-cllr">Eliminar Estudiante</h3>
+  <p class="text-cllm mb-6">Se eliminará a <strong class="text-white">${s.name}</strong> del curso.</p>
+  <div class="flex justify-end gap-3">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="deleteStudent('${sid}')">Eliminar</button>
+  </div></div>`);
+}
+async function deleteStudent(sid){
+  const cid=state.currentCourseId;
+  await fbRemove('students/'+cid+'/'+sid);
+  await fbRemove('observations/'+cid+'/'+sid);
+  delete state.students[cid][sid];hideModal();showToast('Estudiante eliminado');renderCurrentView();
+}
+
+// Observaciones
+function modalObservations(sid){
+  const cid=state.currentCourseId;
+  const s=state.students[cid][sid];
+  const obs=state.observations[cid]?.[sid]||{};
+  const obsKeys=Object.keys(obs).sort((a,b)=>(obs[b].date||'').localeCompare(obs[a].date||''));
+
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-2">Observaciones</h3>
+  <p class="text-cllm text-sm mb-4">${s.name}</p>
+  <div class="mb-4"><textarea id="obs-text" class="w-full h-20 resize-none" placeholder="Escribir observación..."></textarea>
+  <button class="btn-cll text-xs mt-2" onclick="addObservation('${sid}')"><i class="fa-solid fa-plus mr-1"></i>Agregar</button></div>
+  <div class="space-y-2 max-h-48 overflow-y-auto">
+    ${obsKeys.length===0?'<p class="text-cllm text-xs text-center py-4">Sin observaciones</p>':''}
+    ${obsKeys.map(ok=>`<div class="bg-cll p-3 border border-cllb text-sm"><div class="flex justify-between items-start"><p>${obs[ok].text}</p><button class="text-red-500 text-xs ml-2" onclick="deleteObservation('${sid}','${ok}')"><i class="fa-solid fa-xmark"></i></button></div><p class="text-[10px] text-cllm mt-1">${obs[ok].date} ${obs[ok].time||''}</p></div>`).join('')}
+  </div></div>`);
+}
+async function addObservation(sid){
+  const text=document.getElementById('obs-text').value.trim();
+  if(!text){showToast('Escribe una observación','error');return}
+  const cid=state.currentCourseId;const id=uid();
+  await fbSet('observations/'+cid+'/'+sid+'/'+id,{text,date:today(),time:nowTime()});
+  if(!state.observations[cid])state.observations[cid]={};
+  if(!state.observations[cid][sid])state.observations[cid][sid]={};
+  state.observations[cid][sid][id]={text,date:today(),time:nowTime()};
+  modalObservations(sid);showToast('Observación guardada');
+}
+async function deleteObservation(sid,oid){
+  const cid=state.currentCourseId;
+  await fbRemove('observations/'+cid+'/'+sid+'/'+oid);
+  delete state.observations[cid][sid][oid];
+  modalObservations(sid);showToast('Observación eliminada');
+}
+
+// ============================================
+// REGISTRO DIARIO
+// ============================================
+async function renderDailyRecord(container){
+  const cid=state.currentCourseId;
+  const studs=state.students[cid]||{};
+  const cats=state.categories;
+  const catKeys=Object.keys(cats).sort((a,b)=>(cats[a].order||0)-(cats[b].order||0));
+  const selDate=state.selectedDate;
+
+  // Cargar registros del día
+  const dayRecs=await fbGet('records/'+cid+'/'+selDate)||{};
+  // Mapa: studentId -> category -> recordId
+  const recMap={};
+  Object.entries(dayRecs).forEach(([rid,rv])=>{
+    if(!recMap[rv.studentId])recMap[rv.studentId]={};
+    recMap[rv.studentId][rv.category]=rid;
+  });
+
+  const studKeys=Object.keys(studs).sort((a,b)=>(studs[a].listNumber||0)-(studs[b].listNumber||0));
+
+  container.innerHTML=`
+  <div class="flex flex-wrap items-center gap-3 mb-6">
+    <div class="flex items-center gap-2">
+      <label class="text-xs text-cllm uppercase tracking-wider">Fecha:</label>
+      <input type="date" id="date-picker" value="${selDate}" onchange="state.selectedDate=this.value;renderCurrentView()" class="text-sm">
+    </div>
+    <button class="btn-ghost text-xs ${selDate===today()?'border-cllr text-cllr':''}" onclick="state.selectedDate=today();renderCurrentView()">Hoy</button>
+    ${selDate!==today()?`<span class="text-xs text-yellow-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Viendo fecha pasada</span>`:''}
+    <div class="flex-1"></div>
+    <button class="btn-ghost text-xs" onclick="modalAddCategory()"><i class="fa-solid fa-plus mr-1"></i>Agregar tipo</button>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="border-b border-cllb text-cllm text-xs uppercase tracking-wider">
+        <th class="py-3 px-2 text-left w-12">N.</th>
+        <th class="py-3 px-2 text-left min-w-[160px]">Estudiante</th>
+        ${catKeys.map(ck=>`<th class="py-3 px-2 text-center min-w-[100px]">
+          <div class="flex items-center justify-center gap-1">
+            <span>${cats[ck].name}</span>
+            <button class="text-cllm hover:text-cllr text-[10px]" onclick="modalEditCategory('${ck}')"><i class="fa-solid fa-pen"></i></button>
+          </div>
+        </th>`).join('')}
+        <th class="py-3 px-2 text-center w-16">Obs.</th>
+      </tr></thead>
+      <tbody>
+        ${studKeys.length===0?'<tr><td colspan="'+(3+catKeys.length)+'" class="py-12 text-center text-cllm">Sin estudiantes. Agrega estudiantes primero.</td></tr>':''}
+        ${studKeys.map(sk=>{
+          const s=studs[sk];
+          return`<tr class="border-b border-cllb/30 hover:bg-cll3/30">
+            <td class="py-2 px-2 font-mono text-cllm text-xs">${s.listNumber}</td>
+            <td class="py-2 px-2 font-medium text-sm">${s.name}</td>
+            ${catKeys.map(ck=>{
+              const isReg=!!(recMap[sk]&&recMap[sk][ck]);
+              return`<td class="py-2 px-2 text-center">
+                <button class="reg-btn ${isReg?'registered':''}" onclick="toggleRecord('${sk}','${ck}','${isReg?recMap[sk][ck]:''}')">
+                  ${isReg?'<i class="fa-solid fa-check mr-1"></i>':''}${isReg?'Hecho':cats[ck].name}
+                </button>
+              </td>`;
+            }).join('')}
+            <td class="py-2 px-2 text-center"><button class="btn-ghost text-xs" onclick="modalObservations('${sk}')"><i class="fa-solid fa-comment"></i></button></td>
+          </tr>`}).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+async function toggleRecord(studentId,category,existingId){
+  if(existingId){
+    // Preguntar si quiere quitar
+    showModal(`<div class="p-6"><h3 class="goth text-xl mb-4">Quitar Registro</h3>
+    <p class="text-cllm mb-6">¿Quitar este registro de ${formatDate(state.selectedDate)}?</p>
+    <div class="flex justify-end gap-3">
+      <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+      <button class="btn-cll text-sm" onclick="removeRecord('${studentId}','${existingId}')">Sí, quitar</button>
+    </div></div>`);
+  }else{
+    // Crear registro
+    const cid=state.currentCourseId;const id=uid();
+    await fbSet('records/'+cid+'/'+state.selectedDate+'/'+id,{studentId,category,time:nowTime()});
+    showToast('Registro guardado');
+    renderCurrentView();
+  }
+}
+
+async function removeRecord(studentId,recordId){
+  const cid=state.currentCourseId;
+  await fbRemove('records/'+cid+'/'+state.selectedDate+'/'+recordId);
+  hideModal();showToast('Registro eliminado');renderCurrentView();
+}
+
+// Categorías
+function modalAddCategory(){
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-6">Agregar Tipo de Registro</h3>
+  <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre</label><input id="cat-name" class="w-full" placeholder="Ej: Investigó"></div>
+  <div class="flex justify-end gap-3 mt-6">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="addCategory()">Agregar</button>
+  </div></div>`);
+}
+async function addCategory(){
+  const name=document.getElementById('cat-name').value.trim();
+  if(!name){showToast('Ingresa un nombre','error');return}
+  const id=uid();const order=Object.keys(state.categories).length;
+  await fbSet('categories/'+id,{name,order});
+  state.categories[id]={name,order};
+  hideModal();showToast('Tipo agregado');renderCurrentView();
+}
+
+function modalEditCategory(cid){
+  const c=state.categories[cid];
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-6">Editar Tipo de Registro</h3>
+  <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Nombre</label><input id="ecat-name" class="w-full" value="${c.name}"></div>
+  <div class="flex justify-between mt-6">
+    <button class="btn-ghost text-xs border-red-900 text-red-500" onclick="deleteCategory('${cid}')"><i class="fa-solid fa-trash mr-1"></i>Eliminar</button>
+    <div class="flex gap-3">
+      <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+      <button class="btn-cll text-sm" onclick="editCategory('${cid}')">Guardar</button>
+    </div>
+  </div></div>`);
+}
+async function editCategory(cid){
+  const name=document.getElementById('ecat-name').value.trim();
+  if(!name){showToast('Ingresa un nombre','error');return}
+  await fbSet('categories/'+cid+'/name',name);
+  state.categories[cid].name=name;hideModal();showToast('Tipo actualizado');renderCurrentView();
+}
+async function deleteCategory(cid){
+  await fbRemove('categories/'+cid);delete state.categories[cid];
+  hideModal();showToast('Tipo eliminado');renderCurrentView();
+}
+
+// ============================================
+// CALENDARIO
+// ============================================
+async function renderCalendar(container){
+  const year=state.calYear;const month=state.calMonth;
+  const mNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const startIdx=firstDay===0?6:firstDay-1; // Lunes=0
+
+  // Cargar registros del mes
+  let monthData={};
+  for(const cid of Object.keys(state.courses)){
+    const recs=await fbGet('records/'+cid)||{};
+    Object.entries(recs).forEach(([date,dateRecs])=>{
+      if(date.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)){
+        const count=Object.keys(dateRecs).length;
+        monthData[date]=(monthData[date]||0)+count;
+      }
     });
-    return `
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card bg-sCard border border-sBorder rounded-lg p-5 anim-fadeUp stagger-1">
-            <p class="text-sMuted text-xs uppercase tracking-wider mb-1">Cursos</p>
-            <p class="font-display text-4xl text-white">${courseList.length}</p>
-        </div>
-        <div class="stat-card bg-sCard border border-sBorder rounded-lg p-5 anim-fadeUp stagger-2">
-            <p class="text-sMuted text-xs uppercase tracking-wider mb-1">Estudiantes</p>
-            <p class="font-display text-4xl text-white">${totalStudents}</p>
-        </div>
-        <div class="stat-card bg-sCard border border-sBorder rounded-lg p-5 anim-fadeUp stagger-3">
-            <p class="text-sMuted text-xs uppercase tracking-wider mb-1">Registros hoy</p>
-            <p class="font-display text-4xl text-sRed">${todayRecords}</p>
-        </div>
-        <div class="stat-card bg-sCard border border-sBorder rounded-lg p-5 anim-fadeUp stagger-4">
-            <p class="text-sMuted text-xs uppercase tracking-wider mb-1">Total registros</p>
-            <p class="font-display text-4xl text-white">${totalRecords}</p>
-        </div>
+  }
+
+  let grid='';
+  const dayNames=['L','M','X','J','V','S','D'];
+  dayNames.forEach(d=>{grid+=`<div class="text-center text-[10px] text-cllm py-2 uppercase tracking-wider">${d}</div>`});
+
+  for(let i=0;i<startIdx;i++)grid+=`<div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const count=monthData[dateStr]||0;
+    const isToday=dateStr===today();
+    grid+=`<div class="text-center py-2 lg:py-3 cursor-pointer border border-cllb hover:border-cllr transition-colors ${isToday?'bg-cllr/20 border-cllr':''}" onclick="selectCalDate('${dateStr}')">
+      <div class="text-sm ${isToday?'text-cllr font-bold':'text-white'}">${d}</div>
+      ${count>0?`<div class="text-[10px] text-cllr font-bold mt-0.5">${count}</div>`:''}
+    </div>`;
+  }
+
+  container.innerHTML=`
+  <div class="flex items-center justify-between mb-6">
+    <button class="btn-ghost text-sm" onclick="state.calMonth--;if(state.calMonth<0){state.calMonth=11;state.calYear--}renderCurrentView()"><i class="fa-solid fa-chevron-left"></i></button>
+    <h3 class="goth text-2xl">${mNames[month]} ${year}</h3>
+    <button class="btn-ghost text-sm" onclick="state.calMonth++;if(state.calMonth>11){state.calMonth=0;state.calYear++}renderCurrentView()"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+  <div class="grid grid-cols-7 gap-1 max-w-2xl">${grid}</div>
+  <div id="cal-detail" class="mt-6"></div>`;
+}
+
+async function selectCalDate(dateStr){
+  state.selectedDate=dateStr;
+  const detail=document.getElementById('cal-detail');
+  let html=`<h4 class="font-semibold mb-3">${formatDate(dateStr)}</h4><div class="space-y-2">`;
+  let found=false;
+  for(const[cid,course]of Object.entries(state.courses)){
+    const recs=await fbGet('records/'+cid+'/'+dateStr)||{};
+    const studs=await fbGet('students/'+cid)||{};
+    const rKeys=Object.keys(recs);
+    if(rKeys.length>0){
+      found=true;
+      html+=`<div class="bg-cll3 border border-cllb p-4"><h5 class="font-medium text-cllr mb-2">${course.name} — ${course.paralelo}</h5>`;
+      rKeys.forEach(rk=>{const r=recs[rk];const sName=studs[r.studentId]?.name||'Desconocido';html+=`<p class="text-sm text-cllm"><span class="text-white">${sName}</span> — ${r.category} <span class="text-[10px]">${r.time||''}</span></p>`});
+      html+=`</div>`;
+    }
+  }
+  if(!found)html+=`<p class="text-cllm text-sm py-4 text-center">Sin registros en esta fecha</p>`;
+  html+=`</div>`;
+  detail.innerHTML=html;
+}
+
+// ============================================
+// ESTADÍSTICAS
+// ============================================
+async function renderStatistics(container){
+  const courses=state.courses;
+  const cKeys=Object.keys(courses);
+  if(cKeys.length===0){container.innerHTML='<div class="text-center py-20 text-cllm"><i class="fa-solid fa-chart-bar text-4xl mb-4 block"></i><p>Crea cursos para ver estadísticas</p></div>';return}
+
+  // Recopilar datos globales
+  let allStudentStats={}; // studentName -> {course, totals: {cat: count}}
+  let courseStats={};
+  let weeklyData={};
+
+  for(const cid of cKeys){
+    const studs=await fbGet('students/'+cid)||{};
+    const recs=await fbGet('records/'+cid)||{};
+    courseStats[cid]={total:0,byCategory:{},byStudent:{}};
+
+    Object.entries(recs).forEach(([date,dateRecs])=>{
+      Object.entries(dateRecs).forEach(([rid,r])=>{
+        courseStats[cid].total++;
+        courseStats[cid].byCategory[r.category]=(courseStats[cid].byCategory[r.category]||0)+1;
+        const sName=studs[r.studentId]?.name||'?';
+        courseStats[cid].byStudent[sName]=(courseStats[cid].byStudent[sName]||0)+1;
+
+        // Semana
+        const d=new Date(date);
+        const weekStart=new Date(d);weekStart.setDate(d.getDate()-d.getDay()+1);
+        const ws=weekStart.toISOString().split('T')[0];
+        weeklyData[ws]=(weeklyData[ws]||0)+1;
+      });
+    });
+  }
+
+  // Ranking global
+  let globalRank={};
+  for(const cid of cKeys){
+    if(!courseStats[cid])continue;
+    Object.entries(courseStats[cid].byStudent).forEach(([name,count])=>{
+      globalRank[name]=(globalRank[name]||0)+count;
+    });
+  }
+  const rankArr=Object.entries(globalRank).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  container.innerHTML=`
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Ranking de Participación</h4>
+      <canvas id="chart-ranking" height="250"></canvas>
     </div>
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="font-display text-2xl tracking-wider">MIS CURSOS</h2>
-        <button onclick="openCreateCourseModal()" class="btn-red px-6 py-3 rounded-lg text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Crear Curso</button>
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Distribución por Categoría</h4>
+      <canvas id="chart-categories" height="250"></canvas>
     </div>
-    ${courseList.length===0?`
-    <div class="text-center py-20 anim-fadeUp">
-        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-sCard border border-sBorder flex items-center justify-center"><i class="fas fa-graduation-cap text-3xl text-sMuted"></i></div>
-        <p class="text-sMuted mb-4">No tienes cursos aun</p>
-        <button onclick="openCreateCourseModal()" class="btn-red px-8 py-3 rounded-lg text-sm">Crear primer curso</button>
-    </div>`:`
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        ${courseList.map(([cId,c],i)=>`
-        <div class="bg-sCard border border-sBorder rounded-lg p-5 card-hover cursor-pointer anim-fadeUp stagger-${(i%4)+1}" onclick="navigateTo('course-detail',{courseId:'${cId}'})">
-            <div class="flex items-start justify-between mb-3">
-                <div><h3 class="font-bold text-lg">${c.name}</h3><span class="text-sRed text-sm font-semibold">${c.paralelo}</span></div>
-                <div class="flex gap-1" onclick="event.stopPropagation()">
-                    <button onclick="openEditCourseModal('${cId}')" class="text-sMuted hover:text-white text-xs p-1"><i class="fas fa-pen"></i></button>
-                    <button onclick="deleteCourse('${cId}')" class="text-sMuted hover:text-sRed text-xs p-1"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-            <div class="flex gap-4 text-xs text-sMuted">
-                <span><i class="fas fa-users mr-1"></i>${Object.keys(state.students[cId]||{}).length} estudiantes</span>
-                <span><i class="fas fa-clipboard-list mr-1"></i>${getAllRecords(cId).length} registros</span>
-            </div>
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Evolución Semanal</h4>
+      <canvas id="chart-weekly" height="250"></canvas>
+    </div>
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Registros por Curso</h4>
+      <canvas id="chart-courses" height="250"></canvas>
+    </div>
+  </div>
+  ${rankArr.length>0?`
+  <div class="mt-6 bg-cll3 border border-cllb p-5">
+    <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Top 10 Participaciones</h4>
+    <div class="space-y-2">
+      ${rankArr.map(([name,count],i)=>`<div class="flex items-center gap-3"><span class="w-6 text-center font-bold ${i<3?'text-cllr':'text-cllm'}">${i+1}</span><span class="flex-1 text-sm">${name}</span><span class="font-bold text-sm">${count}</span><div class="w-24 h-2 bg-cll4"><div class="h-full bg-cllr" style="width:${Math.round(count/rankArr[0][1]*100)}%"></div></div></div>`).join('')}
+    </div>
+  </div>`:''}`;
+
+  // Charts
+  setTimeout(()=>{
+    const chartOpts={responsive:true,plugins:{legend:{labels:{color:'#9CA3AF',font:{size:11}}}},scales:{x:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#1E1E1E'}},y:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#1E1E1E'}}}};
+
+    // Ranking
+    if(rankArr.length>0){
+      state.charts.ranking=new Chart(document.getElementById('chart-ranking'),{type:'bar',data:{labels:rankArr.map(r=>r[0].split(' ')[0]),datasets:[{label:'Participaciones',data:rankArr.map(r=>r[1]),backgroundColor:'#DC2626',borderWidth:0}]},options:{...chartOpts,indexAxis:'y'}});
+    }
+
+    // Categorías
+    let catTotals={};
+    Object.values(courseStats).forEach(cs=>{Object.entries(cs.byCategory||{}).forEach(([cat,count])=>{catTotals[cat]=(catTotals[cat]||0)+count})});
+    const catArr=Object.entries(catTotals);
+    if(catArr.length>0){
+      state.charts.categories=new Chart(document.getElementById('chart-categories'),{type:'doughnut',data:{labels:catArr.map(c=>state.categories[c[0]]?.name||c[0]),datasets:[{data:catArr.map(c=>c[1]),backgroundColor:['#DC2626','#EF4444','#F87171','#991B1B','#7F1D1D','#FCA5A5'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{labels:{color:'#9CA3AF',font:{size:11}}}}}});
+    }
+
+    // Semanal
+    const weekArr=Object.entries(weeklyData).sort((a,b)=>a[0].localeCompare(b[0])).slice(-8);
+    if(weekArr.length>0){
+      state.charts.weekly=new Chart(document.getElementById('chart-weekly'),{type:'line',data:{labels:weekArr.map(w=>w[0].slice(5)),datasets:[{label:'Registros',data:weekArr.map(w=>w[1]),borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.1)',fill:true,tension:.4,pointBackgroundColor:'#DC2626',pointRadius:4}]},options:chartOpts});
+    }
+
+    // Cursos
+    const cArr=cKeys.map(k=>({name:courses[k].name+' '+courses[k].paralelo,count:courseStats[k]?.total||0}));
+    if(cArr.length>0){
+      state.charts.courses=new Chart(document.getElementById('chart-courses'),{type:'bar',data:{labels:cArr.map(c=>c.name),datasets:[{label:'Registros',data:cArr.map(c=>c.count),backgroundColor:'#DC2626',borderWidth:0}]},options:chartOpts});
+    }
+  },100);
+}
+
+// Estadísticas de curso individual
+async function renderCourseStats(container){
+  const cid=state.currentCourseId;
+  const course=state.courses[cid];
+  const studs=state.students[cid]||{};
+  const recs=state.records[cid]||{};
+
+  let byStudent={};let byCategory={};let byDate={};
+  Object.entries(recs).forEach(([date,dateRecs])=>{
+    Object.entries(dateRecs).forEach(([rid,r])=>{
+      const sName=studs[r.studentId]?.name||'?';
+      byStudent[sName]=(byStudent[sName]||0)+1;
+      byCategory[r.category]=(byCategory[r.category]||0)+1;
+      byDate[date]=(byDate[date]||0)+1;
+    });
+  });
+
+  const rankArr=Object.entries(byStudent).sort((a,b)=>b[1]-a[1]);
+  const dateArr=Object.entries(byDate).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+  const catArr=Object.entries(byCategory);
+
+  // Baja participación
+  const totalStudents=Object.keys(studs).length;
+  const avg=totalStudents>0?Object.values(byStudent).reduce((a,b)=>a+b,0)/totalStudents:0;
+  const lowPart=rankArr.filter(r=>r[1]<avg*0.5);
+
+  container.innerHTML=`
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div class="bg-cll3 border border-cllb p-4"><p class="text-[10px] text-cllm uppercase tracking-wider">Total registros</p><p class="text-2xl font-bold mt-1">${Object.values(byDate).reduce((a,b)=>a+b,0)}</p></div>
+    <div class="bg-cll3 border border-cllb p-4"><p class="text-[10px] text-cllm uppercase tracking-wider">Promedio/estudiante</p><p class="text-2xl font-bold mt-1">${avg.toFixed(1)}</p></div>
+    <div class="bg-cll3 border border-cllb p-4"><p class="text-[10px] text-cllm uppercase tracking-wider">Días activos</p><p class="text-2xl font-bold mt-1">${Object.keys(byDate).length}</p></div>
+    <div class="bg-cll3 border border-cllb p-4"><p class="text-[10px] text-cllm uppercase tracking-wider">Baja participación</p><p class="text-2xl font-bold mt-1 text-yellow-500">${lowPart.length}</p></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Participación por Estudiante</h4>
+      <canvas id="course-chart-students" height="250"></canvas>
+    </div>
+    <div class="bg-cll3 border border-cllb p-5">
+      <h4 class="text-sm text-cllm uppercase tracking-wider mb-4">Evolución Temporal</h4>
+      <canvas id="course-chart-time" height="250"></canvas>
+    </div>
+  </div>
+  ${lowPart.length>0?`
+  <div class="bg-cll3 border border-yellow-900/50 p-5">
+    <h4 class="text-sm text-yellow-500 uppercase tracking-wider mb-3"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Estudiantes con Baja Participación</h4>
+    <div class="space-y-1">${lowPart.map(([name,count])=>`<p class="text-sm"><span class="text-white">${name}</span> <span class="text-cllm">— ${count} registro(s)</span></p>`).join('')}</div>
+  </div>`:''}`;
+
+  setTimeout(()=>{
+    const chartOpts={responsive:true,plugins:{legend:{labels:{color:'#9CA3AF',font:{size:11}}}},scales:{x:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#1E1E1E'}},y:{ticks:{color:'#6B7280',font:{size:10}},grid:{color:'#1E1E1E'}}}};
+
+    if(rankArr.length>0){
+      state.charts.courseStudents=new Chart(document.getElementById('course-chart-students'),{type:'bar',data:{labels:rankArr.map(r=>r[0].split(' ')[0]),datasets:[{label:'Registros',data:rankArr.map(r=>r[1]),backgroundColor:'#DC2626',borderWidth:0}]},options:{...chartOpts,indexAxis:'y'}});
+    }
+    if(dateArr.length>0){
+      state.charts.courseTime=new Chart(document.getElementById('course-chart-time'),{type:'line',data:{labels:dateArr.map(d=>d[0].slice(5)),datasets:[{label:'Registros',data:dateArr.map(d=>d[1]),borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.1)',fill:true,tension:.4,pointBackgroundColor:'#DC2626'}]},options:chartOpts});
+    }
+  },100);
+}
+
+// ============================================
+// REPORTES PDF
+// ============================================
+function renderReports(container){
+  const cKeys=Object.keys(state.courses);
+  container.innerHTML=`
+  <div class="max-w-2xl">
+    <h4 class="text-lg font-semibold mb-6">Generar Reporte PDF</h4>
+    <div class="space-y-4">
+      <div><label class="text-xs text-cllm tracking-wider uppercase block mb-1">Seleccionar curso</label>
+        <select id="report-course" class="w-full text-sm">
+          ${cKeys.map(k=>`<option value="${k}">${state.courses[k].name} — ${state.courses[k].paralelo}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn-cll" onclick="generatePDF()"><i class="fa-solid fa-file-pdf mr-2"></i>Exportar Reporte del Curso</button>
+    </div>
+    ${cKeys.length===0?'<p class="text-cllm text-sm mt-4">No hay cursos disponibles</p>':''}
+  </div>`;
+}
+
+async function generatePDF(){
+  const cid=document.getElementById('report-course')?.value;
+  if(!cid){showToast('Selecciona un curso','error');return}
+
+  const course=state.courses[cid];
+  const studs=await fbGet('students/'+cid)||{};
+  const recs=await fbGet('records/'+cid)||{};
+  const obs=await fbGet('observations/'+cid)||{};
+  const cats=state.categories;
+
+  // Procesar datos
+  const studArr=Object.entries(studs).sort((a,b)=>a[1].listNumber-b[1].listNumber);
+  let byStudent={};let byCategory={};
+  Object.values(recs).forEach(dateRecs=>{Object.values(dateRecs).forEach(r=>{
+    byStudent[r.studentId]=(byStudent[r.studentId]||{});byStudent[r.studentId][r.category]=(byStudent[r.studentId][r.category]||0)+1;
+    byCategory[r.category]=(byCategory[r.category]||0)+1;
+  })});
+
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+
+  // Fondo oscuro
+  doc.setFillColor(10,10,10);doc.rect(0,0,210,297,'F');
+
+  // Header CLLASKM
+  doc.setTextColor(220,38,38);doc.setFontSize(36);doc.text('CLLASKM',105,25,{align:'center'});
+  doc.setTextColor(150,150,150);doc.setFontSize(10);doc.text('SISTEMA DOCENTE — REPORTE ACADÉMICO',105,32,{align:'center'});
+
+  // Línea roja
+  doc.setDrawColor(220,38,38);doc.setLineWidth(0.5);doc.line(20,36,190,36);
+
+  // Info curso
+  doc.setTextColor(255,255,255);doc.setFontSize(16);doc.text(`${course.name} — ${course.paralelo}`,20,48);
+  doc.setTextColor(150,150,150);doc.setFontSize(9);doc.text(`Fecha de generación: ${formatDate(today())}`,20,54);
+  doc.text(`Total estudiantes: ${studArr.length} | Total registros: ${Object.values(recs).reduce((a,d)=>a+Object.keys(d).length,0)}`,20,59);
+
+  // Tabla de estudiantes
+  const tableBody=studArr.map(([sid,s])=>{
+    const sRecs=byStudent[sid]||{};
+    const total=Object.values(sRecs).reduce((a,b)=>a+b,0);
+    const catCols=Object.keys(cats).map(ck=>sRecs[ck]||0);
+    return[s.listNumber,s.name,...catCols,total];
+  });
+
+  const catHeaders=Object.keys(cats).map(ck=>cats[ck].name);
+
+  doc.autoTable({
+    startY:65,
+    head:[['N.','Estudiante',...catHeaders,'Total']],
+    body:tableBody,
+    theme:'plain',
+    styles:{fillColor:[22,22,22],textColor:[255,255,255],fontSize:8,lineColor:[40,40,40],lineWidth:0.5},
+    headStyles:{fillColor:[30,30,30],textColor:[220,38,38],fontStyle:'bold',fontSize:8},
+    alternateRowStyles:{fillColor:[16,16,16]},
+    margin:{left:20,right:20}
+  });
+
+  // Ranking
+  let finalY=doc.lastAutoTable.finalY+15;
+  const rankArr=studArr.map(([sid,s])=>({name:s.name,total:Object.values(byStudent[sid]||{}).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total);
+
+  if(finalY<250){
+    doc.setTextColor(220,38,38);doc.setFontSize(12);doc.text('Ranking de Participación',20,finalY);
+    finalY+=6;
+    rankArr.slice(0,10).forEach((r,i)=>{
+      doc.setTextColor(i<3?[220,38,38]:[150,150,150]);doc.setFontSize(9);
+      doc.text(`${i+1}. ${r.name} — ${r.total} registro(s)`,25,finalY);
+      finalY+=5;
+    });
+  }
+
+  // Observaciones
+  const allObs=[];
+  Object.entries(obs).forEach(([sid,sObs])=>{Object.values(sObs).forEach(o=>{allObs.push({student:studs[sid]?.name||'?',text:o.text,date:o.date})})});
+
+  if(allObs.length>0&&finalY<270){
+    finalY+=5;doc.setTextColor(220,38,38);doc.setFontSize(12);doc.text('Observaciones',20,finalY);finalY+=6;
+    allObs.slice(0,15).forEach(o=>{
+      doc.setTextColor(150,150,150);doc.setFontSize(8);
+      doc.text(`${o.student} (${o.date}): ${o.text}`,25,finalY,{maxWidth:155});finalY+=5;
+    });
+  }
+
+  // Footer
+  doc.setTextColor(80,80,80);doc.setFontSize(7);
+  doc.text('Generado por CLLASKM — Sistema Docente Premium',105,290,{align:'center'});
+
+  doc.save(`CLLASKM_${course.name}_${course.paralelo}_${today()}.pdf`);
+  showToast('PDF generado correctamente');
+}
+
+// ============================================
+// MINIJUEGO: BURRITO RUN
+// ============================================
+function renderGame(container){
+  container.innerHTML=`
+  <div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="goth text-3xl red-glow">BURRITO RUN</h3>
+        <p class="text-cllm text-xs tracking-wider">MODO DESCANSO</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-cllm">Record</p>
+        <p class="text-lg font-bold text-cllr" id="game-highscore">${localStorage.getItem('cllaskm_hs')||0}</p>
+      </div>
+    </div>
+    <div class="bg-cll3 border border-cllb relative">
+      <canvas id="gameCanvas" width="800" height="280" class="w-full" style="max-height:280px"></canvas>
+      <div id="game-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60">
+        <div class="text-center">
+          <h4 class="goth text-4xl red-glow mb-2">BURRITO RUN</h4>
+          <p class="text-cllm text-sm mb-1">Espacio / Click — Saltar</p>
+          <p class="text-cllm text-sm mb-4">Flecha abajo — Agacharse</p>
+          <button class="btn-cll" onclick="startGame()">Iniciar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // Inicializar canvas
+  const canvas=document.getElementById('gameCanvas');
+  if(canvas){
+    state.gameInstance=new BurritoRunGame(canvas);
+  }
+}
+
+class BurritoRunGame{
+  constructor(canvas){
+    this.canvas=canvas;this.ctx=canvas.getContext('2d');
+    this.state='idle';this.score=0;this.highScore=parseInt(localStorage.getItem('cllaskm_hs')||'0');
+    this.groundY=230;this.speed=4;this.gravity=0.6;this.frameCount=0;
+    this.player={x:80,y:this.groundY,vy:0,width:36,height:44,ducking:false,duckH:22};
+    this.obstacles=[];this.particles=[];this.groundOffset=0;
+    this.animFrame=null;
+
+    // Controles
+    this.keyHandler=e=>{
+      if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();this.jump()}
+      if(e.code==='ArrowDown'){e.preventDefault();this.player.ducking=true}
+    };
+    this.keyUpHandler=e=>{if(e.code==='ArrowDown')this.player.ducking=false};
+    this.clickHandler=()=>{if(this.state==='playing')this.jump()};
+    document.addEventListener('keydown',this.keyHandler);
+    document.addEventListener('keyup',this.keyUpHandler);
+    this.canvas.addEventListener('click',this.clickHandler);
+    this.canvas.addEventListener('touchstart',this.clickHandler);
+
+    this.drawIdle();
+  }
+
+  drawIdle(){
+    const c=this.ctx;
+    c.fillStyle='#0A0A0A';c.fillRect(0,0,this.canvas.width,this.canvas.height);
+    this.drawGround();
+    this.drawPlayer();
+  }
+
+  start(){
+    this.state='playing';this.score=0;this.speed=4;this.frameCount=0;
+    this.player.y=this.groundY;this.player.vy=0;this.player.ducking=false;
+    this.obstacles=[];this.particles=[];
+    document.getElementById('game-overlay').style.display='none';
+    this.loop();
+  }
+
+  loop(){
+    if(this.state!=='playing')return;
+    this.update();this.draw();
+    this.animFrame=requestAnimationFrame(()=>this.loop());
+  }
+
+  update(){
+    this.frameCount++;
+    this.speed=4+Math.floor(this.score/500)*0.5;
+    this.score++;
+
+    // Jugador
+    if(this.player.ducking){
+      this.player.height=this.player.duckH;
+    }else{
+      this.player.height=44;
+    }
+    this.player.vy+=this.gravity;
+    this.player.y+=this.player.vy;
+    if(this.player.y>=this.groundY){this.player.y=this.groundY;this.player.vy=0}
+
+    // Obstáculos
+    if(this.frameCount%Math.max(50,90-Math.floor(this.score/200))===0){
+      const types=['small','medium','tall'];
+      const type=types[Math.floor(Math.random()*types.length)];
+      const h=type==='small'?20:type==='medium'?35:50;
+      const w=type==='small'?18:type==='medium'?22:28;
+      this.obstacles.push({x:this.canvas.width+20,y:this.groundY+44-h,width:w,height:h,type});
+    }
+
+    this.obstacles.forEach(o=>o.x-=this.speed);
+    this.obstacles=this.obstacles.filter(o=>o.x>-50);
+
+    // Colisiones
+    const p=this.player;
+    const pH=p.ducking?p.duckH:44;
+    const pTop=p.y+44-pH;
+    this.obstacles.forEach(o=>{
+      if(p.x+p.width>o.x&&p.x<o.x+o.width&&p.y+44>o.y&&pTop<o.y+o.height){
+        this.gameOver();
+      }
+    });
+
+    this.groundOffset=(this.groundOffset+this.speed)%20;
+  }
+
+  draw(){
+    const c=this.ctx;
+    c.fillStyle='#0A0A0A';c.fillRect(0,0,this.canvas.width,this.canvas.height);
+
+    // Grid sutil
+    c.strokeStyle='rgba(37,37,37,0.5)';c.lineWidth=0.5;
+    for(let i=0;i<this.canvas.width;i+=40){c.beginPath();c.moveTo(i-this.groundOffset,0);c.lineTo(i-this.groundOffset,this.canvas.height);c.stroke()}
+
+    this.drawGround();
+    this.obstacles.forEach(o=>this.drawObstacle(o));
+    this.drawPlayer();
+
+    // Puntaje
+    c.fillStyle='#DC2626';c.font='bold 16px Inter';c.textAlign='right';
+    c.fillText(this.score.toString().padStart(6,'0'),this.canvas.width-20,30);
+    c.textAlign='left';
+  }
+
+  drawGround(){
+    const c=this.ctx;
+    c.strokeStyle='#DC2626';c.lineWidth=2;
+    c.beginPath();c.moveTo(0,this.groundY+44);c.lineTo(this.canvas.width,this.groundY+44);c.stroke();
+    // Textura
+    c.strokeStyle='rgba(220,38,38,0.15)';c.lineWidth=0.5;
+    for(let i=0;i<this.canvas.width;i+=20){
+      c.beginPath();c.moveTo(i-this.groundOffset,this.groundY+44);c.lineTo(i-this.groundOffset-8,this.groundY+52);c.stroke();
+    }
+  }
+
+  drawPlayer(){
+    const c=this.ctx;const p=this.player;
+    const h=p.ducking?p.duckH:44;
+    const drawY=p.y+44-h;
+
+    // Cuerpo
+    c.fillStyle='#FFFFFF';
+    c.fillRect(p.x,drawY,p.width,h);
+
+    // Detalle rojo
+    c.fillStyle='#DC2626';
+    c.fillRect(p.x,drawY,p.width,3);
+    if(!p.ducking){
+      c.fillRect(p.x+8,drawY+10,4,4);
+      c.fillRect(p.x+20,drawY+10,4,4);
+    }
+
+    // Sombra
+    c.fillStyle='rgba(220,38,38,0.1)';
+    c.fillRect(p.x-2,this.groundY+44,p.width+4,4);
+  }
+
+  drawObstacle(o){
+    const c=this.ctx;
+
+    if(o.type==='small'){
+      // Hoja de papel
+      c.fillStyle='#E5E5E5';c.fillRect(o.x,o.y,o.width,o.height);
+      c.strokeStyle='#9CA3AF';c.lineWidth=0.5;c.strokeRect(o.x,o.y,o.width,o.height);
+      c.beginPath();c.moveTo(o.x+4,o.y+6);c.lineTo(o.x+o.width-4,o.y+6);c.stroke();
+      c.beginPath();c.moveTo(o.x+4,o.y+12);c.lineTo(o.x+o.width-4,o.y+12);c.stroke();
+    }else if(o.type==='medium'){
+      // Libro
+      c.fillStyle='#DC2626';c.fillRect(o.x,o.y,o.width,o.height);
+      c.fillStyle='#991B1B';c.fillRect(o.x,o.y,4,o.height);
+      c.fillStyle='#FFFFFF';c.fillRect(o.x+6,o.y+o.height/2-1,o.width-10,2);
+    }else{
+      // Cuaderno alto
+      c.fillStyle='#FFFFFF';c.fillRect(o.x,o.y,o.width,o.height);
+      c.fillStyle='#DC2626';c.fillRect(o.x+o.width-3,o.y,3,o.height);
+      for(let i=4;i<o.height;i+=6){c.fillStyle='#D4D4D4';c.fillRect(o.x+3,o.y+i,o.width-8,0.5)}
+    }
+  }
+
+  jump(){
+    if(this.state!=='playing')return;
+    if(this.player.y>=this.groundY){this.player.vy=-11}
+  }
+
+  gameOver(){
+    this.state='gameover';
+    if(this.score>this.highScore){
+      this.highScore=this.score;
+      localStorage.setItem('cllaskm_hs',this.highScore.toString());
+    }
+    const hsEl=document.getElementById('game-highscore');
+    if(hsEl)hsEl.textContent=this.highScore;
+
+    const c=this.ctx;
+    c.fillStyle='rgba(0,0,0,0.7)';c.fillRect(0,0,this.canvas.width,this.canvas.height);
+    c.fillStyle='#DC2626';c.font='bold 28px Inter';c.textAlign='center';
+    c.fillText('FIN DEL JUEGO',this.canvas.width/2,this.canvas.height/2-20);
+    c.fillStyle='#FFFFFF';c.font='16px Inter';
+    c.fillText(`Puntaje: ${this.score}`,this.canvas.width/2,this.canvas.height/2+10);
+    c.fillStyle='#9CA3AF';c.font='12px Inter';
+    c.fillText('Clic o Espacio para reiniciar',this.canvas.width/2,this.canvas.height/2+35);
+    c.textAlign='left';
+
+    // Click para reiniciar
+    const restartHandler=()=>{
+      this.canvas.removeEventListener('click',restartHandler);
+      this.canvas.removeEventListener('touchstart',restartHandler);
+      document.removeEventListener('keydown',restartKeyHandler);
+      this.start();
+    };
+    const restartKeyHandler=e=>{
+      if(e.code==='Space'){e.preventDefault();restartHandler()}
+    };
+    setTimeout(()=>{
+      this.canvas.addEventListener('click',restartHandler);
+      this.canvas.addEventListener('touchstart',restartHandler);
+      document.addEventListener('keydown',restartKeyHandler);
+    },500);
+  }
+
+  destroy(){
+    if(this.animFrame)cancelAnimationFrame(this.animFrame);
+    document.removeEventListener('keydown',this.keyHandler);
+    document.removeEventListener('keyup',this.keyUpHandler);
+    if(this.canvas){
+      this.canvas.removeEventListener('click',this.clickHandler);
+      this.canvas.removeEventListener('touchstart',this.clickHandler);
+    }
+  }
+}
+
+function startGame(){
+  if(state.gameInstance)state.gameInstance.start();
+}
+
+// ============================================
+// CONFIGURACIÓN
+// ============================================
+function renderSettings(container){
+  const catKeys=Object.keys(state.categories).sort((a,b)=>(state.categories[a].order||0)-(state.categories[b].order||0));
+  container.innerHTML=`
+  <div class="max-w-2xl space-y-8">
+    <div>
+      <h4 class="text-lg font-semibold mb-4">Tipos de Registro</h4>
+      <p class="text-cllm text-sm mb-4">Gestiona las categorías disponibles para el registro diario de participación.</p>
+      <div class="space-y-2 mb-4">
+        ${catKeys.map(ck=>`<div class="bg-cll3 border border-cllb p-3 flex items-center justify-between">
+          <span class="text-sm">${state.categories[ck].name}</span>
+          <div class="flex gap-2">
+            <button class="btn-ghost text-xs" onclick="modalEditCategory('${ck}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-ghost text-xs border-red-900 text-red-500" onclick="deleteCategoryConfirm('${ck}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>`).join('')}
-    </div>`}`;
-}
-
-/* =========================================
-   VISTA: CURSOS
-   ========================================= */
-function renderCourses(){
-    const courseList=Object.entries(state.courses);
-    return `
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="font-display text-2xl tracking-wider">TODOS LOS CURSOS</h2>
-        <button onclick="openCreateCourseModal()" class="btn-red px-6 py-3 rounded-lg text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Crear Curso</button>
+      </div>
+      <button class="btn-cll text-sm" onclick="modalAddCategory()"><i class="fa-solid fa-plus mr-2"></i>Agregar tipo de registro</button>
     </div>
-    ${courseList.length===0?'<p class="text-sMuted text-center py-16">No hay cursos creados</p>':`
-    <div class="space-y-3">
-        ${courseList.map(([cId,c])=>`
-        <div class="bg-sCard border border-sBorder rounded-lg p-5 card-hover flex items-center justify-between anim-fadeUp">
-            <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="navigateTo('course-detail',{courseId:'${cId}'})">
-                <div class="w-12 h-12 bg-sRed/20 rounded-lg flex items-center justify-center"><i class="fas fa-book text-sRed"></i></div>
-                <div><h3 class="font-bold">${c.name}</h3><span class="text-sRed text-sm font-semibold">${c.paralelo}</span>
-                <div class="flex gap-4 text-xs text-sMuted mt-1"><span>${Object.keys(state.students[cId]||{}).length} estudiantes</span><span>${getAllRecords(cId).length} registros</span></div></div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="openEditCourseModal('${cId}')" class="btn-outline px-3 py-2 rounded text-xs"><i class="fas fa-pen"></i></button>
-                <button onclick="deleteCourse('${cId}')" class="btn-outline px-3 py-2 rounded text-xs hover:!border-red-500 hover:!text-red-500"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>`).join('')}
-    </div>`}`;
-}
-
-/* =========================================
-   VISTA: DETALLE DE CURSO
-   ========================================= */
-function renderCourseDetail(){
-    const cId=state.selectedCourseId;
-    const course=getCourse(cId);
-    if(!course)return'<p class="text-sMuted text-center py-16">Curso no encontrado</p>';
-    const students=getStudents(cId);
-    const btns=Object.values(state.customButtons).sort((a,b)=>(a.order||0)-(b.order||0));
-    const counts=getStudentRecordCounts(cId);
-    const q=state.searchQuery.toLowerCase();
-    const filtered=q?students.filter(([,s])=>s.name.toLowerCase().includes(q)):students;
-    return `
-    <div class="mb-6 anim-fadeUp">
-        <button onclick="navigateTo('courses')" class="text-sMuted hover:text-white text-sm mb-3 inline-flex items-center gap-2 transition-colors"><i class="fas fa-arrow-left"></i> Volver a cursos</button>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-                <h2 class="font-display text-3xl tracking-wider">${course.name}</h2>
-                <span class="text-sRed font-bold">${course.paralelo}</span>
-                <span class="text-sMuted text-sm ml-3">${students.length} estudiantes</span>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="openAddStudentModal('${cId}')" class="btn-red px-4 py-2 rounded text-sm flex items-center gap-2"><i class="fas fa-user-plus"></i> Agregar Estudiante</button>
-                <button onclick="exportCoursePDF('${cId}')" class="btn-outline px-4 py-2 rounded text-sm flex items-center gap-2"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-            </div>
-        </div>
+    <div class="border-t border-cllb pt-8">
+      <h4 class="text-lg font-semibold mb-4">Acerca de</h4>
+      <div class="bg-cll3 border border-cllb p-5">
+        <h5 class="goth text-2xl text-cllr red-glow mb-2">CLLASKM</h5>
+        <p class="text-cllm text-sm">Sistema Docente Premium v1.0</p>
+        <p class="text-cllm text-xs mt-2">Registro diario de participación, gestión académica visual, estadísticas inteligentes, reportes automáticos y más.</p>
+      </div>
     </div>
-    <div class="mb-4"><input type="text" placeholder="Buscar estudiante..." value="${state.searchQuery}" oninput="state.searchQuery=this.value;render()" class="max-w-sm"></div>
-    ${filtered.length===0?'<div class="text-center py-16"><p class="text-sMuted">'+(q?'Sin resultados para la busqueda':'No hay estudiantes en este curso')+'</p>'+(q?'':`<button onclick="openAddStudentModal('${cId}')" class="btn-red px-6 py-2 rounded text-sm mt-4">Agregar estudiante</button>`)+'</div>':`
-    <div class="overflow-x-auto bg-sCard border border-sBorder rounded-lg anim-fadeUp">
-        <table class="w-full min-w-[700px]">
-            <thead><tr>
-                <th class="w-16">#</th><th>Nombre</th>
-                ${btns.map(b=>`<th class="text-center text-xs">${b.label}</th>`).join('')}
-                <th class="text-center">Total</th>
-                <th class="text-center">Acciones</th>
-            </tr></thead>
-            <tbody>
-            ${filtered.map(([sId,s])=>{
-                const ct=counts[sId]||{total:0,byType:{}};
-                return `<tr>
-                    <td class="text-sMuted font-mono">${s.listNumber}</td>
-                    <td class="font-medium">${s.name}</td>
-                    ${btns.map(b=>`<td class="text-center"><button class="record-btn" onclick="addRecord('${cId}','${sId}','${b.label}')">${b.label} <span class="text-sRed ml-1">${ct.byType[b.label]||0}</span></button></td>`).join('')}
-                    <td class="text-center"><span class="font-display text-lg text-sRed">${ct.total}</span></td>
-                    <td class="text-center"><div class="flex items-center justify-center gap-1">
-                        <button onclick="openObservations('${cId}','${sId}','${s.name.replace(/'/g,"\\'")}')" class="text-sMuted hover:text-yellow-400 text-sm p-1 transition-colors" title="Observaciones"><i class="fas fa-comment-dots"></i></button>
-                        <button onclick="openEditStudentModal('${cId}','${sId}')" class="text-sMuted hover:text-white text-sm p-1 transition-colors" title="Editar"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteStudent('${cId}','${sId}')" class="text-sMuted hover:text-sRed text-sm p-1 transition-colors" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </div></td>
-                </tr>`}).join('')}
-            </tbody>
-        </table>
-    </div>`}`;
+    <div class="border-t border-cllb pt-8">
+      <h4 class="text-lg font-semibold mb-4">Datos</h4>
+      <div class="flex gap-3">
+        <button class="btn-ghost text-sm" onclick="loadData()"><i class="fa-solid fa-rotate mr-2"></i>Recargar datos</button>
+        <button class="btn-ghost text-sm border-red-900 text-red-500" onclick="confirmClearData()"><i class="fa-solid fa-trash mr-2"></i>Limpiar todo</button>
+      </div>
+    </div>
+  </div>`;
 }
 
-/* =========================================
-   VISTA: CALENDARIO
-   ========================================= */
-function renderCalendar(){
-    const d=state.calendarDate;
-    const year=d.getFullYear(),month=d.getMonth();
-    const firstDay=new Date(year,month,1).getDay();
-    const daysInMonth=new Date(year,month+1,0).getDate();
-    const today=new Date();const todayStr=today.toISOString().split('T')[0];
-    const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const dayNames=['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
-    /* Contar registros por día */
-    const recordsByDay={};
-    Object.values(state.records).forEach(courseRecs=>{
-        Object.values(courseRecs).forEach(sRecs=>{Object.values(sRecs||{}).forEach(r=>{if(r.date){recordsByDay[r.date]=(recordsByDay[r.date]||0)+1}})});
-    });
-    let daysHtml='';
-    /* Espacios vacíos antes del día 1 */
-    for(let i=0;i<firstDay;i++)daysHtml+=`<div class="p-2 min-h-[70px]"></div>`;
-    for(let day=1;day<=daysInMonth;day++){
-        const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const recCount=recordsByDay[dateStr]||0;
-        const isToday=dateStr===todayStr;
-        daysHtml+=`<div class="cal-day border border-sBorder rounded-lg p-2 min-h-[70px] ${recCount?'has-records':''} ${isToday?'today':''}" onclick="showDayDetail('${dateStr}')">
-            <div class="flex items-center justify-between mb-1"><span class="text-sm font-medium ${isToday?'text-sRed':'text-white'}">${day}</span>${recCount?`<span class="text-[10px] bg-sRed text-white px-1.5 py-0.5 rounded-full font-bold">${recCount}</span>`:''}</div>
-            ${recCount?'<div class="text-[10px] text-sMuted"><i class="fas fa-clipboard-check text-sRed mr-1"></i>Actividad</div>':''}
-        </div>`;
-    }
-    return `
-    <div class="anim-fadeUp">
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-                <button onclick="state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()-1,1);render()" class="btn-outline w-10 h-10 rounded-lg flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
-                <h2 class="font-display text-2xl tracking-wider">${monthNames[month]} ${year}</h2>
-                <button onclick="state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()+1,1);render()" class="btn-outline w-10 h-10 rounded-lg flex items-center justify-center"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <button onclick="state.calendarDate=new Date();render()" class="btn-outline px-4 py-2 rounded text-sm">Hoy</button>
-        </div>
-        <div class="bg-sCard border border-sBorder rounded-lg p-4">
-            <div class="grid grid-cols-7 gap-1 mb-2">${dayNames.map(d=>`<div class="text-center text-xs text-sMuted font-semibold uppercase py-1">${d}</div>`).join('')}</div>
-            <div class="grid grid-cols-7 gap-1">${daysHtml}</div>
-        </div>
-    </div>`;
+function deleteCategoryConfirm(cid){
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-4 text-cllr">Eliminar Tipo</h3>
+  <p class="text-cllm mb-6">Se eliminará el tipo <strong class="text-white">${state.categories[cid].name}</strong>.</p>
+  <div class="flex justify-end gap-3">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="deleteCategory('${cid}')">Eliminar</button>
+  </div></div>`);
 }
 
-function showDayDetail(dateStr){
-    const details=[];
-    Object.entries(state.courses).forEach(([cId,course])=>{
-        const recs=state.records[cId]||{};
-        Object.entries(recs).forEach(([sId,sRecs])=>{
-            Object.values(sRecs||{}).forEach(r=>{
-                if(r.date===dateStr){
-                    const student=(state.students[cId]||{})[sId];
-                    if(student)details.push({course:course.name+' - '+course.paralelo,student:student.name,type:r.type,time:r.time||''});
-                }
-            });
-        });
-    });
-    const html=details.length?details.map(d=>`<div class="border-b border-sBorder py-3 last:border-0"><div class="flex items-center gap-2 mb-1"><span class="bg-sRed/20 text-sRed text-xs px-2 py-0.5 rounded font-semibold">${d.type}</span><span class="text-xs text-sMuted">${d.time}</span></div><p class="text-sm font-medium">${d.student}</p><p class="text-xs text-sMuted">${d.course}</p></div>`).join(''):'<p class="text-sMuted text-sm text-center py-6">Sin actividad este dia</p>';
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-1">ACTIVIDAD DEL DIA</h3><p class="text-sMuted text-sm mb-4">${formatDate(dateStr)}</p>${html}</div>`);
+function confirmClearData(){
+  showModal(`<div class="p-6"><h3 class="goth text-2xl mb-4 text-cllr">Limpiar Todos los Datos</h3>
+  <p class="text-cllm mb-6">Esta acción eliminará todos los cursos, estudiantes, registros y configuraciones. No se puede deshacer.</p>
+  <div class="flex justify-end gap-3">
+    <button class="btn-ghost text-sm" onclick="hideModal()">Cancelar</button>
+    <button class="btn-cll text-sm" onclick="clearAllData()">Limpiar todo</button>
+  </div></div>`);
+}
+async function clearAllData(){
+  await fbRemove('');state.courses={};state.categories={};state.students={};state.records={};state.observations={};
+  hideModal();showToast('Datos eliminados');loadData();
 }
 
-/* =========================================
-   VISTA: ESTADÍSTICAS
-   ========================================= */
-function renderStatistics(){
-    const courseList=Object.entries(state.courses);
-    const selectedCId=state.selectedCourseId||courseList[0]?.[0]||'';
-    return `
-    <div class="anim-fadeUp">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h2 class="font-display text-2xl tracking-wider">ESTADISTICAS</h2>
-            <select onchange="state.selectedCourseId=this.value;render()" class="max-w-xs">
-                <option value="">Seleccionar curso</option>
-                ${courseList.map(([cId,c])=>`<option value="${cId}" ${cId===selectedCId?'selected':''}>${c.name} - ${c.paralelo}</option>`).join('')}
-            </select>
-        </div>
-        ${!selectedCId?'<p class="text-sMuted text-center py-16">Selecciona un curso para ver estadisticas</p>':`
-        <div class="grid lg:grid-cols-2 gap-6">
-            <div class="bg-sCard border border-sBorder rounded-lg p-5">
-                <h3 class="font-display text-lg tracking-wider mb-4">PARTICIPACION POR ESTUDIANTE</h3>
-                <div style="height:300px"><canvas id="chart-bar"></canvas></div>
-            </div>
-            <div class="bg-sCard border border-sBorder rounded-lg p-5">
-                <h3 class="font-display text-lg tracking-wider mb-4">DISTRIBUCION POR TIPO</h3>
-                <div style="height:300px"><canvas id="chart-doughnut"></canvas></div>
-            </div>
-            <div class="bg-sCard border border-sBorder rounded-lg p-5">
-                <h3 class="font-display text-lg tracking-wider mb-4">RANKING</h3>
-                <div id="ranking-list"></div>
-            </div>
-            <div class="bg-sCard border border-sBorder rounded-lg p-5">
-                <h3 class="font-display text-lg tracking-wider mb-4">ACTIVIDAD SEMANAL</h3>
-                <div style="height:300px"><canvas id="chart-line"></canvas></div>
-            </div>
-            <div class="bg-sCard border border-sBorder rounded-lg p-5 lg:col-span-2">
-                <h3 class="font-display text-lg tracking-wider mb-4">MENOR PARTICIPACION</h3>
-                <div id="lowest-list"></div>
-            </div>
-        </div>`}
-    </div>`;
-}
-
-function initCharts(){
-    const cId=state.selectedCourseId;
-    if(!cId||!getCourse(cId))return;
-    const counts=getStudentRecordCounts(cId);
-    const entries=Object.entries(counts).sort((a,b)=>b[1].total-a[1].total);
-    const btns=Object.values(state.customButtons).sort((a,b)=>(a.order||0)-(b.order||0));
-    const colors=['#da251d','#ff6b35','#ffc107','#4caf50','#2196f3','#9c27b0','#e91e63','#00bcd4','#8bc34a','#ff5722'];
-
-    /* Gráfico de barras */
-    const barCtx=document.getElementById('chart-bar');
-    if(barCtx){
-        state.charts.bar=new Chart(barCtx,{type:'bar',data:{labels:entries.map(([,c])=>c.name.substring(0,15)),datasets:[{label:'Total registros',data:entries.map(([,c])=>c.total),backgroundColor:'#da251d',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#777',font:{size:10}},grid:{color:'#2a2a2a'}},y:{ticks:{color:'#777'},grid:{color:'#2a2a2a'}}}}});
-    }
-
-    /* Gráfico de dona */
-    const doughCtx=document.getElementById('chart-doughnut');
-    if(doughCtx){
-        const typeCounts={};btns.forEach(b=>{typeCounts[b.label]=0});
-        entries.forEach(([,c])=>{Object.entries(c.byType).forEach(([t,v])=>{typeCounts[t]=(typeCounts[t]||0)+v})});
-        state.charts.doughnut=new Chart(doughCtx,{type:'doughnut',data:{labels:Object.keys(typeCounts),datasets:[{data:Object.values(typeCounts),backgroundColor:colors.slice(0,Object.keys(typeCounts).length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aaa',padding:12,font:{size:11}}}}}});
-    }
-
-    /* Gráfico de línea - actividad semanal */
-    const lineCtx=document.getElementById('chart-line');
-    if(lineCtx){
-        const weekData=[];const labels=[];
-        for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];labels.push(d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric'}));let count=0;Object.values(state.records[cId]||{}).forEach(sRecs=>{Object.values(sRecs||{}).forEach(r=>{if(r.date===ds)count++})});weekData.push(count)}
-        state.charts.line=new Chart(lineCtx,{type:'line',data:{labels,datasets:[{label:'Registros',data:weekData,borderColor:'#da251d',backgroundColor:'rgba(218,37,29,0.1)',fill:true,tension:.4,pointBackgroundColor:'#da251d',pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#777'},grid:{color:'#2a2a2a'}},y:{ticks:{color:'#777'},grid:{color:'#2a2a2a'},beginAtZero:true}}}});
-    }
-
-    /* Ranking */
-    const rankEl=document.getElementById('ranking-list');
-    if(rankEl){
-        const top=entries.slice(0,10);
-        const maxTotal=top[0]?.[1]?.total||1;
-        rankEl.innerHTML=top.length?top.map(([sId,c],i)=>`<div class="flex items-center gap-3 py-2 ${i>0?'border-t border-sBorder':''}"><span class="font-display text-lg ${i<3?'text-sRed':'text-sMuted'} w-8">${i+1}</span><span class="flex-1 text-sm font-medium truncate">${c.name}</span><div class="w-24 h-2 bg-sBorder rounded-full overflow-hidden"><div class="h-full bg-sRed rounded-full" style="width:${Math.max(2,(c.total/maxTotal)*100)}%"></div></div><span class="text-sm font-display text-sRed w-8 text-right">${c.total}</span></div>`).join(''):'<p class="text-sMuted text-sm text-center py-4">Sin datos</p>';
-    }
-
-    /* Menor participación */
-    const lowEl=document.getElementById('lowest-list');
-    if(lowEl){
-        const lowest=entries.filter(([,c])=>c.total>0).slice().sort((a,b)=>a[1].total-b[1].total).slice(0,5);
-        lowEl.innerHTML=lowest.length?`<div class="grid sm:grid-cols-5 gap-3">${lowest.map(([sId,c])=>`<div class="bg-sBlack border border-sBorder rounded-lg p-4 text-center"><p class="text-sm font-medium truncate mb-1">${c.name}</p><p class="font-display text-2xl text-sRed">${c.total}</p><p class="text-xs text-sMuted">registros</p></div>`).join('')}</div>`:'<p class="text-sMuted text-sm text-center py-4">Sin datos suficientes</p>';
-    }
-}
-
-/* =========================================
-   VISTA: REPORTES
-   ========================================= */
-function renderReports(){
-    const courseList=Object.entries(state.courses);
-    return `
-    <div class="anim-fadeUp">
-        <h2 class="font-display text-2xl tracking-wider mb-6">REPORTES PDF</h2>
-        ${courseList.length===0?'<p class="text-sMuted text-center py-16">No hay cursos para exportar</p>':`
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            ${courseList.map(([cId,c])=>`
-            <div class="bg-sCard border border-sBorder rounded-lg p-6 card-hover">
-                <div class="mb-4"><h3 class="font-bold text-lg">${c.name}</h3><span class="text-sRed text-sm font-semibold">${c.paralelo}</span></div>
-                <div class="text-xs text-sMuted mb-4"><span>${Object.keys(state.students[cId]||{}).length} estudiantes</span></div>
-                <button onclick="exportCoursePDF('${cId}')" class="btn-red w-full py-3 rounded-lg text-sm flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Exportar Reporte</button>
-            </div>`).join('')}
-        </div>`}
-    </div>`;
-}
-
-/* =========================================
-   VISTA: CONFIGURACIÓN
-   ========================================= */
-function renderConfig(){
-    const btns=Object.entries(state.customButtons).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-    return `
-    <div class="anim-fadeUp">
-        <h2 class="font-display text-2xl tracking-wider mb-6">CONFIGURACION</h2>
-        <div class="bg-sCard border border-sBorder rounded-lg p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-display text-lg tracking-wider">BOTONES DE REGISTRO</h3>
-                <button onclick="openAddButtonModal()" class="btn-red px-4 py-2 rounded text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Agregar Boton</button>
-            </div>
-            <p class="text-sMuted text-xs mb-4">Estos botones aparecen en la tabla de cada estudiante para registrar actividades.</p>
-            <div class="space-y-2">
-                ${btns.map(([bId,b])=>`
-                <div class="flex items-center justify-between bg-sBlack border border-sBorder rounded-lg px-4 py-3">
-                    <div class="flex items-center gap-3"><div class="w-3 h-3 bg-sRed rounded-full"></div><span class="font-medium text-sm">${b.label}</span></div>
-                    <button onclick="deleteCustomButton('${bId}')" class="text-sMuted hover:text-sRed text-sm transition-colors"><i class="fas fa-trash"></i></button>
-                </div>`).join('')}
-            </div>
-        </div>
-        <div class="bg-sCard border border-sBorder rounded-lg p-6">
-            <h3 class="font-display text-lg tracking-wider mb-4">ACERCA DE</h3>
-            <div class="logo-box inline-block mb-4"><span class="font-display text-white text-xl tracking-[.15em]">CLLASKM</span></div>
-            <p class="text-sMuted text-sm">Plataforma de administracion docente. Todos los datos se sincronizan en tiempo real con la base de datos.</p>
-        </div>
-    </div>`;
-}
-
-/* =========================================
-   MODALES
-   ========================================= */
-function openCreateCourseModal(){
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">CREAR CURSO</h3>
-    <div class="space-y-4"><div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Nombre del curso</label><input id="m-name" placeholder="Ej: Historia" autofocus></div>
-    <div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Paralelo</label><input id="m-par" placeholder="Ej: A"></div></div>
-    <div class="flex gap-3 mt-6"><button onclick="closeModal()" class="btn-outline flex-1 py-2 rounded text-sm">Cancelar</button><button onclick="createCourse(document.getElementById('m-name').value,document.getElementById('m-par').value)" class="btn-red flex-1 py-2 rounded text-sm">Crear</button></div></div>`);
-}
-function openEditCourseModal(cId){
-    const c=getCourse(cId);if(!c)return;
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">EDITAR CURSO</h3>
-    <div class="space-y-4"><div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Nombre del curso</label><input id="m-name" value="${c.name}"></div>
-    <div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Paralelo</label><input id="m-par" value="${c.paralelo}"></div></div>
-    <div class="flex gap-3 mt-6"><button onclick="closeModal()" class="btn-outline flex-1 py-2 rounded text-sm">Cancelar</button><button onclick="updateCourse('${cId}',document.getElementById('m-name').value,document.getElementById('m-par').value)" class="btn-red flex-1 py-2 rounded text-sm">Guardar</button></div></div>`);
-}
-function openAddStudentModal(cId){
-    const nextNum=getStudents(cId).length+1;
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">AGREGAR ESTUDIANTE</h3>
-    <div class="space-y-4"><div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Numero de lista</label><input id="m-num" type="number" value="${nextNum}" min="1"></div>
-    <div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Nombre completo</label><input id="m-name" placeholder="Ej: Juan Perez" autofocus></div></div>
-    <div class="flex gap-3 mt-6"><button onclick="closeModal()" class="btn-outline flex-1 py-2 rounded text-sm">Cancelar</button><button onclick="addStudent('${cId}',document.getElementById('m-num').value,document.getElementById('m-name').value)" class="btn-red flex-1 py-2 rounded text-sm">Agregar</button></div></div>`);
-}
-function openEditStudentModal(cId,sId){
-    const s=(state.students[cId]||{})[sId];if(!s)return;
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">EDITAR ESTUDIANTE</h3>
-    <div class="space-y-4"><div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Numero de lista</label><input id="m-num" type="number" value="${s.listNumber}" min="1"></div>
-    <div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Nombre completo</label><input id="m-name" value="${s.name}"></div></div>
-    <div class="flex gap-3 mt-6"><button onclick="closeModal()" class="btn-outline flex-1 py-2 rounded text-sm">Cancelar</button><button onclick="updateStudent('${cId}','${sId}',document.getElementById('m-num').value,document.getElementById('m-name').value)" class="btn-red flex-1 py-2 rounded text-sm">Guardar</button></div></div>`);
-}
-function openAddButtonModal(){
-    openModal(`<div class="p-6"><h3 class="font-display text-xl tracking-wider mb-4">NUEVO BOTON DE REGISTRO</h3>
-    <div><label class="text-xs text-sMuted uppercase tracking-wider block mb-1">Nombre del boton</label><input id="m-label" placeholder="Ej: Leyo, Investigó, Respondió" autofocus></div>
-    <p class="text-sMuted text-xs mt-3">Este boton estara disponible para todos los cursos.</p>
-    <div class="flex gap-3 mt-6"><button onclick="closeModal()" class="btn-outline flex-1 py-2 rounded text-sm">Cancelar</button><button onclick="addCustomButton(document.getElementById('m-label').value)" class="btn-red flex-1 py-2 rounded text-sm">Agregar</button></div></div>`);
-}
-
-/* =========================================
-   EXPORTAR PDF
-   ========================================= */
-function exportCoursePDF(cId){
-    const course=getCourse(cId);if(!course)return;
-    const students=getStudents(cId);
-    const btns=Object.values(state.customButtons).sort((a,b)=>(a.order||0)-(b.order||0));
-    const counts=getStudentRecordCounts(cId);
-    const allRecs=getAllRecords(cId);
-    const{jsPDF}=window.jspdf;
-    const doc=new jsPDF();
-    let y=15;
-
-    /* Header con logo CLLASKM */
-    doc.setFillColor(218,37,29);
-    doc.rect(14,y,55,14,'F');
-    doc.setTextColor(255,255,255);
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(18);
-    doc.text('CLLASKM',41.5,y+10,{align:'center'});
-    doc.setTextColor(0,0,0);
-    doc.setFontSize(10);
-    doc.setFont('helvetica','normal');
-    doc.text(`Curso: ${course.name} - ${course.paralelo}`,75,y+5);
-    doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`,75,y+11);
-    y+=22;
-
-    /* Línea separadora */
-    doc.setDrawColor(218,37,29);doc.setLineWidth(0.8);doc.line(14,y,196,y);y+=8;
-
-    /* Resumen */
-    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('Resumen General',14,y);y+=7;
-    doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text(`Total de estudiantes: ${students.length}`,14,y);y+=5;
-    doc.text(`Total de registros: ${allRecs.length}`,14,y);y+=5;
-    const avg=students.length?(allRecs.length/students.length).toFixed(1):'0';
-    doc.text(`Promedio de registros por estudiante: ${avg}`,14,y);y+=10;
-
-    /* Tabla de estudiantes */
-    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('Registro de Estudiantes',14,y);y+=5;
-    const tableHead=[['#','Nombre',...btns.map(b=>b.label),'Total']];
-    const tableBody=students.map(([sId,s])=>{
-        const ct=counts[sId]||{total:0,byType:{}};
-        return[s.listNumber,s.name,...btns.map(b=>ct.byType[b.label]||0),ct.total];
-    });
-    doc.autoTable({startY:y,head:tableHead,body:tableBody,theme:'grid',headStyles:{fillColor:[218,37,29],textColor:[255,255,255],fontStyle:'bold',fontSize:8},bodyStyles:{fontSize:8},alternateRowStyles:{fillColor:[245,245,245]},margin:{left:14,right:14}});
-    y=doc.lastAutoTable.finalY+10;
-
-    /* Ranking */
-    if(y>240){doc.addPage();y=15}
-    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('Ranking de Participacion',14,y);y+=5;
-    const sorted=Object.entries(counts).sort((a,b)=>b[1].total-a[1].total);
-    const rankHead=[['Pos','Estudiante','Total']];
-    const rankBody=sorted.map(([sId,c],i)=>[i+1,c.name,c.total]);
-    doc.autoTable({startY:y,head:rankHead,body:rankBody,theme:'grid',headStyles:{fillColor:[218,37,29],textColor:[255,255,255],fontStyle:'bold',fontSize:8},bodyStyles:{fontSize:8},margin:{left:14,right:14}});
-    y=doc.lastAutoTable.finalY+10;
-
-    /* Observaciones */
-    const obsData=[];
-    students.forEach(([sId,s])=>{
-        const obs=getObservations(cId,sId);
-        if(obs.length){obs.forEach(([,o])=>{obsData.push([s.name,o.text,formatDate(o.date)])})}
-    });
-    if(obsData.length){
-        if(y>230){doc.addPage();y=15}
-        doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('Observaciones',14,y);y+=5;
-        doc.autoTable({startY:y,head:[['Estudiante','Observacion','Fecha']],body:obsData,theme:'grid',headStyles:{fillColor:[218,37,29],textColor:[255,255,255],fontStyle:'bold',fontSize:8},bodyStyles:{fontSize:8},columnStyles:{1:{cellWidth:80}},margin:{left:14,right:14}});
-    }
-
-    /* Footer */
-    const pageCount=doc.internal.getNumberOfPages();
-    for(let i=1;i<=pageCount;i++){doc.setPage(i);doc.setFontSize(7);doc.setTextColor(150);doc.text('Generado por CLLASKM – Administracion Docente',105,290,{align:'center'})}
-
-    doc.save(`CLLASKM_${course.name}_${course.paralelo}.pdf`);
-    showToast('PDF exportado exitosamente');
-}
-
-/* =========================================
-   INICIALIZACIÓN
-   ========================================= */
-function initApp(){
-    setupListeners();
-    /* Ocultar pantalla de carga */
-    setTimeout(()=>{const ls=document.getElementById('loading-screen');if(ls){ls.style.transition='opacity .5s';ls.style.opacity='0';setTimeout(()=>ls.remove(),500)}},1600);
-    /* Navegación por clic en sidebar */
-    document.querySelectorAll('#nav-links .nav-link').forEach(link=>{
-        link.addEventListener('click',()=>{navigateTo(link.dataset.nav)});
-    });
-    /* Atajos de teclado */
-    document.addEventListener('keydown',e=>{
-        if(e.key==='Escape')closeModal();
-    });
-}
-
-/* Si auth ya estaba listo */
-if(authReady)initApp();
-
-/* =========================================
-   EVENTOS GLOBALES
-   ========================================= */
-/* Delegación de eventos para botones dinámicos */
-document.addEventListener('click',e=>{
-    /* Nada extra por ahora, los onclick inline cubren las necesidades */
+// ============================================
+// SIDEBAR NAV
+// ============================================
+document.querySelectorAll('.sidebar-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const view=item.dataset.view;
+    if(view)navigate(view);
+  });
 });
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+(async function init(){
+  await loadData();
+  navigate('dashboard');
+})();
 </script>
 </body>
 </html>
