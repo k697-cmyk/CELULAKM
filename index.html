@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* === Variables de diseño === */
         :root {
             --bg: #0B0F1A;
             --fg: #F0F2F5;
@@ -104,7 +103,7 @@
         }
         .btn-ingresar:active { transform: translateY(0); }
 
-        /* Partículas flotantes en el landing */
+        /* Partículas flotantes */
         .particle {
             position: absolute;
             border-radius: 50%;
@@ -136,10 +135,8 @@
         .sidebar-brand { padding: 22px 20px; border-bottom: 1px solid var(--border); }
         .sidebar-brand h5 {
             font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            margin: 0;
-            color: var(--accent);
-            font-size: 1.15rem;
+            font-weight: 700; margin: 0;
+            color: var(--accent); font-size: 1.15rem;
         }
         .sidebar-brand small { color: var(--muted); font-size: 0.72rem; }
         .sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
@@ -208,8 +205,7 @@
         }
         .table-custom tbody td {
             border-bottom: 1px solid var(--border);
-            padding: 10px 12px; vertical-align: middle;
-            font-size: 0.9rem;
+            padding: 10px 12px; vertical-align: middle; font-size: 0.9rem;
         }
         .table-custom tbody tr:hover { background: rgba(16,185,129,0.04); }
 
@@ -331,43 +327,21 @@
             border-radius: 14px; padding: 22px;
         }
 
-        /* Toast personalizado */
-        .toast-custom {
-            background: var(--card); border: 1px solid var(--border);
-            color: var(--fg); border-radius: 12px;
+        /* Indicador de conexión */
+        .conn-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.7rem; padding: 3px 10px;
+            border-radius: 20px; font-weight: 600;
         }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-        /* Botón móvil */
-        .mobile-toggle {
-            display: none;
-            position: fixed; top: 14px; left: 14px; z-index: 1060;
-            background: var(--card); border: 1px solid var(--border);
-            color: var(--fg); border-radius: 10px;
-            padding: 7px 11px; font-size: 1.15rem; cursor: pointer;
+        .conn-badge.online { background: rgba(16,185,129,0.15); color: var(--accent); }
+        .conn-badge.offline { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .conn-dot {
+            width: 6px; height: 6px; border-radius: 50%;
         }
-        .sidebar-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55); z-index: 1040;
-        }
-        .sidebar-overlay.show { display: block; }
+        .conn-badge.online .conn-dot { background: var(--accent); }
+        .conn-badge.offline .conn-dot { background: var(--danger); }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.show { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 20px 16px; padding-top: 60px; }
-            .mobile-toggle { display: block !important; }
-            .landing-title { font-size: 2.4rem; }
-            .btn-ingresar { padding: 14px 40px; font-size: 1rem; letter-spacing: 3px; }
-        }
-
-        /* Animación de carga */
+        /* Spinner */
         .spinner-landing {
             width: 28px; height: 28px;
             border: 3px solid var(--border);
@@ -394,11 +368,46 @@
         #pdf-content .student-block { margin-bottom: 24px; page-break-inside: avoid; }
         #pdf-content .student-block h4 { margin: 0 0 4px; color: #1a1a2e; }
         #pdf-content .student-block small { color: #666; }
+
+        /* Toast */
+        .toast-custom {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--fg); border-radius: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /* Botón móvil */
+        .mobile-toggle {
+            display: none;
+            position: fixed; top: 14px; left: 14px; z-index: 1060;
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--fg); border-radius: 10px;
+            padding: 7px 11px; font-size: 1.15rem; cursor: pointer;
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55); z-index: 1040;
+        }
+        .sidebar-overlay.show { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px 16px; padding-top: 60px; }
+            .mobile-toggle { display: block !important; }
+            .landing-title { font-size: 2.4rem; }
+            .btn-ingresar { padding: 14px 40px; font-size: 1rem; letter-spacing: 3px; }
+        }
     </style>
 </head>
 <body>
 
-<!-- ==================== CONTENEDOR DE TOASTS ==================== -->
+<!-- ==================== TOASTS ==================== -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999" id="toast-container"></div>
 
 <!-- ==================== PANTALLA DE INGRESO ==================== -->
@@ -414,18 +423,16 @@
 
 <!-- ==================== APLICACION PRINCIPAL ==================== -->
 <div id="app">
-    <!-- Botón toggle móvil -->
     <button class="mobile-toggle" id="mobile-toggle" onclick="toggleSidebar()">
         <i class="bi bi-list"></i>
     </button>
-    <!-- Overlay móvil -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <h5><i class="bi bi-mortarboard-fill me-2"></i>KMT School</h5>
-            <small>Gestion Escolar</small>
+            <small id="conn-status">Conectando...</small>
         </div>
         <div class="sidebar-nav">
             <div class="nav-item-custom active" data-section="dashboard" onclick="navigateTo('dashboard')">
@@ -533,7 +540,6 @@
                 <p>Registro de participaciones y observaciones por estudiante</p>
             </div>
             <div class="row g-3">
-                <!-- Selector de estudiante y formulario -->
                 <div class="col-lg-5">
                     <div class="card-custom mb-3">
                         <label class="form-label-custom">Seleccionar estudiante</label>
@@ -565,7 +571,6 @@
                         </button>
                     </div>
                 </div>
-                <!-- Historial de anotaciones -->
                 <div class="col-lg-7">
                     <div class="card-custom" style="min-height:300px;">
                         <h6 style="font-weight:600;margin-bottom:16px;">Historial de anotaciones</h6>
@@ -632,8 +637,8 @@
             </div>
         </div>
 
-    </div><!-- /main-content -->
-</div><!-- /app -->
+    </div>
+</div>
 
 <!-- ==================== MODAL: ESTUDIANTE ==================== -->
 <div class="modal fade" id="modal-estudiante" tabindex="-1">
@@ -728,21 +733,18 @@
     </div>
 </div>
 
-<!-- ==================== CONTENIDO OCULTO PARA PDF ==================== -->
+<!-- Contenido oculto para PDF -->
 <div id="pdf-content"></div>
 
 <!-- ==================== SCRIPTS ==================== -->
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<!-- jsPDF y html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- Firebase Compat SDK -->
+
+<!-- Firebase Compat SDK (solo database, sin auth) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
 // =====================================================
@@ -760,7 +762,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const auth = firebase.auth();
 
 // =====================================================
 // ESTADO DE LA APLICACION
@@ -770,14 +771,16 @@ let estudiantes = {};
 let anotaciones = {};
 let currentSection = 'dashboard';
 let deleteCursoId = null;
-let chartInstances = {}; // Almacenar instancias de Chart.js para destruir antes de recrear
+let chartInstances = {};
+let dataLoaded = false; // Bandera para saber si ya se cargaron los datos
 
 // =====================================================
 // UTILIDADES
 // =====================================================
 
 // Mostrar notificación toast
-function showToast(message, type = 'success') {
+function showToast(message, type) {
+    type = type || 'success';
     const container = document.getElementById('toast-container');
     const id = 'toast-' + Date.now();
     const iconMap = {
@@ -792,19 +795,17 @@ function showToast(message, type = 'success') {
         info: 'var(--info)',
         warning: 'var(--accent-warm)'
     };
-    const html = `
-        <div id="${id}" class="toast toast-custom show" role="alert" style="min-width:280px;">
-            <div class="toast-body d-flex align-items-center gap-2">
-                <i class="bi ${iconMap[type] || iconMap.info}" style="color:${colorMap[type]};font-size:1.1rem;"></i>
-                <span style="font-size:0.88rem;">${message}</span>
-                <button type="button" class="btn-close btn-close-white ms-auto" style="font-size:0.65rem;" onclick="document.getElementById('${id}').remove()"></button>
-            </div>
-        </div>
-    `;
+    var iconCls = iconMap[type] || iconMap.info;
+    var color = colorMap[type] || colorMap.info;
+    var html = '<div id="' + id + '" class="toast toast-custom show" role="alert" style="min-width:280px;">' +
+        '<div class="toast-body d-flex align-items-center gap-2">' +
+        '<i class="bi ' + iconCls + '" style="color:' + color + ';font-size:1.1rem;"></i>' +
+        '<span style="font-size:0.88rem;">' + message + '</span>' +
+        '<button type="button" class="btn-close btn-close-white ms-auto" style="font-size:0.65rem;" onclick="document.getElementById(\'' + id + '\').remove()"></button>' +
+        '</div></div>';
     container.insertAdjacentHTML('beforeend', html);
-    // Auto-eliminar después de 3.5 segundos
-    setTimeout(() => {
-        const el = document.getElementById(id);
+    setTimeout(function() {
+        var el = document.getElementById(id);
         if (el) el.remove();
     }, 3500);
 }
@@ -812,7 +813,7 @@ function showToast(message, type = 'success') {
 // Formatear fecha para mostrar
 function formatDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr + 'T00:00:00');
+    var d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -830,30 +831,35 @@ function getEstudianteNombre(estId) {
 
 // Contar anotaciones de un estudiante
 function countAnotaciones(estId) {
-    return Object.values(anotaciones).filter(a => a.estudianteId === estId).length;
+    var count = 0;
+    var keys = Object.keys(anotaciones);
+    for (var i = 0; i < keys.length; i++) {
+        if (anotaciones[keys[i]].estudianteId === estId) count++;
+    }
+    return count;
 }
 
 // Obtener la fecha de hoy en formato YYYY-MM-DD
 function todayStr() {
-    const d = new Date();
+    var d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 // =====================================================
-// AUTENTICACION ANONIMA Y INGRESO
+// INGRESO A LA APP (SIN AUTENTICACION)
 // =====================================================
 
 // Crear partículas flotantes en la pantalla de ingreso
 function createParticles() {
-    const landing = document.getElementById('landing');
-    const colors = ['rgba(16,185,129,0.4)', 'rgba(245,158,11,0.3)', 'rgba(59,130,246,0.3)'];
-    for (let i = 0; i < 20; i++) {
-        const p = document.createElement('div');
+    var landing = document.getElementById('landing');
+    var colors = ['rgba(16,185,129,0.4)', 'rgba(245,158,11,0.3)', 'rgba(59,130,246,0.3)'];
+    for (var i = 0; i < 20; i++) {
+        var p = document.createElement('div');
         p.className = 'particle';
-        const size = Math.random() * 6 + 2;
+        var size = Math.random() * 6 + 2;
         p.style.width = size + 'px';
         p.style.height = size + 'px';
-        p.style.left = Math.random() * 100 + '%';
+        p.style.left = (Math.random() * 100) + '%';
         p.style.background = colors[Math.floor(Math.random() * colors.length)];
         p.style.animationDuration = (Math.random() * 8 + 6) + 's';
         p.style.animationDelay = (Math.random() * 6) + 's';
@@ -862,24 +868,36 @@ function createParticles() {
 }
 
 // Función principal al hacer clic en INGRESAR
-async function ingresarApp() {
-    const btnArea = document.getElementById('landing-btn-area');
+// No usa autenticación, solo carga datos de Firebase directamente
+function ingresarApp() {
+    var btnArea = document.getElementById('landing-btn-area');
     btnArea.innerHTML = '<div class="spinner-landing"></div>';
 
-    try {
-        // Autenticación anónima para cumplir regla "auth != null"
-        await auth.signInAnonymously();
-        // Cargar datos desde Firebase
-        await loadData();
-        // Ocultar landing y mostrar app
+    // Cargar datos desde Firebase (las reglas permiten .read: true)
+    loadData().then(function() {
+        // Precargar datos de ejemplo si es la primera vez
+        return preloadData();
+    }).then(function() {
+        // Mostrar la aplicación
         document.getElementById('landing').style.display = 'none';
         document.getElementById('app').style.display = 'block';
+        updateConnStatus(true);
         renderAll();
         showToast('Sesion iniciada correctamente', 'success');
-    } catch (error) {
+    }).catch(function(error) {
         console.error('Error al ingresar:', error);
         btnArea.innerHTML = '<button class="btn-ingresar" onclick="ingresarApp()">INGRESAR</button>';
-        showToast('Error al conectar: ' + error.message, 'error');
+        showToast('Error al conectar con Firebase: ' + error.message, 'error');
+    });
+}
+
+// Actualizar indicador de conexión en el sidebar
+function updateConnStatus(online) {
+    var el = document.getElementById('conn-status');
+    if (online) {
+        el.innerHTML = '<span class="conn-badge online"><span class="conn-dot"></span>En linea</span>';
+    } else {
+        el.innerHTML = '<span class="conn-badge offline"><span class="conn-dot"></span>Sin conexion</span>';
     }
 }
 
@@ -887,87 +905,103 @@ async function ingresarApp() {
 // CARGA DE DATOS DESDE FIREBASE
 // =====================================================
 function loadData() {
-    return new Promise((resolve) => {
-        let loaded = 0;
-        const checkDone = () => { if (loaded >= 3) resolve(); };
+    return new Promise(function(resolve, reject) {
+        var loaded = 0;
+        var target = 3;
 
-        // Escuchar cambios en cursos
-        db.ref('cursos').on('value', (snap) => {
+        function checkDone() {
+            if (loaded >= target) {
+                dataLoaded = true;
+                resolve();
+            }
+        }
+
+        // Escuchar cambios en cursos (lectura permitida por reglas)
+        db.ref('cursos').on('value', function(snap) {
             cursos = snap.val() || {};
             loaded++;
             checkDone();
-            renderIfAppVisible();
+            if (dataLoaded) renderAll();
+        }, function(err) {
+            reject(err);
         });
 
         // Escuchar cambios en estudiantes
-        db.ref('estudiantes').on('value', (snap) => {
+        db.ref('estudiantes').on('value', function(snap) {
             estudiantes = snap.val() || {};
             loaded++;
             checkDone();
-            renderIfAppVisible();
+            if (dataLoaded) renderAll();
+        }, function(err) {
+            reject(err);
         });
 
         // Escuchar cambios en anotaciones
-        db.ref('anotaciones').on('value', (snap) => {
+        db.ref('anotaciones').on('value', function(snap) {
             anotaciones = snap.val() || {};
             loaded++;
             checkDone();
-            renderIfAppVisible();
+            if (dataLoaded) renderAll();
+        }, function(err) {
+            reject(err);
         });
     });
 }
 
-// Renderizar solo si la app es visible
-function renderIfAppVisible() {
-    if (document.getElementById('app').style.display === 'block') {
-        renderAll();
-    }
-}
-
 // =====================================================
 // PRECARGA DE DATOS DE EJEMPLO
+// Solo se ejecuta si no hay datos existentes en Firebase
 // =====================================================
-async function preloadData() {
-    const snap = await db.ref('cursos').once('value');
-    if (snap.exists()) return; // Ya hay datos, no precargar
+function preloadData() {
+    return db.ref('cursos').once('value').then(function(snap) {
+        if (snap.exists() && Object.keys(snap.val()).length > 0) return; // Ya hay datos
 
-    // Crear cursos de ejemplo
-    const cur1Ref = db.ref('cursos').push();
-    const cur2Ref = db.ref('cursos').push();
-    const cur1Id = cur1Ref.key;
-    const cur2Id = cur2Ref.key;
+        // Crear cursos de ejemplo
+        var cur1Ref = db.ref('cursos').push();
+        var cur2Ref = db.ref('cursos').push();
+        var cur1Id = cur1Ref.key;
+        var cur2Id = cur2Ref.key;
 
-    await cur1Ref.set({ nombre: 'Matematicas', descripcion: 'Algebra y geometria' });
-    await cur2Ref.set({ nombre: 'Ciencias', descripcion: 'Ciencias naturales y fisica' });
+        var p1 = cur1Ref.set({ nombre: 'Matematicas', descripcion: 'Algebra y geometria' });
+        var p2 = cur2Ref.set({ nombre: 'Ciencias', descripcion: 'Ciencias naturales y fisica' });
 
-    // Crear estudiantes de ejemplo
-    const est1Ref = db.ref('estudiantes').push();
-    const est2Ref = db.ref('estudiantes').push();
-    const est3Ref = db.ref('estudiantes').push();
-    const est1Id = est1Ref.key;
-    const est2Id = est2Ref.key;
-    const est3Id = est3Ref.key;
+        return Promise.all([p1, p2]).then(function() {
+            // Crear estudiantes de ejemplo
+            var est1Ref = db.ref('estudiantes').push();
+            var est2Ref = db.ref('estudiantes').push();
+            var est3Ref = db.ref('estudiantes').push();
+            var est1Id = est1Ref.key;
+            var est2Id = est2Ref.key;
+            var est3Id = est3Ref.key;
 
-    await est1Ref.set({ nombre: 'Juan', apellido: 'Perez', email: 'juan.perez@escuela.com', cursoId: cur1Id });
-    await est2Ref.set({ nombre: 'Maria', apellido: 'Garcia', email: 'maria.garcia@escuela.com', cursoId: cur2Id });
-    await est3Ref.set({ nombre: 'Carlos', apellido: 'Lopez', email: 'carlos.lopez@escuela.com', cursoId: cur1Id });
+            var p3 = est1Ref.set({ nombre: 'Juan', apellido: 'Perez', email: 'juan.perez@escuela.com', cursoId: cur1Id });
+            var p4 = est2Ref.set({ nombre: 'Maria', apellido: 'Garcia', email: 'maria.garcia@escuela.com', cursoId: cur2Id });
+            var p5 = est3Ref.set({ nombre: 'Carlos', apellido: 'Lopez', email: 'carlos.lopez@escuela.com', cursoId: cur1Id });
 
-    // Crear anotaciones de ejemplo
-    const hoy = todayStr();
-    const ayer = (function() {
-        const d = new Date(); d.setDate(d.getDate()-1);
-        return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    })();
+            return Promise.all([p3, p4, p5]).then(function() {
+                // Crear anotaciones de ejemplo
+                var hoy = todayStr();
+                var dAyer = new Date(); dAyer.setDate(dAyer.getDate()-1);
+                var ayer = dAyer.getFullYear()+'-'+String(dAyer.getMonth()+1).padStart(2,'0')+'-'+String(dAyer.getDate()).padStart(2,'0');
 
-    await db.ref('anotaciones').push({ estudianteId: est1Id, fecha: hoy, tipo: 'positiva', texto: 'Excelente participacion en clase de algebra' });
-    await db.ref('anotaciones').push({ estudianteId: est1Id, fecha: ayer, tipo: 'tarea', texto: 'Pendiente entrega del trabajo practico 3' });
-    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Muy buena comprension del tema de fisica' });
-    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: ayer, tipo: 'observacion', texto: 'Llego tarde a la clase de hoy' });
-    await db.ref('anotaciones').push({ estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Colaboro activamente en el trabajo grupal' });
-    await db.ref('anotaciones').push({ estudianteId: est3Id, fecha: hoy, tipo: 'negativa', texto: 'No participo durante la sesion de ejercicios' });
-    await db.ref('anotaciones').push({ estudianteId: est3Id, fecha: ayer, tipo: 'observacion', texto: 'Necesita refuerzo en el tema de geometria' });
+                var anotacionesEjemplo = [
+                    { estudianteId: est1Id, fecha: hoy, tipo: 'positiva', texto: 'Excelente participacion en clase de algebra' },
+                    { estudianteId: est1Id, fecha: ayer, tipo: 'tarea', texto: 'Pendiente entrega del trabajo practico 3' },
+                    { estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Muy buena comprension del tema de fisica' },
+                    { estudianteId: est2Id, fecha: ayer, tipo: 'observacion', texto: 'Llego tarde a la clase de hoy' },
+                    { estudianteId: est2Id, fecha: hoy, tipo: 'positiva', texto: 'Colaboro activamente en el trabajo grupal' },
+                    { estudianteId: est3Id, fecha: hoy, tipo: 'negativa', texto: 'No participo durante la sesion de ejercicios' },
+                    { estudianteId: est3Id, fecha: ayer, tipo: 'observacion', texto: 'Necesita refuerzo en el tema de geometria' }
+                ];
 
-    showToast('Datos de ejemplo precargados', 'info');
+                var promesas = [];
+                for (var i = 0; i < anotacionesEjemplo.length; i++) {
+                    promesas.push(db.ref('anotaciones').push(anotacionesEjemplo[i]));
+                }
+                return Promise.all(promesas);
+            });
+        });
+    });
 }
 
 // =====================================================
@@ -978,7 +1012,10 @@ function renderAll() {
     renderEstudiantes();
     renderCursos();
     renderAnotacionesEstudiante();
-    renderEstadisticas();
+    // Solo re-renderizar estadísticas si es la sección activa
+    if (currentSection === 'estadisticas') {
+        renderEstadisticas();
+    }
 }
 
 // =====================================================
@@ -987,13 +1024,24 @@ function renderAll() {
 function navigateTo(section) {
     currentSection = section;
     // Actualizar clases activas del sidebar
-    document.querySelectorAll('.nav-item-custom[data-section]').forEach(el => {
-        el.classList.toggle('active', el.dataset.section === section);
-    });
+    var navItems = document.querySelectorAll('.nav-item-custom[data-section]');
+    for (var i = 0; i < navItems.length; i++) {
+        var el = navItems[i];
+        if (el.dataset.section === section) {
+            el.classList.add('active');
+        } else {
+            el.classList.remove('active');
+        }
+    }
     // Mostrar/ocultar secciones
-    document.querySelectorAll('.section-content').forEach(el => {
-        el.classList.toggle('active', el.id === 'sec-' + section);
-    });
+    var sections = document.querySelectorAll('.section-content');
+    for (var j = 0; j < sections.length; j++) {
+        if (sections[j].id === 'sec-' + section) {
+            sections[j].classList.add('active');
+        } else {
+            sections[j].classList.remove('active');
+        }
+    }
     // Cerrar sidebar en móvil
     if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.remove('show');
@@ -1013,58 +1061,50 @@ function toggleSidebar() {
 // DASHBOARD
 // =====================================================
 function renderDashboard() {
-    const totalEst = Object.keys(estudiantes).length;
-    const totalCur = Object.keys(cursos).length;
-    const totalAnot = Object.keys(anotaciones).length;
-    const totalPos = Object.values(anotaciones).filter(a => a.tipo === 'positiva').length;
+    var totalEst = Object.keys(estudiantes).length;
+    var totalCur = Object.keys(cursos).length;
+    var totalAnot = Object.keys(anotaciones).length;
+    var totalPos = 0;
+    var anotKeys = Object.keys(anotaciones);
+    for (var i = 0; i < anotKeys.length; i++) {
+        if (anotaciones[anotKeys[i]].tipo === 'positiva') totalPos++;
+    }
 
-    // Tarjetas de estadísticas
-    document.getElementById('dashboard-stats').innerHTML = `
-        <div class="col-6 col-md-3">
-            <div class="stat-card green">
-                <div class="stat-number">${totalEst}</div>
-                <div class="stat-label">Estudiantes</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card amber">
-                <div class="stat-number">${totalCur}</div>
-                <div class="stat-label">Cursos</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card blue">
-                <div class="stat-number">${totalAnot}</div>
-                <div class="stat-label">Anotaciones</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card green">
-                <div class="stat-number">${totalPos}</div>
-                <div class="stat-label">Positivas</div>
-            </div>
-        </div>
-    `;
+    document.getElementById('dashboard-stats').innerHTML =
+        '<div class="col-6 col-md-3"><div class="stat-card green"><div class="stat-number">' + totalEst + '</div><div class="stat-label">Estudiantes</div></div></div>' +
+        '<div class="col-6 col-md-3"><div class="stat-card amber"><div class="stat-number">' + totalCur + '</div><div class="stat-label">Cursos</div></div></div>' +
+        '<div class="col-6 col-md-3"><div class="stat-card blue"><div class="stat-number">' + totalAnot + '</div><div class="stat-label">Anotaciones</div></div></div>' +
+        '<div class="col-6 col-md-3"><div class="stat-card green"><div class="stat-number">' + totalPos + '</div><div class="stat-label">Positivas</div></div></div>';
 
     // Gráfico de estudiantes por curso
     renderChart('chart-dashboard', 'bar', getEstudiantesPorCursoData());
 
-    // Últimas anotaciones (5 más recientes)
-    const anotArr = Object.entries(anotaciones).sort((a,b) => (b[1].fecha||'').localeCompare(a[1].fecha||'')).slice(0,5);
-    const recentDiv = document.getElementById('dashboard-recent-annotations');
+    // Últimas 5 anotaciones
+    var anotArr = [];
+    var keys = Object.keys(anotaciones);
+    for (var j = 0; j < keys.length; j++) {
+        anotArr.push({ id: keys[j], data: anotaciones[keys[j]] });
+    }
+    anotArr.sort(function(a,b) { return (b.data.fecha||'').localeCompare(a.data.fecha||''); });
+    anotArr = anotArr.slice(0, 5);
+
+    var recentDiv = document.getElementById('dashboard-recent-annotations');
     if (anotArr.length === 0) {
         recentDiv.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Sin anotaciones registradas</p>';
     } else {
-        recentDiv.innerHTML = anotArr.map(([id, a]) => `
-            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span style="font-weight:600;font-size:0.85rem;">${getEstudianteNombre(a.estudianteId)}</span>
-                    <span class="badge-tipo badge-${a.tipo}">${a.tipo}</span>
-                </div>
-                <div style="font-size:0.8rem;color:var(--muted);margin-bottom:2px;">${a.texto || ''}</div>
-                <div style="font-size:0.72rem;color:var(--muted);">${formatDate(a.fecha)}</div>
-            </div>
-        `).join('');
+        var recentHtml = '';
+        for (var k = 0; k < anotArr.length; k++) {
+            var a = anotArr[k].data;
+            recentHtml += '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">' +
+                '<div class="d-flex justify-content-between align-items-center mb-1">' +
+                '<span style="font-weight:600;font-size:0.85rem;">' + getEstudianteNombre(a.estudianteId) + '</span>' +
+                '<span class="badge-tipo badge-' + a.tipo + '">' + a.tipo + '</span>' +
+                '</div>' +
+                '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:2px;">' + (a.texto || '') + '</div>' +
+                '<div style="font-size:0.72rem;color:var(--muted);">' + formatDate(a.fecha) + '</div>' +
+                '</div>';
+        }
+        recentDiv.innerHTML = recentHtml;
     }
 }
 
@@ -1072,11 +1112,10 @@ function renderDashboard() {
 // ESTUDIANTES - CRUD
 // =====================================================
 
-// Renderizar tabla de estudiantes
 function renderEstudiantes() {
-    const tbody = document.getElementById('tbody-estudiantes');
-    const emptyEl = document.getElementById('empty-estudiantes');
-    const entries = Object.entries(estudiantes);
+    var tbody = document.getElementById('tbody-estudiantes');
+    var emptyEl = document.getElementById('empty-estudiantes');
+    var entries = Object.entries(estudiantes);
 
     if (entries.length === 0) {
         tbody.innerHTML = '';
@@ -1085,35 +1124,39 @@ function renderEstudiantes() {
     }
     emptyEl.classList.add('d-none');
 
-    tbody.innerHTML = entries.map(([id, e]) => `
-        <tr>
-            <td><span style="font-weight:600;">${e.nombre} ${e.apellido}</span></td>
-            <td style="color:var(--muted);font-size:0.85rem;">${e.email || '-'}</td>
-            <td><span class="badge-tipo" style="background:rgba(16,185,129,0.1);color:var(--accent);">${getCursoNombre(e.cursoId)}</span></td>
-            <td style="color:var(--muted);">${countAnotaciones(id)}</td>
-            <td>
-                <button class="btn-sm-icon me-1" title="Ver anotaciones" onclick="viewEstudianteAnotaciones('${id}')"><i class="bi bi-journal-text"></i></button>
-                <button class="btn-sm-icon me-1" title="Editar" onclick="openEstudianteModal('${id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn-sm-icon danger" title="Eliminar" onclick="deleteEstudiante('${id}')"><i class="bi bi-trash3"></i></button>
-            </td>
-        </tr>
-    `).join('');
+    var html = '';
+    for (var i = 0; i < entries.length; i++) {
+        var id = entries[i][0];
+        var e = entries[i][1];
+        html += '<tr>' +
+            '<td><span style="font-weight:600;">' + e.nombre + ' ' + e.apellido + '</span></td>' +
+            '<td style="color:var(--muted);font-size:0.85rem;">' + (e.email || '-') + '</td>' +
+            '<td><span class="badge-tipo" style="background:rgba(16,185,129,0.1);color:var(--accent);">' + getCursoNombre(e.cursoId) + '</span></td>' +
+            '<td style="color:var(--muted);">' + countAnotaciones(id) + '</td>' +
+            '<td>' +
+            '<button class="btn-sm-icon me-1" title="Ver anotaciones" onclick="viewEstudianteAnotaciones(\'' + id + '\')"><i class="bi bi-journal-text"></i></button>' +
+            '<button class="btn-sm-icon me-1" title="Editar" onclick="openEstudianteModal(\'' + id + '\')"><i class="bi bi-pencil"></i></button>' +
+            '<button class="btn-sm-icon danger" title="Eliminar" onclick="deleteEstudiante(\'' + id + '\')"><i class="bi bi-trash3"></i></button>' +
+            '</td></tr>';
+    }
+    tbody.innerHTML = html;
 }
 
 // Abrir modal de estudiante (agregar o editar)
-function openEstudianteModal(id = null) {
+function openEstudianteModal(id) {
     document.getElementById('est-id').value = id || '';
     document.getElementById('modal-estudiante-title').textContent = id ? 'Editar estudiante' : 'Agregar estudiante';
 
     // Llenar dropdown de cursos
-    const sel = document.getElementById('est-curso');
+    var sel = document.getElementById('est-curso');
     sel.innerHTML = '<option value="">-- Sin curso --</option>';
-    Object.entries(cursos).forEach(([cid, c]) => {
-        sel.innerHTML += `<option value="${cid}">${c.nombre}</option>`;
-    });
+    var cursoEntries = Object.entries(cursos);
+    for (var i = 0; i < cursoEntries.length; i++) {
+        sel.innerHTML += '<option value="' + cursoEntries[i][0] + '">' + cursoEntries[i][1].nombre + '</option>';
+    }
 
     if (id && estudiantes[id]) {
-        const e = estudiantes[id];
+        var e = estudiantes[id];
         document.getElementById('est-nombre').value = e.nombre || '';
         document.getElementById('est-apellido').value = e.apellido || '';
         document.getElementById('est-email').value = e.email || '';
@@ -1127,52 +1170,57 @@ function openEstudianteModal(id = null) {
 }
 
 // Guardar estudiante (crear o actualizar)
-async function saveEstudiante() {
-    const id = document.getElementById('est-id').value;
-    const nombre = document.getElementById('est-nombre').value.trim();
-    const apellido = document.getElementById('est-apellido').value.trim();
-    const email = document.getElementById('est-email').value.trim();
-    const cursoId = document.getElementById('est-curso').value;
+function saveEstudiante() {
+    var id = document.getElementById('est-id').value;
+    var nombre = document.getElementById('est-nombre').value.trim();
+    var apellido = document.getElementById('est-apellido').value.trim();
+    var email = document.getElementById('est-email').value.trim();
+    var cursoId = document.getElementById('est-curso').value;
 
-    // Validaciones
     if (!nombre) { showToast('El nombre es obligatorio', 'warning'); return; }
     if (!apellido) { showToast('El apellido es obligatorio', 'warning'); return; }
 
-    const data = { nombre, apellido, email, cursoId };
+    var data = { nombre: nombre, apellido: apellido, email: email, cursoId: cursoId };
+    var promise;
 
-    try {
-        if (id) {
-            await db.ref('estudiantes/' + id).update(data);
-            showToast('Estudiante actualizado', 'success');
-        } else {
-            await db.ref('estudiantes').push(data);
-            showToast('Estudiante agregado', 'success');
-        }
-        bootstrap.Modal.getInstance(document.getElementById('modal-estudiante')).hide();
-    } catch (err) {
-        showToast('Error al guardar: ' + err.message, 'error');
+    if (id) {
+        promise = db.ref('estudiantes/' + id).update(data);
+        showToast('Estudiante actualizado', 'success');
+    } else {
+        promise = db.ref('estudiantes').push(data);
+        showToast('Estudiante agregado', 'success');
     }
+
+    promise.then(function() {
+        bootstrap.Modal.getInstance(document.getElementById('modal-estudiante')).hide();
+    }).catch(function(err) {
+        showToast('Error al guardar: ' + err.message, 'error');
+    });
 }
 
 // Eliminar estudiante
-async function deleteEstudiante(id) {
-    const nombre = getEstudianteNombre(id);
+function deleteEstudiante(id) {
+    var nombre = getEstudianteNombre(id);
     if (!confirm('Se eliminara al estudiante "' + nombre + '" y todas sus anotaciones. Continuar?')) return;
 
-    try {
-        // Eliminar anotaciones del estudiante
-        const anotsOfEst = Object.entries(anotaciones).filter(([,a]) => a.estudianteId === id);
-        const updates = {};
-        anotsOfEst.forEach(([aid]) => { updates['anotaciones/' + aid] = null; });
-        updates['estudiantes/' + id] = null;
-        await db.ref().update(updates);
-        showToast('Estudiante eliminado', 'success');
-    } catch (err) {
-        showToast('Error al eliminar: ' + err.message, 'error');
+    var updates = {};
+    // Eliminar anotaciones del estudiante
+    var anotKeys = Object.keys(anotaciones);
+    for (var i = 0; i < anotKeys.length; i++) {
+        if (anotaciones[anotKeys[i]].estudianteId === id) {
+            updates['anotaciones/' + anotKeys[i]] = null;
+        }
     }
+    updates['estudiantes/' + id] = null;
+
+    db.ref().update(updates).then(function() {
+        showToast('Estudiante eliminado', 'success');
+    }).catch(function(err) {
+        showToast('Error al eliminar: ' + err.message, 'error');
+    });
 }
 
-// Ver anotaciones de un estudiante (navega a la sección de anotaciones)
+// Ver anotaciones de un estudiante (navega a la sección)
 function viewEstudianteAnotaciones(estId) {
     navigateTo('anotaciones');
     document.getElementById('select-estudiante-anot').value = estId;
@@ -1183,11 +1231,10 @@ function viewEstudianteAnotaciones(estId) {
 // CURSOS - CRUD
 // =====================================================
 
-// Renderizar tarjetas de cursos
 function renderCursos() {
-    const grid = document.getElementById('cursos-grid');
-    const emptyEl = document.getElementById('empty-cursos');
-    const entries = Object.entries(cursos);
+    var grid = document.getElementById('cursos-grid');
+    var emptyEl = document.getElementById('empty-cursos');
+    var entries = Object.entries(cursos);
 
     if (entries.length === 0) {
         grid.innerHTML = '';
@@ -1196,33 +1243,33 @@ function renderCursos() {
     }
     emptyEl.classList.add('d-none');
 
-    grid.innerHTML = entries.map(([id, c]) => {
-        const numEst = Object.values(estudiantes).filter(e => e.cursoId === id).length;
-        return `
-            <div class="col-md-6 col-lg-4">
-                <div class="card-custom">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 style="font-weight:700;margin:0;font-size:1.05rem;">${c.nombre}</h6>
-                            <span style="color:var(--muted);font-size:0.8rem;">${c.descripcion || ''}</span>
-                        </div>
-                        <div class="d-flex gap-1">
-                            <button class="btn-sm-icon" title="Editar" onclick="openCursoModal('${id}')"><i class="bi bi-pencil"></i></button>
-                            <button class="btn-sm-icon danger" title="Eliminar" onclick="openDeleteCursoModal('${id}')"><i class="bi bi-trash3"></i></button>
-                        </div>
-                    </div>
-                    <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
-                        <i class="bi bi-people" style="color:var(--accent);"></i>
-                        <span style="font-size:0.88rem;">${numEst} estudiante${numEst!==1?'s':''}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+    var html = '';
+    for (var i = 0; i < entries.length; i++) {
+        var id = entries[i][0];
+        var c = entries[i][1];
+        var numEst = 0;
+        var estKeys = Object.keys(estudiantes);
+        for (var j = 0; j < estKeys.length; j++) {
+            if (estudiantes[estKeys[j]].cursoId === id) numEst++;
+        }
+        html += '<div class="col-md-6 col-lg-4">' +
+            '<div class="card-custom">' +
+            '<div class="d-flex justify-content-between align-items-start mb-2">' +
+            '<div><h6 style="font-weight:700;margin:0;font-size:1.05rem;">' + c.nombre + '</h6>' +
+            '<span style="color:var(--muted);font-size:0.8rem;">' + (c.descripcion || '') + '</span></div>' +
+            '<div class="d-flex gap-1">' +
+            '<button class="btn-sm-icon" title="Editar" onclick="openCursoModal(\'' + id + '\')"><i class="bi bi-pencil"></i></button>' +
+            '<button class="btn-sm-icon danger" title="Eliminar" onclick="openDeleteCursoModal(\'' + id + '\')"><i class="bi bi-trash3"></i></button>' +
+            '</div></div>' +
+            '<div style="margin-top:12px;display:flex;align-items:center;gap:8px;">' +
+            '<i class="bi bi-people" style="color:var(--accent);"></i>' +
+            '<span style="font-size:0.88rem;">' + numEst + ' estudiante' + (numEst !== 1 ? 's' : '') + '</span>' +
+            '</div></div></div>';
+    }
+    grid.innerHTML = html;
 }
 
-// Abrir modal de curso (agregar o editar)
-function openCursoModal(id = null) {
+function openCursoModal(id) {
     document.getElementById('cur-id').value = id || '';
     document.getElementById('modal-curso-title').textContent = id ? 'Editar curso' : 'Agregar curso';
 
@@ -1236,57 +1283,56 @@ function openCursoModal(id = null) {
     new bootstrap.Modal(document.getElementById('modal-curso')).show();
 }
 
-// Guardar curso (crear o actualizar)
-async function saveCurso() {
-    const id = document.getElementById('cur-id').value;
-    const nombre = document.getElementById('cur-nombre').value.trim();
-    const descripcion = document.getElementById('cur-descripcion').value.trim();
+function saveCurso() {
+    var id = document.getElementById('cur-id').value;
+    var nombre = document.getElementById('cur-nombre').value.trim();
+    var descripcion = document.getElementById('cur-descripcion').value.trim();
 
     if (!nombre) { showToast('El nombre del curso es obligatorio', 'warning'); return; }
 
-    const data = { nombre, descripcion };
+    var data = { nombre: nombre, descripcion: descripcion };
+    var promise;
 
-    try {
-        if (id) {
-            await db.ref('cursos/' + id).update(data);
-            showToast('Curso actualizado', 'success');
-        } else {
-            await db.ref('cursos').push(data);
-            showToast('Curso creado', 'success');
-        }
-        bootstrap.Modal.getInstance(document.getElementById('modal-curso')).hide();
-    } catch (err) {
-        showToast('Error al guardar: ' + err.message, 'error');
+    if (id) {
+        promise = db.ref('cursos/' + id).update(data);
+        showToast('Curso actualizado', 'success');
+    } else {
+        promise = db.ref('cursos').push(data);
+        showToast('Curso creado', 'success');
     }
+
+    promise.then(function() {
+        bootstrap.Modal.getInstance(document.getElementById('modal-curso')).hide();
+    }).catch(function(err) {
+        showToast('Error al guardar: ' + err.message, 'error');
+    });
 }
 
-// Abrir modal de eliminación de curso con opciones de reasignación
+// Abrir modal de eliminación de curso
 function openDeleteCursoModal(id) {
     deleteCursoId = id;
-    const c = cursos[id];
-    const estOfCurso = Object.entries(estudiantes).filter(([,e]) => e.cursoId === id);
-    const otrosCursos = Object.entries(cursos).filter(([cid]) => cid !== id);
+    var c = cursos[id];
+    var estOfCurso = [];
+    var estEntries = Object.entries(estudiantes);
+    for (var i = 0; i < estEntries.length; i++) {
+        if (estEntries[i][1].cursoId === id) estOfCurso.push(estEntries[i]);
+    }
+    var otrosCursos = Object.entries(cursos).filter(function(entry) { return entry[0] !== id; });
 
     document.getElementById('delete-curso-msg').textContent =
-        `Se eliminara el curso "${c.nombre}" que tiene ${estOfCurso.length} estudiante(s) asignado(s).`;
+        'Se eliminara el curso "' + c.nombre + '" que tiene ' + estOfCurso.length + ' estudiante(s) asignado(s).';
 
-    // Checkbox para eliminar estudiantes
-    const chkWrap = document.getElementById('chk-delete-students-wrap');
-    const reassignGroup = document.getElementById('reassign-group');
+    var chkWrap = document.getElementById('chk-delete-students-wrap');
+    var reassignGroup = document.getElementById('reassign-group');
 
     if (estOfCurso.length > 0) {
         chkWrap.style.display = 'block';
-        // Llenar dropdown de reasignación
-        const sel = document.getElementById('reassign-curso');
+        var sel = document.getElementById('reassign-curso');
         sel.innerHTML = '<option value="">-- Seleccionar curso --</option>';
-        otrosCursos.forEach(([cid, cur]) => {
-            sel.innerHTML += `<option value="${cid}">${cur.nombre}</option>`;
-        });
-        if (otrosCursos.length > 0) {
-            reassignGroup.style.display = 'block';
-        } else {
-            reassignGroup.style.display = 'none';
+        for (var j = 0; j < otrosCursos.length; j++) {
+            sel.innerHTML += '<option value="' + otrosCursos[j][0] + '">' + otrosCursos[j][1].nombre + '</option>';
         }
+        reassignGroup.style.display = otrosCursos.length > 0 ? 'block' : 'none';
         document.getElementById('chk-delete-students').checked = false;
     } else {
         chkWrap.style.display = 'none';
@@ -1296,97 +1342,103 @@ function openDeleteCursoModal(id) {
     new bootstrap.Modal(document.getElementById('modal-delete-curso')).show();
 }
 
-// Alternar visibilidad del dropdown de reasignación
 function toggleReassign() {
-    const chk = document.getElementById('chk-delete-students');
-    const reassignGroup = document.getElementById('reassign-group');
-    reassignGroup.style.display = chk.checked ? 'none' : 'block';
+    var chk = document.getElementById('chk-delete-students');
+    document.getElementById('reassign-group').style.display = chk.checked ? 'none' : 'block';
 }
 
-// Confirmar eliminación de curso
-async function confirmDeleteCurso() {
+function confirmDeleteCurso() {
     if (!deleteCursoId) return;
-    const deleteStudents = document.getElementById('chk-delete-students').checked;
-    const reassignTo = document.getElementById('reassign-curso').value;
+    var deleteStudents = document.getElementById('chk-delete-students').checked;
+    var reassignTo = document.getElementById('reassign-curso').value;
 
-    const estOfCurso = Object.entries(estudiantes).filter(([,e]) => e.cursoId === deleteCursoId);
+    var estEntries = Object.entries(estudiantes);
+    var estOfCurso = [];
+    for (var i = 0; i < estEntries.length; i++) {
+        if (estEntries[i][1].cursoId === deleteCursoId) estOfCurso.push(estEntries[i]);
+    }
 
-    try {
-        const updates = {};
-        updates['cursos/' + deleteCursoId] = null;
+    var updates = {};
+    updates['cursos/' + deleteCursoId] = null;
 
-        if (deleteStudents) {
-            // Eliminar estudiantes y sus anotaciones
-            estOfCurso.forEach(([eid]) => {
-                updates['estudiantes/' + eid] = null;
-                // Eliminar anotaciones de esos estudiantes
-                Object.entries(anotaciones).filter(([,a]) => a.estudianteId === eid).forEach(([aid]) => {
-                    updates['anotaciones/' + aid] = null;
-                });
-            });
-        } else if (reassignTo) {
-            // Reasignar estudiantes al curso seleccionado
-            estOfCurso.forEach(([eid]) => {
-                updates['estudiantes/' + eid + '/cursoId'] = reassignTo;
-            });
-        } else if (estOfCurso.length > 0) {
-            // No se eligió reasignar ni eliminar - dejar sin curso
-            estOfCurso.forEach(([eid]) => {
-                updates['estudiantes/' + eid + '/cursoId'] = '';
-            });
+    if (deleteStudents) {
+        // Eliminar estudiantes y sus anotaciones
+        for (var j = 0; j < estOfCurso.length; j++) {
+            var eid = estOfCurso[j][0];
+            updates['estudiantes/' + eid] = null;
+            var anotKeys = Object.keys(anotaciones);
+            for (var k = 0; k < anotKeys.length; k++) {
+                if (anotaciones[anotKeys[k]].estudianteId === eid) {
+                    updates['anotaciones/' + anotKeys[k]] = null;
+                }
+            }
         }
+    } else if (reassignTo) {
+        // Reasignar estudiantes al curso seleccionado
+        for (var m = 0; m < estOfCurso.length; m++) {
+            updates['estudiantes/' + estOfCurso[m][0] + '/cursoId'] = reassignTo;
+        }
+    } else if (estOfCurso.length > 0) {
+        // Sin reasignación: dejar sin curso
+        for (var n = 0; n < estOfCurso.length; n++) {
+            updates['estudiantes/' + estOfCurso[n][0] + '/cursoId'] = '';
+        }
+    }
 
-        await db.ref().update(updates);
+    db.ref().update(updates).then(function() {
         showToast('Curso eliminado', 'success');
         bootstrap.Modal.getInstance(document.getElementById('modal-delete-curso')).hide();
         deleteCursoId = null;
-    } catch (err) {
+    }).catch(function(err) {
         showToast('Error al eliminar: ' + err.message, 'error');
-    }
+    });
 }
 
 // =====================================================
 // ANOTACIONES
 // =====================================================
 
-// Renderizar selector de estudiante y sus anotaciones
 function renderAnotacionesEstudiante() {
-    const sel = document.getElementById('select-estudiante-anot');
-    const currentVal = sel.value;
+    var sel = document.getElementById('select-estudiante-anot');
+    var currentVal = sel.value;
 
-    // Llenar dropdown
+    // Llenar dropdown ordenado alfabéticamente
     sel.innerHTML = '<option value="">-- Elige un estudiante --</option>';
-    Object.entries(estudiantes).sort((a,b) => {
-        const na = (a[1].nombre||'')+(a[1].apellido||'');
-        const nb = (b[1].nombre||'')+(b[1].apellido||'');
+    var estArr = Object.entries(estudiantes).sort(function(a,b) {
+        var na = (a[1].nombre||'')+(a[1].apellido||'');
+        var nb = (b[1].nombre||'')+(b[1].apellido||'');
         return na.localeCompare(nb);
-    }).forEach(([id, e]) => {
-        sel.innerHTML += `<option value="${id}">${e.nombre} ${e.apellido}</option>`;
     });
-
-    // Restaurar selección previa
+    for (var i = 0; i < estArr.length; i++) {
+        sel.innerHTML += '<option value="' + estArr[i][0] + '">' + estArr[i][1].nombre + ' ' + estArr[i][1].apellido + '</option>';
+    }
     if (currentVal) sel.value = currentVal;
 
-    const estId = sel.value;
-    const formWrap = document.getElementById('form-anotacion-wrap');
-    const timeline = document.getElementById('anotaciones-timeline');
-    const emptyEl = document.getElementById('empty-anotaciones');
+    var estId = sel.value;
+    var formWrap = document.getElementById('form-anotacion-wrap');
+    var timeline = document.getElementById('anotaciones-timeline');
+    var emptyEl = document.getElementById('empty-anotaciones');
 
     if (!estId) {
         formWrap.style.display = 'none';
         timeline.innerHTML = '';
         emptyEl.style.display = 'block';
+        emptyEl.querySelector('p').textContent = 'Selecciona un estudiante para ver sus anotaciones';
         return;
     }
 
     formWrap.style.display = 'block';
-    // Fecha por defecto: hoy
     document.getElementById('anot-fecha').value = todayStr();
 
     // Obtener anotaciones del estudiante, ordenadas por fecha (más reciente primero)
-    const estAnots = Object.entries(anotaciones)
-        .filter(([,a]) => a.estudianteId === estId)
-        .sort((a,b) => (b[1].fecha||'').localeCompare(a[1].fecha||''));
+    var estAnots = [];
+    var anotKeys = Object.keys(anotaciones);
+    for (var j = 0; j < anotKeys.length; j++) {
+        if (anotaciones[anotKeys[j]].estudianteId === estId) {
+            estAnots.push({ id: anotKeys[j], data: anotaciones[anotKeys[j]] });
+        }
+    }
+    estAnots.sort(function(a,b) { return (b.data.fecha||'').localeCompare(a.data.fecha||''); });
 
     if (estAnots.length === 0) {
         timeline.innerHTML = '';
@@ -1396,95 +1448,108 @@ function renderAnotacionesEstudiante() {
     }
 
     emptyEl.style.display = 'none';
-    const tipoLabels = {
+    var tipoLabels = {
         positiva: 'Participacion positiva',
         negativa: 'Participacion negativa',
         tarea: 'Tarea pendiente',
         observacion: 'Observacion general'
     };
 
-    timeline.innerHTML = estAnots.map(([id, a]) => `
-        <div class="annotation-item ${a.tipo}">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="badge-tipo badge-${a.tipo}">${tipoLabels[a.tipo] || a.tipo}</span>
-                <div class="d-flex align-items-center gap-2">
-                    <span style="font-size:0.75rem;color:var(--muted);">${formatDate(a.fecha)}</span>
-                    <button class="btn-sm-icon danger" style="width:24px;height:24px;font-size:0.7rem;" title="Eliminar" onclick="deleteAnotacion('${id}')"><i class="bi bi-x"></i></button>
-                </div>
-            </div>
-            <div style="font-size:0.88rem;color:var(--fg);line-height:1.4;">${a.texto || ''}</div>
-        </div>
-    `).join('');
+    var html = '';
+    for (var k = 0; k < estAnots.length; k++) {
+        var a = estAnots[k].data;
+        var aid = estAnots[k].id;
+        html += '<div class="annotation-item ' + a.tipo + '">' +
+            '<div class="d-flex justify-content-between align-items-center mb-1">' +
+            '<span class="badge-tipo badge-' + a.tipo + '">' + (tipoLabels[a.tipo] || a.tipo) + '</span>' +
+            '<div class="d-flex align-items-center gap-2">' +
+            '<span style="font-size:0.75rem;color:var(--muted);">' + formatDate(a.fecha) + '</span>' +
+            '<button class="btn-sm-icon danger" style="width:24px;height:24px;font-size:0.7rem;" title="Eliminar" onclick="deleteAnotacion(\'' + aid + '\')"><i class="bi bi-x"></i></button>' +
+            '</div></div>' +
+            '<div style="font-size:0.88rem;color:var(--fg);line-height:1.4;">' + (a.texto || '') + '</div>' +
+            '</div>';
+    }
+    timeline.innerHTML = html;
 }
 
-// Agregar nueva anotación
-async function addAnotacion() {
-    const estId = document.getElementById('select-estudiante-anot').value;
+function addAnotacion() {
+    var estId = document.getElementById('select-estudiante-anot').value;
     if (!estId) { showToast('Selecciona un estudiante', 'warning'); return; }
 
-    const fecha = document.getElementById('anot-fecha').value || todayStr();
-    const tipo = document.getElementById('anot-tipo').value;
-    const texto = document.getElementById('anot-texto').value.trim();
+    var fecha = document.getElementById('anot-fecha').value || todayStr();
+    var tipo = document.getElementById('anot-tipo').value;
+    var texto = document.getElementById('anot-texto').value.trim();
 
     if (!texto) { showToast('Escribe una descripcion para la anotacion', 'warning'); return; }
 
-    try {
-        await db.ref('anotaciones').push({ estudianteId: estId, fecha, tipo, texto });
+    db.ref('anotaciones').push({
+        estudianteId: estId,
+        fecha: fecha,
+        tipo: tipo,
+        texto: texto
+    }).then(function() {
         document.getElementById('anot-texto').value = '';
         showToast('Anotacion registrada', 'success');
-    } catch (err) {
+    }).catch(function(err) {
         showToast('Error al guardar: ' + err.message, 'error');
-    }
+    });
 }
 
-// Eliminar anotación
-async function deleteAnotacion(id) {
+function deleteAnotacion(id) {
     if (!confirm('Eliminar esta anotacion?')) return;
-    try {
-        await db.ref('anotaciones/' + id).remove();
+    db.ref('anotaciones/' + id).remove().then(function() {
         showToast('Anotacion eliminada', 'success');
-    } catch (err) {
+    }).catch(function(err) {
         showToast('Error al eliminar: ' + err.message, 'error');
-    }
+    });
 }
 
 // =====================================================
 // ESTADISTICAS Y GRAFICOS
 // =====================================================
 
-// Datos para gráfico de estudiantes por curso
 function getEstudiantesPorCursoData() {
-    const labels = [];
-    const data = [];
-    const colors = ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
-    const bgColors = [];
+    var labels = [];
+    var data = [];
+    var colors = ['#10B981','#F59E0B','#3B82F6','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
+    var bgColors = [];
 
-    Object.entries(cursos).forEach(([id, c], i) => {
-        labels.push(c.nombre);
-        data.push(Object.values(estudiantes).filter(e => e.cursoId === id).length);
+    var cursoEntries = Object.entries(cursos);
+    for (var i = 0; i < cursoEntries.length; i++) {
+        labels.push(cursoEntries[i][1].nombre);
+        var count = 0;
+        var estKeys = Object.keys(estudiantes);
+        for (var j = 0; j < estKeys.length; j++) {
+            if (estudiantes[estKeys[j]].cursoId === cursoEntries[i][0]) count++;
+        }
+        data.push(count);
         bgColors.push(colors[i % colors.length]);
-    });
+    }
 
     // Estudiantes sin curso
-    const sinCurso = Object.values(estudiantes).filter(e => !e.cursoId || !cursos[e.cursoId]).length;
+    var sinCurso = 0;
+    var estKeys2 = Object.keys(estudiantes);
+    for (var k = 0; k < estKeys2.length; k++) {
+        var cid = estudiantes[estKeys2[k]].cursoId;
+        if (!cid || !cursos[cid]) sinCurso++;
+    }
     if (sinCurso > 0) {
         labels.push('Sin curso');
         data.push(sinCurso);
         bgColors.push('#6B7280');
     }
 
-    return { labels, data, bgColors };
+    return { labels: labels, data: data, bgColors: bgColors, label: 'Estudiantes' };
 }
 
-// Renderizar gráfico reutilizable
 function renderChart(canvasId, type, chartData) {
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
     }
-    const ctx = document.getElementById(canvasId);
+    var ctx = document.getElementById(canvasId);
     if (!ctx) return;
 
-    chartInstances[canvasId] = new Chart(ctx, {
+    var config = {
         type: type,
         data: {
             labels: chartData.labels,
@@ -1492,188 +1557,230 @@ function renderChart(canvasId, type, chartData) {
                 label: chartData.label || 'Cantidad',
                 data: chartData.data,
                 backgroundColor: chartData.bgColors,
-                borderColor: type === 'bar' ? chartData.bgColors.map(c => c) : undefined,
                 borderWidth: type === 'bar' ? 0 : undefined,
                 borderRadius: type === 'bar' ? 6 : undefined,
-                hoverOffset: type === 'pie' ? 12 : undefined,
+                hoverOffset: type === 'pie' ? 12 : undefined
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: type === 'pie', labels: { color: '#7B8794', font: { size: 12 } } }
-            },
-            scales: type === 'bar' ? {
-                x: { ticks: { color: '#7B8794' }, grid: { color: 'rgba(30,42,58,0.5)' } },
-                y: { beginAtZero: true, ticks: { color: '#7B8794', stepSize: 1 }, grid: { color: 'rgba(30,42,58,0.5)' } }
-            } : undefined
+                legend: {
+                    display: type === 'pie',
+                    labels: { color: '#7B8794', font: { size: 12 } }
+                }
+            }
         }
-    });
+    };
+
+    if (type === 'bar') {
+        config.options.scales = {
+            x: { ticks: { color: '#7B8794' }, grid: { color: 'rgba(30,42,58,0.5)' } },
+            y: { beginAtZero: true, ticks: { color: '#7B8794', stepSize: 1 }, grid: { color: 'rgba(30,42,58,0.5)' } }
+        };
+    }
+
+    chartInstances[canvasId] = new Chart(ctx, config);
 }
 
-// Renderizar sección de estadísticas completa
 function renderEstadisticas() {
     // Gráfico de barras: estudiantes por curso
-    const estPorCurso = getEstudiantesPorCursoData();
-    estPorCurso.label = 'Estudiantes';
-    renderChart('chart-est-curso', 'bar', estPorCurso);
+    renderChart('chart-est-curso', 'bar', getEstudiantesPorCursoData());
 
     // Gráfico de pastel: anotaciones por tipo
-    const tipos = ['positiva','negativa','tarea','observacion'];
-    const tipoLabelsMap = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea', observacion:'Observacion' };
-    const tipoColors = ['#10B981','#EF4444','#F59E0B','#3B82F6'];
-    const anotTipoData = {
-        labels: tipos.map(t => tipoLabelsMap[t]),
-        data: tipos.map(t => Object.values(anotaciones).filter(a => a.tipo === t).length),
+    var tipos = ['positiva','negativa','tarea','observacion'];
+    var tipoLabelsMap = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea', observacion:'Observacion' };
+    var tipoColors = ['#10B981','#EF4444','#F59E0B','#3B82F6'];
+    var tipoData = [];
+    var tipoLabels = [];
+    for (var i = 0; i < tipos.length; i++) {
+        tipoLabels.push(tipoLabelsMap[tipos[i]]);
+        var count = 0;
+        var anotKeys = Object.keys(anotaciones);
+        for (var j = 0; j < anotKeys.length; j++) {
+            if (anotaciones[anotKeys[j]].tipo === tipos[i]) count++;
+        }
+        tipoData.push(count);
+    }
+
+    renderChart('chart-anot-tipo', 'pie', {
+        labels: tipoLabels,
+        data: tipoData,
         bgColors: tipoColors,
         label: 'Anotaciones'
-    };
-    renderChart('chart-anot-tipo', 'pie', anotTipoData);
+    });
 
     // Top 3 estudiantes con más anotaciones positivas
-    const positivasPorEst = {};
-    Object.values(anotaciones).filter(a => a.tipo === 'positiva').forEach(a => {
-        positivasPorEst[a.estudianteId] = (positivasPorEst[a.estudianteId] || 0) + 1;
-    });
-    const top3 = Object.entries(positivasPorEst)
-        .sort((a,b) => b[1]-a[1])
-        .slice(0,3);
+    var positivasPorEst = {};
+    var anotKeys2 = Object.keys(anotaciones);
+    for (var k = 0; k < anotKeys2.length; k++) {
+        if (anotaciones[anotKeys2[k]].tipo === 'positiva') {
+            var eid = anotaciones[anotKeys2[k]].estudianteId;
+            positivasPorEst[eid] = (positivasPorEst[eid] || 0) + 1;
+        }
+    }
+    var top3 = Object.entries(positivasPorEst).sort(function(a,b) { return b[1]-a[1]; }).slice(0,3);
+    var rankClasses = ['gold','silver','bronze'];
+    var top3Container = document.getElementById('top3-container');
 
-    const rankClasses = ['gold','silver','bronze'];
-    const top3Container = document.getElementById('top3-container');
     if (top3.length === 0) {
         top3Container.innerHTML = '<div class="col-12"><p style="color:var(--muted);text-align:center;padding:20px;">No hay participaciones positivas registradas</p></div>';
     } else {
-        top3Container.innerHTML = top3.map(([estId, count], i) => `
-            <div class="col-md-4">
-                <div class="podium-item">
-                    <div class="podium-rank ${rankClasses[i]}">${i+1}</div>
-                    <div style="font-weight:600;margin-top:6px;font-size:0.95rem;">${getEstudianteNombre(estId)}</div>
-                    <div style="color:var(--accent);font-weight:700;font-size:1.4rem;margin-top:4px;">${count}</div>
-                    <div style="color:var(--muted);font-size:0.78rem;">participaciones positivas</div>
-                </div>
-            </div>
-        `).join('');
+        var topHtml = '';
+        for (var m = 0; m < top3.length; m++) {
+            topHtml += '<div class="col-md-4"><div class="podium-item">' +
+                '<div class="podium-rank ' + rankClasses[m] + '">' + (m+1) + '</div>' +
+                '<div style="font-weight:600;margin-top:6px;font-size:0.95rem;">' + getEstudianteNombre(top3[m][0]) + '</div>' +
+                '<div style="color:var(--accent);font-weight:700;font-size:1.4rem;margin-top:4px;">' + top3[m][1] + '</div>' +
+                '<div style="color:var(--muted);font-size:0.78rem;">participaciones positivas</div>' +
+                '</div></div>';
+        }
+        top3Container.innerHTML = topHtml;
     }
 
     // Porcentaje de estudiantes con al menos una observación
-    const totalEst = Object.keys(estudiantes).length;
-    const conObs = new Set(Object.values(anotaciones).filter(a => a.tipo === 'observacion').map(a => a.estudianteId)).size;
-    const pct = totalEst > 0 ? Math.round((conObs / totalEst) * 100) : 0;
+    var totalEst = Object.keys(estudiantes).length;
+    var conObs = {};
+    var anotKeys3 = Object.keys(anotaciones);
+    for (var n = 0; n < anotKeys3.length; n++) {
+        if (anotaciones[anotKeys3[n]].tipo === 'observacion') {
+            conObs[anotaciones[anotKeys3[n]].estudianteId] = true;
+        }
+    }
+    var obsCount = Object.keys(conObs).length;
+    var pct = totalEst > 0 ? Math.round((obsCount / totalEst) * 100) : 0;
     document.getElementById('pct-observacion').textContent = pct + '%';
 
     // Total positivas
-    const totalPos = Object.values(anotaciones).filter(a => a.tipo === 'positiva').length;
+    var totalPos = 0;
+    for (var p = 0; p < anotKeys3.length; p++) {
+        if (anotaciones[anotKeys3[p]].tipo === 'positiva') totalPos++;
+    }
     document.getElementById('total-positivas').textContent = totalPos;
 
     // Total tareas pendientes
-    const totalTareas = Object.values(anotaciones).filter(a => a.tipo === 'tarea').length;
+    var totalTareas = 0;
+    for (var q = 0; q < anotKeys3.length; q++) {
+        if (anotaciones[anotKeys3[q]].tipo === 'tarea') totalTareas++;
+    }
     document.getElementById('total-tareas').textContent = totalTareas;
 }
 
 // =====================================================
 // EXPORTACION A PDF
 // =====================================================
-async function exportPDF() {
+function exportPDF() {
     showToast('Generando PDF, espera un momento...', 'info');
 
-    // Construir contenido HTML para el PDF
-    const pdfDiv = document.getElementById('pdf-content');
-    const tipoLabels = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea pendiente', observacion:'Observacion' };
+    var pdfDiv = document.getElementById('pdf-content');
+    var tipoLabels = { positiva:'Positiva', negativa:'Negativa', tarea:'Tarea pendiente', observacion:'Observacion' };
 
-    let html = `
-        <h2 style="margin-bottom:4px;">Reporte de Gestion Escolar</h2>
-        <p style="color:#666;font-size:0.85rem;margin-bottom:24px;">Generado el ${new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'long',year:'numeric'})}</p>
-    `;
+    var html = '<h2 style="margin-bottom:4px;">Reporte de Gestion Escolar</h2>' +
+        '<p style="color:#666;font-size:0.85rem;margin-bottom:24px;">Generado el ' +
+        new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'long',year:'numeric'}) + '</p>';
 
     // Resumen general
-    html += `<table><thead><tr><th>Metrica</th><th>Valor</th></tr></thead><tbody>
-        <tr><td>Total estudiantes</td><td>${Object.keys(estudiantes).length}</td></tr>
-        <tr><td>Total cursos</td><td>${Object.keys(cursos).length}</td></tr>
-        <tr><td>Total anotaciones</td><td>${Object.keys(anotaciones).length}</td></tr>
-    </tbody></table><br>`;
+    html += '<table><thead><tr><th>Metrica</th><th>Valor</th></tr></thead><tbody>' +
+        '<tr><td>Total estudiantes</td><td>' + Object.keys(estudiantes).length + '</td></tr>' +
+        '<tr><td>Total cursos</td><td>' + Object.keys(cursos).length + '</td></tr>' +
+        '<tr><td>Total anotaciones</td><td>' + Object.keys(anotaciones).length + '</td></tr>' +
+        '</tbody></table><br>';
 
     // Detalle por estudiante
-    Object.entries(estudiantes).sort((a,b) => {
+    var estArr = Object.entries(estudiantes).sort(function(a,b) {
         return ((a[1].apellido||'')+(a[1].nombre||'')).localeCompare((b[1].apellido||'')+(b[1].nombre||''));
-    }).forEach(([id, e]) => {
-        const estAnots = Object.values(anotaciones).filter(a => a.estudianteId === id);
-        const posCount = estAnots.filter(a => a.tipo === 'positiva').length;
-        const negCount = estAnots.filter(a => a.tipo === 'negativa').length;
-        const tarCount = estAnots.filter(a => a.tipo === 'tarea').length;
-        const obsCount = estAnots.filter(a => a.tipo === 'observacion').length;
+    });
 
-        html += `<div class="student-block">
-            <h4>${e.nombre} ${e.apellido}</h4>
-            <small>Email: ${e.email || '-'} | Curso: ${getCursoNombre(e.cursoId)}</small>
-            <table>
-                <thead><tr><th>Resumen</th><th>Cantidad</th></tr></thead>
-                <tbody>
-                    <tr><td>Positivas</td><td>${posCount}</td></tr>
-                    <tr><td>Negativas</td><td>${negCount}</td></tr>
-                    <tr><td>Tareas pendientes</td><td>${tarCount}</td></tr>
-                    <tr><td>Observaciones</td><td>${obsCount}</td></tr>
-                    <tr style="font-weight:600;"><td>Total</td><td>${estAnots.length}</td></tr>
-                </tbody>
-            </table>`;
+    for (var i = 0; i < estArr.length; i++) {
+        var id = estArr[i][0];
+        var e = estArr[i][1];
+        var estAnots = [];
+        var anotKeys = Object.keys(anotaciones);
+        for (var j = 0; j < anotKeys.length; j++) {
+            if (anotaciones[anotKeys[j]].estudianteId === id) {
+                estAnots.push(anotaciones[anotKeys[j]]);
+            }
+        }
+
+        var posCount = 0, negCount = 0, tarCount = 0, obsCount = 0;
+        for (var k = 0; k < estAnots.length; k++) {
+            if (estAnots[k].tipo === 'positiva') posCount++;
+            else if (estAnots[k].tipo === 'negativa') negCount++;
+            else if (estAnots[k].tipo === 'tarea') tarCount++;
+            else if (estAnots[k].tipo === 'observacion') obsCount++;
+        }
+
+        html += '<div class="student-block">' +
+            '<h4>' + e.nombre + ' ' + e.apellido + '</h4>' +
+            '<small>Email: ' + (e.email || '-') + ' | Curso: ' + getCursoNombre(e.cursoId) + '</small>' +
+            '<table><thead><tr><th>Resumen</th><th>Cantidad</th></tr></thead><tbody>' +
+            '<tr><td>Positivas</td><td>' + posCount + '</td></tr>' +
+            '<tr><td>Negativas</td><td>' + negCount + '</td></tr>' +
+            '<tr><td>Tareas pendientes</td><td>' + tarCount + '</td></tr>' +
+            '<tr><td>Observaciones</td><td>' + obsCount + '</td></tr>' +
+            '<tr style="font-weight:600;"><td>Total</td><td>' + estAnots.length + '</td></tr>' +
+            '</tbody></table>';
 
         if (estAnots.length > 0) {
-            html += `<table style="margin-top:8px;">
-                <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripcion</th></tr></thead>
-                <tbody>`;
-            estAnots.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).forEach(a => {
-                html += `<tr><td>${formatDate(a.fecha)}</td><td>${tipoLabels[a.tipo]||a.tipo}</td><td>${a.texto||''}</td></tr>`;
-            });
-            html += `</tbody></table>`;
+            estAnots.sort(function(a,b) { return (b.fecha||'').localeCompare(a.fecha||''); });
+            html += '<table style="margin-top:8px;"><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripcion</th></tr></thead><tbody>';
+            for (var m = 0; m < estAnots.length; m++) {
+                html += '<tr><td>' + formatDate(estAnots[m].fecha) + '</td>' +
+                    '<td>' + (tipoLabels[estAnots[m].tipo]||estAnots[m].tipo) + '</td>' +
+                    '<td>' + (estAnots[m].texto||'') + '</td></tr>';
+            }
+            html += '</tbody></table>';
         }
-        html += `</div>`;
-    });
+        html += '</div>';
+    }
 
     pdfDiv.innerHTML = html;
 
-    // Esperar un poco para que el DOM se renderice
-    await new Promise(r => setTimeout(r, 300));
+    setTimeout(function() {
+        html2canvas(pdfDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(function(canvas) {
+            var jsPDF = window.jspdf.jsPDF;
+            var pdf = new jsPDF('p', 'mm', 'a4');
+            var pageWidth = pdf.internal.pageSize.getWidth();
+            var pageHeight = pdf.internal.pageSize.getHeight();
+            var imgWidth = pageWidth - 20;
+            var imgHeight = (canvas.height * imgWidth) / canvas.width;
+            var heightLeft = imgHeight;
+            var position = 10;
 
-    try {
-        const canvas = await html2canvas(pdfDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pageWidth - 20;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 10;
-
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= (pageHeight - 20);
-
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight + 10;
-            pdf.addPage();
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= (pageHeight - 20);
-        }
 
-        pdf.save('reporte_gestion_escolar.pdf');
-        showToast('PDF generado exitosamente', 'success');
-    } catch (err) {
-        showToast('Error al generar PDF: ' + err.message, 'error');
-    }
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight + 10;
+                pdf.addPage();
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - 20);
+            }
 
-    // Limpiar contenido oculto
-    pdfDiv.innerHTML = '';
+            pdf.save('reporte_gestion_escolar.pdf');
+            showToast('PDF generado exitosamente', 'success');
+            pdfDiv.innerHTML = '';
+        }).catch(function(err) {
+            showToast('Error al generar PDF: ' + err.message, 'error');
+            pdfDiv.innerHTML = '';
+        });
+    }, 300);
 }
 
 // =====================================================
 // RESPALDO: EXPORTAR / IMPORTAR JSON
 // =====================================================
 function exportBackup() {
-    const data = { cursos, estudiantes, anotaciones, exportDate: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var data = {
+        cursos: cursos,
+        estudiantes: estudiantes,
+        anotaciones: anotaciones,
+        exportDate: new Date().toISOString()
+    };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = 'respaldo_escolar_' + todayStr() + '.json';
     a.click();
@@ -1681,52 +1788,43 @@ function exportBackup() {
     showToast('Respaldo exportado correctamente', 'success');
 }
 
-async function importBackup(event) {
-    const file = event.target.files[0];
+function importBackup(event) {
+    var file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async function(e) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
         try {
-            const data = JSON.parse(e.target.result);
+            var data = JSON.parse(e.target.result);
             if (!data.cursos || !data.estudiantes || !data.anotaciones) {
                 showToast('Archivo de respaldo invalido', 'error');
                 return;
             }
-
             if (!confirm('Se reemplazaran TODOS los datos actuales con el respaldo. Continuar?')) return;
 
-            // Sobrescribir datos en Firebase
-            const updates = {};
+            var updates = {};
             updates['cursos'] = data.cursos;
             updates['estudiantes'] = data.estudiantes;
             updates['anotaciones'] = data.anotaciones;
-            await db.ref().update(updates);
 
-            showToast('Respaldo importado correctamente', 'success');
+            db.ref().update(updates).then(function() {
+                showToast('Respaldo importado correctamente', 'success');
+            }).catch(function(err) {
+                showToast('Error al importar: ' + err.message, 'error');
+            });
         } catch (err) {
-            showToast('Error al importar: ' + err.message, 'error');
+            showToast('Error al leer el archivo: ' + err.message, 'error');
         }
     };
     reader.readAsText(file);
-    // Resetear el input para permitir reimportar el mismo archivo
     event.target.value = '';
 }
 
 // =====================================================
 // INICIALIZACION
 // =====================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // Crear partículas en la pantalla de ingreso
+document.addEventListener('DOMContentLoaded', function() {
     createParticles();
-
-    // Escuchar estado de autenticación (por si ya estaba autenticado)
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // Precargar datos de ejemplo si es la primera vez
-            preloadData();
-        }
-    });
 });
 </script>
 </body>
