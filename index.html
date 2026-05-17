@@ -3,1279 +3,1280 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>FERTO</title>
+<title>KLIS123 | CLLASKM — Control Docente Inteligente</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{g900:'#050505',g800:'#0a0a0a',g700:'#111111',g600:'#1a1a1a',g500:'#222222',g400:'#2a2a2a',g300:'#333333',blood:'#dc2626',bloodD:'#991b1b',bloodL:'#ef4444'},fontFamily:{gothic:['UnifrakturMaguntia','serif'],cinzel:['Cinzel','serif']}}}}
+</script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a12;font-family:'Courier New',monospace;touch-action:none;user-select:none;-webkit-user-select:none}
-#wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
-#scanlines{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.15) 0px,rgba(0,0,0,0.15) 1px,transparent 1px,transparent 3px);opacity:0.4}
-#crt{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:11;box-shadow:inset 0 0 80px rgba(0,0,0,0.6);border-radius:8px}
-#touch{position:fixed;bottom:0;left:0;width:100%;height:30vh;z-index:20;display:none;pointer-events:none}
-.tbtn{position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid rgba(0,255,255,0.5);background:rgba(0,255,255,0.1);color:#0ff;font-size:22px;display:flex;align-items:center;justify-content:center;pointer-events:auto;-webkit-tap-highlight-color:transparent;transition:background 0.1s}
-.tbtn:active{background:rgba(0,255,255,0.35)}
-#bl{left:15px;bottom:20px}
-#br{left:90px;bottom:20px}
-#bj{right:15px;bottom:20px;width:72px;height:72px;font-size:16px}
-#ba{right:100px;bottom:25px;width:56px;height:56px;font-size:12px;border-color:rgba(255,0,255,0.5);background:rgba(255,0,255,0.1);color:#f0f}
-#ba:active{background:rgba(255,0,255,0.35)}
-#bp{right:15px;top:10px;width:40px;height:40px;font-size:14px;border-color:rgba(255,255,0,0.4);background:rgba(255,255,0,0.08);color:#ff0}
-@media(hover:none)and(pointer:coarse){#touch{display:block}}
-@media(max-width:500px){.tbtn{width:52px;height:52px;font-size:18px}#bj{width:62px;height:62px}#ba{width:48px;height:48px}}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#0a0a0a}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#dc2626}
+body{font-family:'Cinzel',serif;background:#050505;color:#e5e5e5;overflow-x:hidden}
+.font-gothic{font-family:'UnifrakturMaguntia',serif}
+.font-cinzel{font-family:'Cinzel',serif}
+
+/* Splash */
+.splash-screen{position:fixed;inset:0;z-index:9999;background:#050505;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+.splash-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
+.glitch-text{font-family:'UnifrakturMaguntia',serif;font-size:clamp(3rem,12vw,8rem);color:#fff;position:relative;animation:glitchIn 1.5s ease-out forwards}
+.glitch-text::before,.glitch-text::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+.glitch-text::before{color:#dc2626;animation:glitch1 2s infinite;clip-path:inset(0 0 70% 0)}
+.glitch-text::after{color:#3b82f6;animation:glitch2 2.5s infinite;clip-path:inset(70% 0 0 0)}
+@keyframes glitchIn{0%{opacity:0;transform:scale(.8)translateY(20px);filter:blur(10px)}50%{opacity:.6;transform:scale(1.05);filter:blur(2px)}100%{opacity:1;transform:scale(1)translateY(0);filter:blur(0)}}
+@keyframes glitch1{0%,100%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-1px)}80%{transform:translate(2px,1px)}}
+@keyframes glitch2{0%,100%{transform:translate(0)}20%{transform:translate(2px,-2px)}40%{transform:translate(-2px,2px)}60%{transform:translate(2px,1px)}80%{transform:translate(-2px,-1px)}}
+.subtitle-anim{opacity:0;animation:fadeUp 1s ease-out forwards;animation-delay:1.5s}
+.tagline-anim{opacity:0;animation:fadeUp 1s ease-out forwards;animation-delay:2.5s}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(15px)}100%{opacity:1;transform:translateY(0)}}
+
+/* Smoke particles */
+.smoke-container{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.smoke{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(220,38,38,.06)0%,transparent 70%);filter:blur(40px);animation:smokeDrift 8s infinite}
+@keyframes smokeDrift{0%{transform:translateY(100vh)scale(.5);opacity:0}30%{opacity:1}70%{opacity:.5}100%{transform:translateY(-20vh)scale(1.5);opacity:0}}
+
+/* Cards & Components */
+.card-dark{background:linear-gradient(135deg,#111 0%,#1a1a1a 100%);border:1px solid #2a2a2a;border-radius:12px;transition:all .3s}
+.card-dark:hover{border-color:#dc2626;box-shadow:0 0 20px rgba(220,38,38,.1)}
+.btn-blood{background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:'Cinzel',serif;font-weight:600;cursor:pointer;transition:all .3s;text-transform:uppercase;letter-spacing:1px;font-size:.8rem}
+.btn-blood:hover{box-shadow:0 0 25px rgba(220,38,38,.4);transform:translateY(-1px)}
+.btn-blood:active{transform:scale(.97)}
+.btn-ghost{background:transparent;color:#999;border:1px solid #333;border-radius:8px;padding:8px 16px;font-family:'Cinzel',serif;font-weight:600;cursor:pointer;transition:all .3s;font-size:.75rem}
+.btn-ghost:hover{border-color:#dc2626;color:#dc2626}
+.input-dark{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#e5e5e5;font-family:'Cinzel',serif;font-size:.85rem;width:100%;transition:border-color .3s}
+.input-dark:focus{outline:none;border-color:#dc2626;box-shadow:0 0 0 2px rgba(220,38,38,.15)}
+.input-dark::placeholder{color:#555}
+
+/* Toast */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:8000;display:flex;flex-direction:column;gap:8px;max-width:360px}
+.toast{padding:14px 18px;border-radius:10px;color:#fff;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:10px;animation:toastIn .4s ease-out;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast-success{background:linear-gradient(135deg,#166534,#14532d);border:1px solid #22c55e}
+.toast-error{background:linear-gradient(135deg,#991b1b,#7f1d1d);border:1px solid #ef4444}
+.toast-info{background:linear-gradient(135deg,#1e3a5f,#172554);border:1px solid #3b82f6}
+.toast-warning{background:linear-gradient(135deg,#713f12,#612f0c);border:1px solid #f59e0b}
+@keyframes toastIn{0%{opacity:0;transform:translateX(40px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(40px)}}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s}
+.modal-box{background:#111;border:1px solid #2a2a2a;border-radius:16px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;animation:modalIn .3s}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes modalIn{0%{opacity:0;transform:scale(.9)translateY(20px)}100%{opacity:1;transform:scale(1)translateY(0)}}
+
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:#0a0a0a;border-right:1px solid #1a1a1a;z-index:5000;transition:transform .3s;overflow-y:auto}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);width:280px}.sidebar.open{transform:translateX(0)}}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:4999;display:none}
+@media(max-width:768px){.sidebar-overlay.open{display:block}}
+
+/* Mobile bottom nav */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid #1a1a1a;z-index:4000;padding:6px 0 env(safe-area-inset-bottom)}
+@media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around;align-items:center}}
+.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;color:#555;font-size:.6rem;cursor:pointer;transition:color .2s}
+.bottom-nav-item.active{color:#dc2626}
+
+/* Registration buttons */
+.reg-btn{padding:6px 12px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;text-transform:uppercase;letter-spacing:.5px}
+.reg-btn:hover{border-color:#dc2626;color:#dc2626;transform:scale(1.03)}
+.reg-btn:active{transform:scale(.95)}
+.reg-btn.recorded{background:rgba(220,38,38,.15);border-color:#dc2626;color:#dc2626}
+
+/* Status indicators */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-high{background:#22c55e;box-shadow:0 0 6px #22c55e}
+.status-mid{background:#eab308;box-shadow:0 0 6px #eab308}
+.status-low{background:#ef4444;box-shadow:0 0 6px #ef4444}
+
+/* Sync indicator */
+.sync-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sync-on{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.5);animation:pulse 2s infinite}
+.sync-sav{background:#eab308;box-shadow:0 0 8px rgba(234,179,8,.5);animation:pulse 1s infinite}
+.sync-off{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.5)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Live mode */
+.live-mode{position:fixed;inset:0;z-index:6000;background:#050505;overflow-y:auto}
+
+/* Print styles */
+@media print{.no-print{display:none!important}.print-only{display:block!important}}
+
+/* Undo float */
+.undo-float{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:5500;background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;padding:12px 24px;border-radius:50px;font-size:.8rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(220,38,38,.4);animation:undoIn .3s}
+@keyframes undoIn{0%{opacity:0;transform:translateX(-50%)translateY(20px)}100%{opacity:1;transform:translateX(-50%)translateY(0)}}
+
+/* Calendar */
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #1a1a1a;border-radius:6px;cursor:pointer;transition:all .2s;font-size:.8rem;position:relative}
+.cal-day:hover{border-color:#dc2626}
+.cal-day.today{border-color:#dc2626;background:rgba(220,38,38,.1)}
+.cal-day.has-activity::after{content:'';position:absolute;bottom:4px;width:6px;height:6px;border-radius:50%;background:#dc2626}
+
+/* Chart container responsive */
+.chart-wrap{position:relative;width:100%;max-width:100%}
+.chart-wrap canvas{max-width:100%!important}
+
+/* Floating action button */
+.fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border:none;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(220,38,38,.4);z-index:3000;transition:all .3s;display:flex;align-items:center;justify-content:center}
+.fab:hover{transform:scale(1.1)}
+@media(min-width:769px){.fab{bottom:30px}}
+
+.hamburger{display:none;cursor:pointer;padding:8px;z-index:5001}
+@media(max-width:768px){.hamburger{display:block}}
+
+/* Participation bar */
+.part-bar{height:6px;border-radius:3px;background:#1a1a1a;overflow:hidden;flex:1}
+.part-bar-fill{height:100%;border-radius:3px;transition:width .5s}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="c"></canvas></div>
-<div id="scanlines"></div>
-<div id="crt"></div>
-<div id="touch">
-  <div class="tbtn" id="bl">◀</div>
-  <div class="tbtn" id="br">▶</div>
-  <div class="tbtn" id="bj">SALTO</div>
-  <div class="tbtn" id="ba">ATAQUE</div>
-  <div class="tbtn" id="bp">| |</div>
-</div>
+<div id="root"></div>
+
 <script>
-// =============================================
-// FERTO — Cyberpunk Retro Arcade Platformer
-// Juego completo en un solo archivo HTML
-// =============================================
-
-// === CONFIGURACIÓN GENERAL ===
-const VW=400,VH=240,TS=16,GRAV=0.45,JUMP=-8.5,MAXFALL=10,ACCEL=0.35,DECEL=0.25,MAXSPD=3.5,RUNSPD=5,COYOTE=6,JBUF=8;
-const C={bg:'#0a0a14',primary:'#00e5ff',magenta:'#ff00aa',violet:'#6a0dad',orange:'#ff6600',green:'#00ff88',dark1:'#12122a',dark2:'#1a1a3e',white:'#eeeedd'};
-const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
-let scale=1,offX=0,offY=0;
-
-// === SISTEMA DE AUDIO (Web Audio API) ===
-const SFX={
-  ctx:null,enabled:true,
-  init(){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){this.enabled=false}},
-  resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
-  play(type){
-    if(!this.enabled||!this.ctx)return;this.resume();
-    const o=this.ctx.createOscillator(),g=this.ctx.createGain();
-    o.connect(g);g.connect(this.ctx.destination);
-    const t=this.ctx.currentTime;
-    switch(type){
-      case'jump':o.type='square';o.frequency.setValueAtTime(350,t);o.frequency.linearRampToValueAtTime(700,t+0.1);g.gain.setValueAtTime(0.12,t);g.gain.linearRampToValueAtTime(0,t+0.15);o.start(t);o.stop(t+0.15);break;
-      case'coin':o.type='square';o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1100,t+0.06);g.gain.setValueAtTime(0.1,t);g.gain.linearRampToValueAtTime(0,t+0.15);o.start(t);o.stop(t+0.15);break;
-      case'hit':o.type='sawtooth';o.frequency.setValueAtTime(200,t);o.frequency.linearRampToValueAtTime(60,t+0.2);g.gain.setValueAtTime(0.15,t);g.gain.linearRampToValueAtTime(0,t+0.25);o.start(t);o.stop(t+0.25);break;
-      case'powerup':o.type='square';o.frequency.setValueAtTime(440,t);o.frequency.linearRampToValueAtTime(880,t+0.1);o.frequency.linearRampToValueAtTime(1320,t+0.2);g.gain.setValueAtTime(0.1,t);g.gain.linearRampToValueAtTime(0,t+0.3);o.start(t);o.stop(t+0.3);break;
-      case'die':o.type='sawtooth';o.frequency.setValueAtTime(400,t);o.frequency.linearRampToValueAtTime(80,t+0.5);g.gain.setValueAtTime(0.15,t);g.gain.linearRampToValueAtTime(0,t+0.6);o.start(t);o.stop(t+0.6);break;
-      case'boss':o.type='square';o.frequency.setValueAtTime(100,t);o.frequency.setValueAtTime(150,t+0.1);o.frequency.setValueAtTime(100,t+0.2);g.gain.setValueAtTime(0.12,t);g.gain.linearRampToValueAtTime(0,t+0.3);o.start(t);o.stop(t+0.3);break;
-      case'win':o.type='square';[523,659,784,1047].forEach((f,i)=>{o.frequency.setValueAtTime(f,t+i*0.12)});g.gain.setValueAtTime(0.1,t);g.gain.linearRampToValueAtTime(0,t+0.55);o.start(t);o.stop(t+0.55);break;
-      case'shoot':o.type='square';o.frequency.setValueAtTime(900,t);o.frequency.linearRampToValueAtTime(200,t+0.08);g.gain.setValueAtTime(0.08,t);g.gain.linearRampToValueAtTime(0,t+0.1);o.start(t);o.stop(t+0.1);break;
-    }
-  }
-};
-
-// Música de fondo - secuenciador simple
-const Music={
-  ctx:null,playing:false,node:null,
-  notes:{C3:130,D3:146,E3:164,F3:174,G3:196,A3:220,B3:247,C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523},
-  tracks:[
-    // Nivel 1-2: melody synthwave
-    ['E4',0,'G4',0,'A4',1,'G4',0,'E4',0,'D4',1,'C4',0,'D4',0,'E4',1,'G4',0,'A4',1,'B4',0,'A4',0,'G4',1,'E4',0,'D4',1,'C4',2],
-    // Nivel 3-4: más oscuro
-    ['A3',0,'C4',0,'E4',1,'D4',0,'C4',0,'A3',1,'F3',0,'A3',0,'C4',1,'E4',0,'D4',1,'C4',0,'A3',0,'E3',1,'F3',0,'G3',2],
-    // Boss
-    ['E3',0,'E3',0,'G3',0,'A3',1,'B3',0,'A3',0,'G3',0,'E3',1,'D3',0,'E3',0,'G3',0,'B3',1,'A3',0,'G3',0,'E3',0,'D3',2],
-  ],
-  trackIdx:0,noteIdx:0,timer:0,tempo:180,
-  init(){this.ctx=SFX.ctx},
-  play(ti){if(!this.ctx)return;this.stop();this.playing=true;this.trackIdx=ti||0;this.noteIdx=0;this.timer=0;this.tempo=180;this._sched()},
-  _sched(){
-    if(!this.playing)return;
-    const tr=this.tracks[this.trackIdx%this.tracks.length];
-    if(this.noteIdx>=tr.length)this.noteIdx=0;
-    const n=tr[this.noteIdx],d=tr[this.noteIdx+1];
-    if(typeof n==='string'&&this.notes[n]){
-      const o=this.ctx.createOscillator(),g=this.ctx.createGain();
-      o.type='square';o.frequency.value=this.notes[n];
-      o.connect(g);g.connect(this.ctx.destination);
-      const t=this.ctx.currentTime,dur=60/this.tempo*(d+1)*0.8;
-      g.gain.setValueAtTime(0.04,t);g.gain.linearRampToValueAtTime(0,t+dur);
-      o.start(t);o.stop(t+dur);
-    }
-    this.noteIdx+=2;this.timer=setTimeout(()=>this._sched(),60/this.tempo*1000*(d+1));
-  },
-  stop(){this.playing=false;clearTimeout(this.timer)}
-};
-
-// === SISTEMA DE ENTRADA ===
-const Keys={left:false,right:false,jump:false,action:false,pause:false};
-let jumpPressed=false,jumpReleased=true;
-const keyMap={'ArrowLeft':'left','ArrowRight':'right','ArrowUp':'jump','KeyA':'left','KeyD':'right','KeyW':'jump','Space':'jump','ShiftLeft':'action','ShiftRight':'action','KeyJ':'jump','KeyK':'action','Escape':'pause','KeyP':'pause'};
-document.addEventListener('keydown',e=>{const k=keyMap[e.code];if(k){Keys[k]=true;if(k==='jump'){jumpPressed=true;jumpReleased=false}e.preventDefault()}});
-document.addEventListener('keyup',e=>{const k=keyMap[e.code];if(k){Keys[k]=false;if(k==='jump')jumpReleased=true}});
-
-// Controles táctiles
-function setupTouch(id,key){
-  const el=document.getElementById(id);if(!el)return;
-  const on=()=>{Keys[key]=true;if(key==='jump'){jumpPressed=true;jumpReleased=false}SFX.resume()};
-  const off=()=>{Keys[key]=false;if(key==='jump')jumpReleased=true};
-  el.addEventListener('touchstart',e=>{e.preventDefault();on()},{passive:false});
-  el.addEventListener('touchend',e=>{e.preventDefault();off()},{passive:false});
-  el.addEventListener('touchcancel',off);
-}
-setupTouch('bl','left');setupTouch('br','right');setupTouch('bj','jump');setupTouch('ba','action');setupTouch('bp','pause');
-
-// === PARTÍCULAS ===
-const particles=[];
-function spawnParticles(x,y,col,count,spd,life){
-  for(let i=0;i<count;i++){
-    const a=Math.random()*Math.PI*2,s=Math.random()*spd+0.5;
-    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:life||30+Math.random()*20,maxLife:life||50,col,size:1+Math.random()*2});
-  }
-}
-function updateParticles(){
-  for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.life--;
-    if(p.life<=0)particles.splice(i,1);
-  }
-}
-function drawParticles(cx,cy){
-  particles.forEach(p=>{
-    const a=p.life/p.maxLife;
-    ctx.globalAlpha=a;ctx.fillStyle=p.col;
-    ctx.fillRect(Math.floor(p.x-cx),Math.floor(p.y-cy),p.size,p.size);
-  });
-  ctx.globalAlpha=1;
-}
-
-// === DEFINICIÓN DE NIVELES ===
-// Formato: array 2D de caracteres
-// . = vacío, # = sólido, - = plataforma, ^ = pinchos, ~ = lava
-// C = núcleo energía, B = chip bonus, K = llave, P = inicio, E = salida
-// 1-5 = spawns enemigos, T = checkpoint, W = power-up
-// Los power-ups: W1=NeonBoost, W2=PlasmaJump, W3=ShieldMatrix, W4=PulseBlast
-function parseLevel(strings){
-  const tiles=[],enemies=[],items=[],checkpoints=[];
-  let playerStart={x:2,y:10},exitPos={x:40,y:10};
-  for(let r=0;r<strings.length;r++){
-    tiles[r]=[];
-    for(let c=0;c<strings[r].length;c++){
-      const ch=strings[r][c];
-      switch(ch){
-        case'#':tiles[r][c]=1;break;
-        case'-':tiles[r][c]=2;break;
-        case'^':tiles[r][c]=3;break;
-        case'~':tiles[r][c]=4;break;
-        case'C':tiles[r][c]=0;items.push({type:'core',x:c*TS,y:r*TS});break;
-        case'B':tiles[r][c]=0;items.push({type:'chip',x:c*TS,y:r*TS});break;
-        case'K':tiles[r][c]=0;items.push({type:'key',x:c*TS,y:r*TS});break;
-        case'P':tiles[r][c]=0;playerStart={x:c*TS,y:r*TS};break;
-        case'E':tiles[r][c]=0;exitPos={x:c*TS,y:r*TS};break;
-        case'T':tiles[r][c]=0;checkpoints.push({x:c*TS,y:r*TS});break;
-        case'1':tiles[r][c]=0;enemies.push({type:'cube',x:c*TS,y:r*TS});break;
-        case'2':tiles[r][c]=0;enemies.push({type:'drone',x:c*TS,y:r*TS});break;
-        case'3':tiles[r][c]=0;enemies.push({type:'crawler',x:c*TS,y:r*TS});break;
-        case'4':tiles[r][c]=0;enemies.push({type:'worm',x:c*TS,y:r*TS});break;
-        case'5':tiles[r][c]=0;enemies.push({type:'bot',x:c*TS,y:r*TS});break;
-        case'Z':tiles[r][c]=0;enemies.push({type:'boss',x:c*TS,y:r*TS});break;
-        case'W':tiles[r][c]=0;items.push({type:'powerup',x:c*TS,y:r*TS,power:Math.floor(Math.random()*4)+1});break;
-        case'w':tiles[r][c]=0;items.push({type:'powerup',x:c*TS,y:r*TS,power:1});break;
-        case'x':tiles[r][c]=0;items.push({type:'powerup',x:c*TS,y:r*TS,power:2});break;
-        case'y':tiles[r][c]=0;items.push({type:'powerup',x:c*TS,y:r*TS,power:3});break;
-        case'z':tiles[r][c]=0;items.push({type:'powerup',x:c*TS,y:r*TS,power:4});break;
-        default:tiles[r][c]=0;
-      }
-    }
-  }
-  return{tiles,enemies,items,checkpoints,playerStart,exitPos,width:strings[0].length,height:strings.length};
-}
-
-const LEVEL_STRINGS=[
-  // Nivel 1: Neon Streets (tutorial)
-  [
-    "......................................................................................................",
-    "......................................................................................................",
-    "......................................................................................................",
-    ".....................C.C.C...........................................................................",
-    "....................#######...........................................................................",
-    "......................................................................................................",
-    "..........B.B.............................C.......................K...................................",
-    ".........#####..........2...............###..........C.C.........................B......................",
-    "...................................................#####............1...........###.....................",
-    "..............1.............T.............................................................E............",
-    "P....####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..#",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..######",
-    "######################################################################################################",
-    "######################################################################################################",
-    "######################################################################################################",
-  ],
-  // Nivel 2: Circuit Factory
-  [
-    "....................................................................................................................",
-    "....................................................................................................................",
-    "....................................................................................................................",
-    "..........C.C.C.............................B.B.B.............................................................",
-    ".........#######.........2.................######........3....................................................",
-    "...............................................................C.C.........C.C...................................",
-    ".......5..............#####.........1.......---...........#####.......---..........K.........................",
-    "......###..........................................................###.....................E....................",
-    "P..............T..................4...........T..................................5..........###...............",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####.####",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..########",
-    "####################################################################################################################",
-    "####################################################################################################################",
-    "####################################################################################################################",
-    "####################################################################################################################",
-  ],
-  // Nivel 3: Data Abyss
-  [
-    "..........................................................................................................",
-    "..........................................................................................................",
-    "..........................................................................................................",
-    "......................C.C.C..................................................K.................................",
-    ".....................#######.......2...............C.......................###.................................",
-    "...........................................---..........---........3........................................",
-    ".........1...........---...........---.............---..........#####.......5..........B.B...................",
-    "........###.................................4.................---...........###.......#####.................",
-    "P...........T...........---...........---...........T..............---..............---.......E..............",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..######",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..####..############",
-    "##########################################################################################################",
-    "##########################################################################################################",
-    "##########################################################################################################",
-    "##########################################################################################################",
-  ],
-  // Nivel 4: Core Tower
-  [
-    "....................................................................................",
-    "....................................................................................",
-    "...........E.......................................................................",
-    "..........###.......3...............................................................",
-    "...................####........2.....................................................",
-    ".......................C.........###........C.........................................",
-    "..........---.......###..........---......###...........5...........................",
-    ".........####................4...........---..........####.....K.....................",
-    "P......---.......---........###..............---..........---........................",
-    "####..####..####..####..####..####..####..####..####..####..####..####..####..######",
-    "####..####..####..####..####..####..####..####..####..####..####..####..###########",
-    "####################################################################################",
-    "####################################################################################",
-    "####################################################################################",
-    "####################################################################################",
-  ],
-  // Nivel 5: Glitch Nexus (Boss)
-  [
-    "......................................................................",
-    "......................................................................",
-    "......................................................................",
-    "......................................................................",
-    "......................................................................",
-    "......................................................................",
-    ".....................Z.................................................",
-    "......................................................................",
-    "......................................................................",
-    "P.....................................................................",
-    "####..####..####..####..####..####..####..####..####..####..####..####",
-    "####..####..####..####..####..####..####..####..####..####..####..####",
-    "######################################################################",
-    "######################################################################",
-    "######################################################################",
-  ],
-];
-
-// === JUEGO PRINCIPAL ===
-const G={
-  state:'menu', // menu,playing,paused,gameover,levelcomplete,victory,controls,credits
-  level:0,lives:3,score:0,energy:100,cores:0,keys:0,
-  maxEnergy:100,invulnT:0,powerUp:null,powerUpT:0,
-  checkpoint:null,frameCount:0,shakeT:0,shakeX:0,shakeY:0,
-  glitchT:0,glitchActive:false,
-  menuSel:0,menuBlink:0,
-  levelData:null,entities:[],projectiles:[],
-  player:null,camX:0,camY:0,
-  transitioning:false,transT:0,transDir:0,
-  bossHP:0,bossMaxHP:0,bossPhase:1,bossAlive:false,bossX:0,bossY:0,bossAT:0,
-  leaderboard:[],
-  firebaseReady:false,
-  fbToken:null,
-};
-
-// Firebase REST API
-const FB={
-  apiKey:'AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA',
-  dbUrl:'https://celulakmt-default-rtdb.firebaseio.com',
-  async signInAnon(){
-    try{
-      const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
-      const d=await r.json();if(d.idToken){G.fbToken=d.idToken;G.firebaseReady=true}
-    }catch(e){console.log('Firebase auth error',e)}
-  },
-  async saveScore(name,score,level){
-    if(!G.firebaseReady)return;
-    try{
-      await fetch(`${this.dbUrl}/scores/${Date.now()}.json?auth=${G.fbToken}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,score,level,date:new Date().toISOString()})});
-    }catch(e){console.log('Save error',e)}
-  },
-  async loadScores(){
-    try{
-      const r=await fetch(`${this.dbUrl}/scores.json?orderBy="score"&limitToLast=10`);
-      const d=await r.json();
-      if(d){G.leaderboard=Object.values(d).sort((a,b)=>b.score-a.score).slice(0,10)}
-    }catch(e){console.log('Load error',e)}
-  }
-};
-
-// === JUGADOR ===
-function createPlayer(x,y){
-  return{
-    x,y,w:12,h:20,vx:0,vy:0,onGround:false,
-    facing:1,animFrame:0,animTimer:0,
-    state:'idle', // idle,walk,jump,fall,hurt,dead,victory
-    coyoteT:0,jumpBuf:0,doubleJump:false,
-    hurtT:0,deadT:0,blinkT:0,
-  };
-}
-
-// === ENEMIGOS ===
-function createEnemy(type,x,y){
-  const base={x,y,vx:0,vy:0,alive:true,hp:1,type,animFrame:0,animTimer:0,timer:0,dir:1};
-  switch(type){
-    case'cube':return{...base,w:14,h:14,vx:1,dir:1,hp:1};
-    case'drone':return{...base,w:12,h:12,vy:0,startY:y,hp:1,flyT:Math.random()*100};
-    case'crawler':return{...base,w:14,h:10,vx:0.8,dir:1,hp:1};
-    case'worm':return{...base,w:14,h:14,emerged:false,emergeT:120+Math.random()*120,hp:1};
-    case'bot':return{...base,w:14,h:18,vx:1.2,dir:1,hp:2};
-    case'boss':return{...base,w:48,h:48,hp:30,phase:1,atkTimer:0,moveT:0};
-    default:return base;
-  }
-}
-
-// === PROYECTILES ===
-function createProjectile(x,y,vx,vy,fromPlayer,col){
-  return{x,y,vx,vy,w:6,h:4,alive:true,fromPlayer,col:col||C.primary,life:120};
-}
-
-// === CARGAR NIVEL ===
-function loadLevel(idx){
-  G.level=idx;G.levelData=parseLevel(LEVEL_STRINGS[idx]);
-  G.entities=[];G.projectiles=[];particles.length=0;
-  const ld=G.levelData;
-  G.player=createPlayer(ld.playerStart.x,ld.playerStart.y);
-  G.checkpoint={x:ld.playerStart.x,y:ld.playerStart.y};
-  ld.enemies.forEach(e=>{G.entities.push(createEnemy(e.type,e.x,e.y))});
-  G.bossAlive=false;
-  if(idx===4){
-    // Boss
-    const be=G.entities.find(e=>e.type==='boss');
-    if(be){G.bossAlive=true;G.bossHP=30;G.bossMaxHP=30;G.bossPhase=1;G.bossX=be.x;G.bossY=be.y;G.bossAT=0}
-  }
-  G.camX=0;G.camY=0;G.glitchT=0;G.glitchActive=false;
-  G.powerUp=null;G.powerUpT=0;
-}
-
-// === COLISIONES CON TILES ===
-function tileAt(tx,ty){
-  if(!G.levelData)return 0;
-  const t=G.levelData.tiles;
-  if(ty<0||ty>=t.length||tx<0||tx>=t[0].length)return 0;
-  return t[ty][tx];
-}
-function isSolid(tx,ty){const v=tileAt(tx,ty);return v===1||v===3||v===4}
-function isPlatform(tx,ty){return tileAt(tx,ty)===2}
-
-function moveEntity(e,dx,dy){
-  // Mover en X
-  e.x+=dx;
-  const txL=Math.floor(e.x/TS),txR=Math.floor((e.x+e.w-1)/TS);
-  const tyT=Math.floor(e.y/TS),tyB=Math.floor((e.y+e.h-1)/TS);
-  for(let ty=tyT;ty<=tyB;ty++){
-    if(dx>0&&isSolid(txR,ty)){e.x=txR*TS-e.w;break}
-    if(dx<0&&isSolid(txL,ty)){e.x=(txL+1)*TS;break}
-  }
-  // Mover en Y
-  e.y+=dy;e.onGround=false;
-  const txL2=Math.floor(e.x/TS),txR2=Math.floor((e.x+e.w-1)/TS);
-  const tyT2=Math.floor(e.y/TS),tyB2=Math.floor((e.y+e.h-1)/TS);
-  for(let tx=txL2;tx<=txR2;tx++){
-    if(dy>0){
-      if(isSolid(tx,tyB2)){e.y=tyB2*TS-e.h;e.vy=0;e.onGround=true}
-      else if(isPlatform(tx,tyB2)&&e.y+e.h-e.vy<=tyB2*TS+2){e.y=tyB2*TS-e.h;e.vy=0;e.onGround=true}
-    }
-    if(dy<0&&isSolid(tx,tyT2)){e.y=(tyT2+1)*TS;e.vy=0}
-  }
-  // Peligro
-  const cx=Math.floor((e.x+e.w/2)/TS),cy=Math.floor((e.y+e.h/2)/TS);
-  if(tileAt(cx,cy)===3||tileAt(cx,cy)===4)damagePlayer(20);
-}
-
-// === DAÑO AL JUGADOR ===
-function damagePlayer(amt){
-  const p=G.player;if(!p||p.hurtT>0||G.invulnT>0)return;
-  if(G.powerUp===3){G.powerUpT=Math.max(0,G.powerUpT-60);spawnParticles(p.x+p.w/2,p.y+p.h/2,C.green,8,2,20);SFX.play('hit');return}
-  G.energy=Math.max(0,G.energy-amt);p.hurtT=40;SFX.play('hit');G.shakeT=8;
-  spawnParticles(p.x+p.w/2,p.y+p.h/2,'#ff3366',6,2,20);
-  if(G.energy<=0){
-    G.lives--;p.state='dead';p.deadT=60;SFX.play('die');
-    if(G.lives<=0){G.state='gameover';Music.stop();FB.saveScore('FERTO',G.score,G.level+1)}
-    else{G.energy=G.maxEnergy;G.invulnT=90}
-  }
-}
-
-// === ACTUALIZAR JUGADOR ===
-function updatePlayer(){
-  const p=G.player;if(!p)return;
-  if(p.state==='dead'){
-    p.deadT--;
-    if(p.deadT<=0){
-      if(G.lives>0){loadLevel(G.level);G.energy=G.maxEnergy}
-    }
-    return;
-  }
-  if(p.hurtT>0)p.hurtT--;
-  if(G.invulnT>0)G.invulnT--;
-
-  // Movimiento horizontal
-  let targetVx=0;
-  if(Keys.left)targetVx=-1;
-  if(Keys.right)targetVx=1;
-
-  const spd=G.powerUp===1?RUNSPD:MAXSPD;
-  if(targetVx!==0){
-    p.vx+=targetVx*ACCEL;
-    if(p.vx>spd)p.vx=spd;if(p.vx<-spd)p.vx=-spd;
-    p.facing=targetVx;
-  }else{
-    if(Math.abs(p.vx)<DECEL)p.vx=0;
-    else p.vx-=Math.sign(p.vx)*DECEL;
-  }
-
-  // Gravedad
-  p.vy+=GRAV;if(p.vy>MAXFALL)p.vy=MAXFALL;
-
-  // Coyote time
-  if(p.onGround)p.coyoteT=COYOTE;else p.coyoteT=Math.max(0,p.coyoteT-1);
-
-  // Jump buffer
-  if(jumpPressed&&jumpReleased){p.jumpBuf=JBUF;jumpReleased=false}
-  if(p.jumpBuf>0)p.jumpBuf--;
-
-  // Salto
-  if(p.jumpBuf>0&&p.coyoteT>0){
-    p.vy=JUMP;p.onGround=false;p.coyoteT=0;p.jumpBuf=0;
-    SFX.play('jump');spawnParticles(p.x+p.w/2,p.y+p.h,'#00e5ff',5,1.5,15);
-  }else if(G.powerUp===2&&jumpPressed&&p.jumpBuf>0&&!p.onGround&&p.doubleJump){
-    p.vy=JUMP*0.85;p.doubleJump=false;p.jumpBuf=0;
-    SFX.play('jump');spawnParticles(p.x+p.w/2,p.y+p.h,C.magenta,5,1.5,15);
-  }
-
-  if(p.onGround)p.doubleJump=G.powerUp===2;
-
-  // Ataque (Pulse Blast)
-  if(Keys.action&&G.powerUp===4&&G.frameCount%12===0){
-    const px=p.x+(p.facing>0?p.w:-6);
-    G.projectiles.push(createProjectile(px,p.y+p.h/2-2,p.facing*6,0,true,C.magenta));
-    SFX.play('shoot');spawnParticles(px,p.y+p.h/2,C.magenta,3,1,10);
-  }
-
-  moveEntity(p,p.vx,p.vy);
-
-  // Animación
-  p.animTimer++;
-  if(Math.abs(p.vx)>0.5&&p.onGround){
-    p.state='walk';if(p.animTimer%8===0)p.animFrame=(p.animFrame+1)%4;
-  }else if(!p.onGround){
-    p.state=p.vy<0?'jump':'fall';p.animFrame=0;
-  }else{
-    p.state='idle';if(p.animTimer%30===0)p.animFrame=(p.animFrame+1)%2;
-  }
-  if(p.hurtT>0)p.state='hurt';
-
-  // Recoger items
-  const ld=G.levelData;
-  for(let i=ld.items.length-1;i>=0;i--){
-    const it=ld.items[i];if(it.collected)continue;
-    if(Math.abs(p.x+p.w/2-it.x-TS/2)<14&&Math.abs(p.y+p.h/2-it.y-TS/2)<14){
-      it.collected=true;SFX.play('coin');
-      switch(it.type){
-        case'core':G.cores++;G.score+=100;spawnParticles(it.x+TS/2,it.y+TS/2,C.primary,8,2,25);break;
-        case'chip':G.score+=500;spawnParticles(it.x+TS/2,it.y+TS/2,C.orange,8,2,25);break;
-        case'key':G.keys++;G.score+=250;spawnParticles(it.x+TS/2,it.y+TS/2,C.magenta,10,2,25);break;
-        case'powerup':
-          G.powerUp=it.power;G.powerUpT=600;SFX.play('powerup');
-          spawnParticles(it.x+TS/2,it.y+TS/2,C.green,12,3,30);
-          break;
-      }
-    }
-  }
-
-  // Checkpoints
-  ld.checkpoints.forEach(cp=>{
-    if(!cp.activated&&Math.abs(p.x-cp.x)<24&&Math.abs(p.y-cp.y)<24){
-      cp.activated=true;G.checkpoint={x:cp.x,y:cp.y};
-      spawnParticles(cp.x+TS/2,cp.y+TS/2,C.green,8,2,20);SFX.play('coin');
-    }
-  });
-
-  // Salida
-  if(Math.abs(p.x+p.w/2-ld.exitPos.x-TS/2)<14&&Math.abs(p.y+p.h/2-ld.exitPos.y-TS/2)<20){
-    if(G.level<4){G.state='levelcomplete';SFX.play('win');Music.stop()}
-    else{G.state='victory';SFX.play('win');Music.stop();FB.saveScore('FERTO',G.score,5)}
-  }
-
-  // Caer al vacío
-  if(p.y>G.levelData.height*TS+32){damagePlayer(999)}
-
-  // Power-up timer
-  if(G.powerUpT>0){G.powerUpT--;if(G.powerUpT<=0)G.powerUp=null}
-
-  // Límites del nivel
-  if(p.x<0)p.x=0;if(p.x>G.levelData.width*TS-p.w)p.x=G.levelData.width*TS-p.w;
-}
-
-// === ACTUALIZAR ENEMIGOS ===
-function updateEnemies(){
-  const p=G.player;if(!p||p.state==='dead')return;
-  G.entities.forEach(e=>{
-    if(!e.alive)return;
-    e.animTimer++;if(e.animTimer%15===0)e.animFrame=(e.animFrame+1)%4;
-    switch(e.type){
-      case'cube':
-        e.x+=e.vx*e.dir;
-        if(isSolid(Math.floor((e.x+(e.dir>0?e.w:0))/TS),Math.floor((e.y+e.h/2)/TS)))e.dir*=-1;
-        if(!isSolid(Math.floor((e.x+(e.dir>0?e.w:0))/TS),Math.floor((e.y+e.h+2)/TS))&&e.onGround!==false)e.dir*=-1;
-        break;
-      case'drone':
-        e.flyT+=0.04;e.y=e.startY+Math.sin(e.flyT)*20;
-        e.x+=Math.cos(e.flyT*0.5)*0.5;
-        break;
-      case'crawler':
-        e.x+=e.vx*e.dir;
-        if(isSolid(Math.floor((e.x+(e.dir>0?e.w:0))/TS),Math.floor(e.y/TS)))e.dir*=-1;
-        break;
-      case'worm':
-        e.emergeT--;
-        if(e.emergeT<=0){e.emerged=!e.emerged;e.emergeT=e.emerged?80:120+Math.random()*80}
-        break;
-      case'bot':
-        e.dir=p.x>e.x?1:-1;e.vx+=(e.dir*1.2-e.vx)*0.05;e.x+=e.vx;
-        if(isSolid(Math.floor((e.x+(e.dir>0?e.w:0))/TS),Math.floor((e.y+e.h/2)/TS)))e.vx*=-0.5;
-        break;
-      case'boss':
-        updateBoss(e);return;
-    }
-    // Colisión con jugador
-    if(e.type!=='worm'||e.emerged){
-      if(p.hurtT<=0&&G.invulnT<=0&&p.x+p.w>e.x&&p.x<e.x+e.w&&p.y+p.h>e.y&&p.y<e.y+e.h){
-        // ¿Pisó al enemigo?
-        if(p.vy>0&&p.y+p.h-e.y<8&&e.type!=='drone'){
-          e.alive=false;p.vy=JUMP*0.6;G.score+=200;
-          SFX.play('hit');spawnParticles(e.x+e.w/2,e.y+e.h/2,C.magenta,8,2,20);
-        }else{damagePlayer(15)}
-      }
-    }
-    // Proyectil del jugador
-    G.projectiles.forEach(pr=>{
-      if(!pr.alive||!pr.fromPlayer)return;
-      if(e.type!=='worm'||e.emerged){
-        if(pr.x+pr.w>e.x&&pr.x<e.x+e.w&&pr.y+pr.h>e.y&&pr.y<e.y+e.h){
-          e.hp--;pr.alive=false;
-          if(e.hp<=0){e.alive=false;G.score+=200;spawnParticles(e.x+e.w/2,e.y+e.h/2,C.magenta,8,2,20);SFX.play('hit')}
-          else{spawnParticles(e.x+e.w/2,e.y+e.h/2,'#ffffff',4,1.5,15)}
-        }
-      }
-    });
-  });
-}
-
-// === JEFE FINAL ===
-function updateBoss(e){
-  const p=G.player;if(!p||p.state==='dead')return;
-  G.bossAT++;
-  // Fase basada en HP
-  if(G.bossHP<=10)G.bossPhase=3;
-  else if(G.bossHP<=20)G.bossPhase=2;
-
-  // Movimiento
-  e.x=G.bossX+Math.sin(G.bossAT*0.02)*40;
-  e.y=G.bossY+Math.cos(G.bossAT*0.015)*20;
-
-  // Ataques por fase
-  const atkInterval=G.bossPhase===3?40:G.bossPhase===2?60:80;
-  if(G.bossAT%atkInterval===0){
-    // Disparar rayo
-    const dx=p.x-e.x,dy=p.y-e.y,dist=Math.sqrt(dx*dx+dy*dy)||1;
-    G.projectiles.push(createProjectile(e.x+e.w/2,e.y+e.h,dx/dist*3,dy/dist*3,false,C.magenta));
-    SFX.play('boss');
-  }
-  if(G.bossPhase>=2&&G.bossAT%180===0){
-    // Invocar enemigo
-    G.entities.push(createEnemy('cube',e.x+Math.random()*40,e.y+e.h+8));
-  }
-  if(G.bossPhase>=3&&G.bossAT%120===0){
-    // Colapsar plataforma - efecto visual
-    G.shakeT=10;SFX.play('hit');
-  }
-
-  // Colisión con proyectiles del jugador
-  G.projectiles.forEach(pr=>{
-    if(!pr.alive||!pr.fromPlayer)return;
-    if(pr.x+pr.w>e.x&&pr.x<e.x+e.w&&pr.y+pr.h>e.y&&pr.y<e.y+e.h){
-      G.bossHP--;pr.alive=false;G.shakeT=4;
-      spawnParticles(pr.x,pr.y,'#ffffff',5,2,15);SFX.play('hit');
-      if(G.bossHP<=0){
-        e.alive=false;G.bossAlive=false;G.score+=2000;
-        spawnParticles(e.x+e.w/2,e.y+e.h/2,C.magenta,20,4,40);
-        spawnParticles(e.x+e.w/2,e.y+e.h/2,C.primary,15,3,35);
-        SFX.play('win');
-      }
-    }
-  });
-
-  // Colisión con jugador
-  if(p.hurtT<=0&&G.invulnT<=0&&p.x+p.w>e.x&&p.x<e.x+e.w&&p.y+p.h>e.y&&p.y<e.y+e.h){
-    if(p.vy>0&&p.y+p.h-e.y<12){G.bossHP-=2;p.vy=JUMP*0.6;G.shakeT=6;SFX.play('hit');spawnParticles(e.x+e.w/2,e.y,C.primary,8,2,20)}
-    else damagePlayer(25);
-  }
-}
-
-// === ACTUALIZAR PROYECTILES ===
-function updateProjectiles(){
-  for(let i=G.projectiles.length-1;i>=0;i--){
-    const p=G.projectiles[i];
-    p.x+=p.vx;p.y+=p.vy;p.life--;
-    if(p.life<=0||p.x<G.camX-50||p.x>G.camX+VW+50||p.y<G.camY-50||p.y>G.camY+VH+50){p.alive=false}
-    if(!p.alive){G.projectiles.splice(i,1);continue}
-    // Proyectil enemigo contra jugador
-    if(!p.fromPlayer){
-      const pl=G.player;
-      if(pl&&pl.state!=='dead'&&pl.hurtT<=0&&pl.x+pl.w>p.x&&pl.x<p.x+p.w&&pl.y+pl.h>p.y&&pl.y<p.y+p.h){
-        damagePlayer(15);p.alive=false;G.projectiles.splice(i,1);
-      }
-    }
-    // Proyectil contra tiles sólidos
-    const tx=Math.floor(p.x/TS),ty=Math.floor(p.y/TS);
-    if(isSolid(tx,ty)){p.alive=false;G.projectiles.splice(i,1)}
-  }
-}
-
-// === CÁMARA ===
-function updateCamera(){
-  const p=G.player;if(!p)return;
-  const targetX=p.x+p.w/2-VW/2;
-  const targetY=p.y+p.h/2-VH/2;
-  G.camX+=(targetX-G.camX)*0.1;
-  G.camY+=(targetY-G.camY)*0.08;
-  G.camX=Math.max(0,Math.min(G.camX,G.levelData.width*TS-VW));
-  G.camY=Math.max(0,Math.min(G.camY,G.levelData.height*TS-VH));
-  // Shake
-  if(G.shakeT>0){G.shakeX=(Math.random()-0.5)*G.shakeT;G.shakeY=(Math.random()-0.5)*G.shakeT;G.shakeT--}
-  else{G.shakeX=0;G.shakeY=0}
-}
-
-// === RENDERIZADO ===
-function drawBg(){
-  const lvl=G.level;
-  // Gradiente de fondo
-  const grd=ctx.createLinearGradient(0,0,0,VH);
-  if(lvl===0){grd.addColorStop(0,'#0a0a1a');grd.addColorStop(1,'#1a0a2e')}
-  else if(lvl===1){grd.addColorStop(0,'#0a0a1a');grd.addColorStop(1,'#0a1a2e')}
-  else if(lvl===2){grd.addColorStop(0,'#0a0014');grd.addColorStop(1,'#1a0028')}
-  else if(lvl===3){grd.addColorStop(0,'#1a0a0a');grd.addColorStop(1,'#0a0a1a')}
-  else{grd.addColorStop(0,'#0a000a');grd.addColorStop(1,'#1a001a')}
-  ctx.fillStyle=grd;ctx.fillRect(0,0,VW,VH);
-
-  // Estrellas / grid parallax
-  ctx.fillStyle='rgba(0,229,255,0.3)';
-  for(let i=0;i<30;i++){
-    const sx=((i*57+G.frameCount*0.1*(0.2+i%3*0.1))%VW);
-    const sy=((i*43+i*17)%VH);
-    ctx.fillRect(sx,sy,1,1);
-  }
-  // Grid synthwave parallax
-  ctx.strokeStyle='rgba(255,0,170,0.08)';ctx.lineWidth=1;
-  const gridOff=(G.camX*0.2)%40;
-  for(let x=-gridOff;x<VW;x+=40){ctx.beginPath();ctx.moveTo(x,VH*0.6);ctx.lineTo(x,VH);ctx.stroke()}
-  for(let y=VH*0.6;y<VH;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(VW,y);ctx.stroke()}
-
-  // Edificios silueta parallax
-  ctx.fillStyle='rgba(10,10,30,0.8)';
-  const bldOff=G.camX*0.15;
-  for(let i=0;i<12;i++){
-    const bx=((i*55-bldOff)%700+700)%700-50;
-    const bh=40+Math.sin(i*3.7)*25;
-    ctx.fillRect(bx,VH*0.7-bh,30+Math.sin(i*2.3)*10,bh+VH*0.3);
-    // Ventanas
-    ctx.fillStyle='rgba(0,229,255,0.15)';
-    for(let wy=VH*0.7-bh+4;wy<VH*0.7;wy+=8){
-      for(let wx=bx+4;wx<bx+25;wx+=7){
-        if(Math.sin(wx*wy)>0)ctx.fillRect(wx,wy,3,4);
-      }
-    }
-    ctx.fillStyle='rgba(10,10,30,0.8)';
-  }
-}
-
-function drawTiles(){
-  const ld=G.levelData;const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  const sx=Math.max(0,Math.floor(cx/TS)),ex=Math.min(ld.width-1,Math.floor((cx+VW)/TS)+1);
-  const sy=Math.max(0,Math.floor(cy/TS)),ey=Math.min(ld.height-1,Math.floor((cy+VH)/TS)+1);
-  for(let ty=sy;ty<=ey;ty++){
-    for(let tx=sx;tx<=ex;tx++){
-      const v=ld.tiles[ty][tx];
-      if(v===0)continue;
-      const dx=tx*TS-cx,dy=ty*TS-cy;
-      if(v===1){
-        // Bloque sólido - estilo por nivel
-        const colors=[['#1a1a3e','#2a2a5e'],['#1a2a3e','#2a3a5e'],['#1a1a28','#2a2a38'],['#2a1a1a','#3a2a2a'],['#1a0a1a','#2a1a2a']];
-        ctx.fillStyle=colors[G.level%5][0];ctx.fillRect(dx,dy,TS,TS);
-        ctx.fillStyle=colors[G.level%5][1];ctx.fillRect(dx+1,dy+1,TS-2,TS-2);
-        // Borde brillante
-        ctx.fillStyle=G.level===4?'rgba(255,0,170,0.3)':'rgba(0,229,255,0.15)';
-        ctx.fillRect(dx,dy,TS,1);ctx.fillRect(dx,dy,1,TS);
-      }else if(v===2){
-        // Plataforma
-        ctx.fillStyle='#2a2a5e';ctx.fillRect(dx,dy,TS,4);
-        ctx.fillStyle=C.primary;ctx.fillRect(dx,dy,TS,1);
-      }else if(v===3){
-        // Pinchos
-        ctx.fillStyle='#ff3366';
-        for(let s=0;s<4;s++)ctx.fillRect(dx+s*4,dy+8,3,8);
-        ctx.fillStyle='#ff6699';
-        for(let s=0;s<4;s++)ctx.fillRect(dx+s*4,dy+8,3,2);
-      }else if(v===4){
-        // Lava/energía
-        const lt=(G.frameCount*0.05+tx*0.3)%1;
-        ctx.fillStyle=`rgba(255,0,100,${0.5+Math.sin(lt*Math.PI*2)*0.3})`;
-        ctx.fillRect(dx,dy,TS,TS);
-      }
-    }
-  }
-}
-
-function drawItems(){
-  const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  G.levelData.items.forEach(it=>{
-    if(it.collected)return;
-    const dx=it.x-cx,dy=it.y-cy;
-    if(dx<-TS||dx>VW+TS||dy<-TS||dy>VH+TS)return;
-    const bob=Math.sin(G.frameCount*0.06+it.x*0.1)*3;
-    switch(it.type){
-      case'core':
-        ctx.fillStyle=C.primary;ctx.fillRect(dx+4,dy+4+bob,8,8);
-        ctx.fillStyle='#ffffff';ctx.fillRect(dx+5,dy+5+bob,3,3);
-        break;
-      case'chip':
-        ctx.fillStyle=C.orange;ctx.fillRect(dx+3,dy+5+bob,10,6);
-        ctx.fillStyle='#ffaa44';ctx.fillRect(dx+5,dy+6+bob,2,4);
-        break;
-      case'key':
-        ctx.fillStyle=C.magenta;ctx.fillRect(dx+4,dy+3+bob,6,4);
-        ctx.fillRect(dx+6,dy+7+bob,2,6);
-        ctx.fillRect(dx+6,dy+11+bob,4,2);
-        break;
-      case'powerup':
-        const pcols=[C.primary,C.magenta,C.green,C.orange];
-        ctx.fillStyle=pcols[(it.power||1)-1];
-        ctx.fillRect(dx+2,dy+2+bob,12,12);
-        ctx.fillStyle='#ffffff';ctx.fillRect(dx+5,dy+5+bob,6,6);
-        break;
-    }
-  });
-  // Checkpoints
-  G.levelData.checkpoints.forEach(cp=>{
-    const dx=cp.x-cx,dy=cp.y-cy;
-    ctx.fillStyle=cp.activated?C.green:'#333344';
-    ctx.fillRect(dx+6,dy,4,16);
-    ctx.fillStyle=cp.activated?C.primary:'#555566';
-    ctx.fillRect(dx+3,dy,10,4);
-  });
-}
-
-function drawFERTO(){
-  const p=G.player;if(!p)return;
-  const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  let dx=Math.floor(p.x-cx),dy=Math.floor(p.y-cy);
-  // Parpadeo cuando dañado
-  if(p.hurtT>0&&G.frameCount%4<2)return;
-  if(G.invulnT>0&&G.frameCount%3<1)return;
-
-  ctx.save();
-  if(p.facing<0){ctx.translate(dx+p.w,dy);ctx.scale(-1,1);dx=0;dy=0}
-  else{ctx.translate(dx,dy);dx=0;dy=0}
-
-  const s=1; // escala pixel
-  // Antena
-  ctx.fillStyle=C.primary;ctx.fillRect(5*s,-4*s,2*s,4*s);
-  ctx.fillStyle='#ffffff';ctx.fillRect(5*s,-5*s,2*s,2*s);
-
-  // Cabeza
-  ctx.fillStyle='#1a1a3e';ctx.fillRect(1*s,0*s,10*s,8*s);
-  // LED rostro
-  ctx.fillStyle='#0a1a2e';ctx.fillRect(2*s,1*s,8*s,6*s);
-  // Ojos
-  const eyeCol=p.hurtT>0?'#ff3366':G.powerUp===1?C.orange:G.powerUp===3?C.green:C.primary;
-  ctx.fillStyle=eyeCol;
-  const eyeOff=p.state==='walk'?Math.sin(G.frameCount*0.3)*1:0;
-  ctx.fillRect(3*s,(2+eyeOff)*s,2*s,2*s);
-  ctx.fillRect(7*s,(2+eyeOff)*s,2*s,2*s);
-  // Boca
-  if(p.state==='hurt'){ctx.fillStyle='#ff3366';ctx.fillRect(4*s,5*s,4*s,1*s)}
-  else if(p.state==='jump'){ctx.fillStyle=C.primary;ctx.fillRect(4*s,5*s,4*s,1*s)}
-  else{ctx.fillStyle=C.primary;ctx.fillRect(5*s,5*s,2*s,1*s)}
-
-  // Cuerpo
-  ctx.fillStyle='#2a2a5e';ctx.fillRect(2*s,8*s,8*s,6*s);
-  // Detalle torso
-  ctx.fillStyle=C.primary;ctx.fillRect(5*s,9*s,2*s,3*s);
-
-  // Brazos
-  const armSwing=p.state==='walk'?Math.sin(G.frameCount*0.3)*2:0;
-  ctx.fillStyle='#3a3a6e';
-  ctx.fillRect(0*s,(9+armSwing)*s,2*s,4*s);
-  ctx.fillRect(10*s,(9-armSwing)*s,2*s,4*s);
-
-  // Piernas
-  const legOff=p.state==='walk'?Math.sin(G.frameCount*0.3)*2:0;
-  ctx.fillStyle='#2a2a5e';
-  ctx.fillRect(3*s,(14+legOff)*s,2*s,4*s);
-  ctx.fillRect(7*s,(14-legOff)*s,2*s,4*s);
-
-  // Botas neón
-  ctx.fillStyle=C.primary;
-  ctx.fillRect(2*s,(17+legOff)*s,3*s,3*s);
-  ctx.fillRect(7*s,(17-legOff)*s,3*s,3*s);
-
-  // Glow del power-up activo
-  if(G.powerUp&&G.powerUpT>0){
-    const gcols=[C.primary,C.magenta,C.green,C.orange];
-    ctx.fillStyle=gcols[G.powerUp-1];ctx.globalAlpha=0.15+Math.sin(G.frameCount*0.1)*0.1;
-    ctx.fillRect(-2*s,-6*s,16*s,26*s);ctx.globalAlpha=1;
-  }
-
-  ctx.restore();
-}
-
-function drawEnemy(e){
-  const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  const dx=Math.floor(e.x-cx),dy=Math.floor(e.y-cy);
-  if(dx<-60||dx>VW+60||dy<-60||dy>VH+60)return;
-
-  switch(e.type){
-    case'cube':
-      ctx.fillStyle='#3a0a3a';ctx.fillRect(dx,dy,e.w,e.h);
-      ctx.fillStyle=C.magenta;ctx.fillRect(dx+1,dy+1,e.w-2,e.h-2);
-      ctx.fillStyle='#ff66aa';ctx.fillRect(dx+3,dy+3,3,3);ctx.fillRect(dx+8,dy+3,3,3);
-      break;
-    case'drone':
-      ctx.fillStyle='#1a1a3e';ctx.fillRect(dx,dy+4,e.w,6);
-      ctx.fillStyle=C.primary;
-      ctx.fillRect(dx+2,dy,e.w-4,4);
-      ctx.fillRect(dx-2,dy+6,3,2);ctx.fillRect(dx+e.w-1,dy+6,3,2);
-      ctx.fillStyle='#ff3366';ctx.fillRect(dx+4,dy+5,2,2);
-      break;
-    case'crawler':
-      ctx.fillStyle='#1a3a1a';ctx.fillRect(dx,dy,e.w,e.h);
-      ctx.fillStyle=C.green;ctx.fillRect(dx+1,dy+1,e.w-2,e.h-2);
-      ctx.fillStyle='#003300';ctx.fillRect(dx+2,dy+3,3,2);ctx.fillRect(dx+8,dy+3,3,2);
-      break;
-    case'worm':
-      if(!e.emerged){
-        ctx.fillStyle='rgba(106,13,173,0.3)';ctx.fillRect(dx+2,dy+6,e.w-4,e.h-6);
-        ctx.fillStyle=C.violet;ctx.fillRect(dx+4,dy+8,2,2);
-      }else{
-        ctx.fillStyle=C.violet;ctx.fillRect(dx,dy,e.w,e.h);
-        ctx.fillStyle='#ffffff';ctx.fillRect(dx+3,dy+3,3,3);ctx.fillRect(dx+8,dy+3,3,3);
-        ctx.fillStyle='#2a0040';ctx.fillRect(dx+1,dy+1,e.w-2,2);
-      }
-      break;
-    case'bot':
-      ctx.fillStyle='#3a1a0a';ctx.fillRect(dx,dy,e.w,e.h);
-      ctx.fillStyle=C.orange;ctx.fillRect(dx+1,dy+1,e.w-2,e.h-2);
-      ctx.fillStyle='#ff0000';ctx.fillRect(dx+3,dy+4,3,2);ctx.fillRect(dx+8,dy+4,3,2);
-      ctx.fillStyle='#1a1a3e';ctx.fillRect(dx+5,dy+e.h-4,4,4);
-      break;
-    case'boss':
-      drawBoss(e,dx,dy);break;
-  }
-}
-
-function drawBoss(e,dx,dy){
-  // Cuerpo principal - cubos corruptos
-  const phase=G.bossPhase;
-  const t=G.frameCount*0.05;
-  // Cubos flotantes
-  for(let i=0;i<8;i++){
-    const ox=Math.sin(t+i*0.8)*12;
-    const oy=Math.cos(t+i*1.1)*8;
-    const sz=8+Math.sin(t+i)*3;
-    ctx.fillStyle=phase===3?'#ff0044':phase===2?C.magenta:'#6a0dad';
-    ctx.globalAlpha=0.6+Math.sin(t+i)*0.3;
-    ctx.fillRect(dx+e.w/2-sz/2+ox,dy+e.h/2-sz/2+oy,sz,sz);
-  }
-  ctx.globalAlpha=1;
-  // Núcleo central
-  ctx.fillStyle=phase===3?'#ff0044':phase===2?C.magenta:C.violet;
-  ctx.fillRect(dx+12,dy+12,e.w-24,e.h-24);
-  ctx.fillStyle=phase===3?'#ff6688':'#ffffff';
-  ctx.fillRect(dx+18,dy+18,12,12);
-  // Ojos
-  ctx.fillStyle='#ff0000';
-  ctx.fillRect(dx+16,dy+20,6,4);ctx.fillRect(dx+26,dy+20,6,4);
-  // Aura
-  ctx.strokeStyle=phase===3?'rgba(255,0,68,0.4)':phase===2?'rgba(255,0,170,0.3)':'rgba(106,13,173,0.3)';
-  ctx.lineWidth=2;
-  ctx.strokeRect(dx-4+Math.sin(t)*3,dy-4+Math.cos(t)*3,e.w+8,e.h+8);
-  // Barra de vida del jefe
-  const bw=60,bh=4,bx=dx+e.w/2-bw/2,by=dy-12;
-  ctx.fillStyle='#330011';ctx.fillRect(bx,by,bw,bh);
-  ctx.fillStyle=phase===3?'#ff0044':phase===2?C.magenta:C.violet;
-  ctx.fillRect(bx,by,bw*(G.bossHP/G.bossMaxHP),bh);
-  ctx.fillStyle='#ffffff';ctx.fillRect(bx,by,bw,1);
-}
-
-function drawProjectiles(){
-  const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  G.projectiles.forEach(p=>{
-    const dx=Math.floor(p.x-cx),dy=Math.floor(p.y-cy);
-    ctx.fillStyle=p.col;ctx.fillRect(dx,dy,p.w,p.h);
-    ctx.fillStyle='#ffffff';ctx.fillRect(dx+1,dy+1,p.w-2,p.h-2);
-  });
-}
-
-function drawExit(){
-  const ld=G.levelData;if(!ld)return;
-  const cx=Math.floor(G.camX),cy=Math.floor(G.camY);
-  const dx=ld.exitPos.x-cx,dy=ld.exitPos.y-cy;
-  const pulse=Math.sin(G.frameCount*0.08)*0.3+0.7;
-  ctx.fillStyle=`rgba(0,255,136,${pulse*0.3})`;ctx.fillRect(dx-2,dy-2,TS+4,TS+4);
-  ctx.fillStyle=C.green;ctx.fillRect(dx,dy,TS,TS);
-  ctx.fillStyle='#ffffff';ctx.fillRect(dx+3,dy+3,TS-6,TS-6);
-  ctx.fillStyle=C.green;ctx.font='8px monospace';
-  ctx.fillText(G.level<4?'EXIT':'WIN',dx-2,dy-4);
-}
-
-// === HUD ===
-function drawHUD(){
-  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,VW,18);
-  // Logo
-  ctx.fillStyle=C.primary;ctx.font='bold 10px monospace';ctx.fillText('FERTO',4,12);
-  // Vidas
-  ctx.fillStyle=C.magenta;ctx.font='9px monospace';
-  let hx=52;
-  for(let i=0;i<G.lives;i++){ctx.fillText('♥',hx,12);hx+=10}
-  // Energía
-  ctx.fillStyle='#1a1a2e';ctx.fillRect(90,4,50,8);
-  const ePct=G.energy/G.maxEnergy;
-  ctx.fillStyle=ePct>0.5?C.primary:ePct>0.25?C.orange:'#ff3366';
-  ctx.fillRect(90,4,50*ePct,8);
-  ctx.strokeStyle=C.primary;ctx.strokeRect(90,4,50,8);
-  // Score
-  ctx.fillStyle='#ffffff';ctx.font='9px monospace';ctx.fillText(`${G.score}`,150,12);
-  // Nivel
-  ctx.fillStyle=C.violet;ctx.fillText(`L${G.level+1}`,210,12);
-  // Cores
-  ctx.fillStyle=C.primary;ctx.fillText(`◆${G.cores}`,240,12);
-  // Keys
-  if(G.keys>0){ctx.fillStyle=C.magenta;ctx.fillText(`♧${G.keys}`,275,12)}
-  // Power-up
-  if(G.powerUp){
-    const pNames=['BOOST','D-JUMP','SHIELD','BLAST'];
-    const pCols=[C.primary,C.magenta,C.green,C.orange];
-    ctx.fillStyle=pCols[G.powerUp-1];ctx.font='8px monospace';
-    ctx.fillText(pNames[G.powerUp-1],VW-60,12);
-    // Timer bar
-    const pPct=G.powerUpT/600;
-    ctx.fillStyle=pCols[G.powerUp-1];ctx.fillRect(VW-60,14,50*pPct,2);
-  }
-}
-
-// === MENÚ PRINCIPAL ===
-function drawMenu(){
-  // Fondo animado
-  const grd=ctx.createLinearGradient(0,0,0,VH);
-  grd.addColorStop(0,'#0a0014');grd.addColorStop(0.5,'#1a0028');grd.addColorStop(1,'#0a0a14');
-  ctx.fillStyle=grd;ctx.fillRect(0,0,VW,VH);
-
-  // Grid animado
-  ctx.strokeStyle='rgba(255,0,170,0.12)';ctx.lineWidth=1;
-  const gt=G.frameCount*0.5;
-  for(let x=-gt%40;x<VW;x+=40){ctx.beginPath();ctx.moveTo(x,VH*0.55);ctx.lineTo(x,VH);ctx.stroke()}
-  for(let y=VH*0.55;y<VH;y+=15){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(VW,y);ctx.stroke()}
-
-  // Estrellas
-  for(let i=0;i<50;i++){
-    ctx.fillStyle=`rgba(0,229,255,${0.2+Math.sin(G.frameCount*0.02+i)*0.2})`;
-    ctx.fillRect((i*73+G.frameCount*0.1)%VW,(i*47)%VH,1,1);
-  }
-
-  // Título FERTO
-  const titleY=55+Math.sin(G.frameCount*0.03)*4;
-  // Glow
-  ctx.fillStyle=C.primary;ctx.globalAlpha=0.08;
-  ctx.fillRect(VW/2-60,titleY-5,120,28);ctx.globalAlpha=1;
-  // Texto
-  ctx.fillStyle=C.primary;ctx.font='bold 32px monospace';ctx.textAlign='center';
-  ctx.fillText('FERTO',VW/2,titleY+22);
-  ctx.fillStyle='#ffffff';ctx.font='bold 31px monospace';
-  ctx.fillText('FERTO',VW/2,titleY+21);
-  // Subtítulo
-  ctx.fillStyle=C.magenta;ctx.font='9px monospace';
-  ctx.fillText('NEOTRON 2088',VW/2,titleY+36);
-
-  // Opciones del menú
-  const opts=['JUGAR','CONTINUAR','CONTROLES','PUNTOS'];
-  opts.forEach((o,i)=>{
-    const oy=120+i*20;
-    const sel=G.menuSel===i;
-    if(sel){
-      ctx.fillStyle=C.primary;ctx.globalAlpha=0.15;
-      ctx.fillRect(VW/2-60,oy-6,120,16);ctx.globalAlpha=1;
-      ctx.fillStyle=C.primary;
-      // Cursor
-      ctx.fillText('▸',VW/2-50,oy+5);
-    }
-    ctx.fillStyle=sel?'#ffffff':'#555577';ctx.font=sel?'bold 11px monospace':'10px monospace';
-    ctx.fillText(o,VW/2,oy+5);
-  });
-
-  ctx.textAlign='left';
-  G.menuBlink++;
-}
-
-// === PANTALLA DE CONTROLES ===
-function drawControls(){
-  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.fillRect(0,0,VW,VH);
-  ctx.fillStyle=C.primary;ctx.font='bold 14px monospace';ctx.textAlign='center';
-  ctx.fillText('CONTROLES',VW/2,30);
-  ctx.font='9px monospace';ctx.fillStyle='#ffffff';ctx.textAlign='left';
-  const lines=[
-    'PC:','  A / ←  Mover izquierda','  D / →  Mover derecha','  ESPACIO  Saltar','  SHIFT  Ataque especial','  ESC  Pausa','',
-    'MOVIL:','  Botones en pantalla','  ◀▶ Mover','  SALTO  Saltar','  ATAQUE  Poder activo','  | |  Pausa','',
-    'POWER-UPS:','  BOOST  Super velocidad','  D-JUMP  Doble salto','  SHIELD  Escudo','  BLAST  Ataque energía',
-  ];
-  lines.forEach((l,i)=>{ctx.fillStyle=l.startsWith('PC')||l.startsWith('MOVIL')||l.startsWith('POWER')?C.magenta:'#aaaacc';ctx.fillText(l,40,55+i*11)});
-  ctx.fillStyle=C.orange;ctx.textAlign='center';ctx.font='9px monospace';
-  ctx.fillText('Toca o presiona cualquier tecla',VW/2,VH-15);
-  ctx.textAlign='left';
-}
-
-// === PANTALLA DE CRÉDITOS / LEADERBOARD ===
-function drawLeaderboard(){
-  ctx.fillStyle='rgba(0,0,0,0.88)';ctx.fillRect(0,0,VW,VH);
-  ctx.fillStyle=C.magenta;ctx.font='bold 14px monospace';ctx.textAlign='center';
-  ctx.fillText('MEJORES PUNTUACIONES',VW/2,25);
-  ctx.font='9px monospace';ctx.textAlign='left';
-  if(G.leaderboard.length===0){
-    ctx.fillStyle='#555577';ctx.fillText('Cargando...',VW/2-30,60);
-  }else{
-    G.leaderboard.forEach((e,i)=>{
-      ctx.fillStyle=i===0?C.primary:i===1?C.magenta:i===2?C.orange:'#777799';
-      ctx.fillText(`${i+1}. ${e.name||'FERTO'} - ${e.score} (Nv.${e.level})`,30,50+i*14);
-    });
-  }
-  ctx.fillStyle=C.orange;ctx.textAlign='center';ctx.font='9px monospace';
-  ctx.fillText('Presiona ESC o toque para volver',VW/2,VH-12);
-  ctx.textAlign='left';
-}
-
-// === GAME OVER ===
-function drawGameOver(){
-  ctx.fillStyle='rgba(10,0,0,0.85)';ctx.fillRect(0,0,VW,VH);
-  ctx.fillStyle='#ff3366';ctx.font='bold 22px monospace';ctx.textAlign='center';
-  ctx.fillText('GAME OVER',VW/2,80);
-  ctx.fillStyle='#ffffff';ctx.font='11px monospace';
-  ctx.fillText(`Puntuación: ${G.score}`,VW/2,110);
-  ctx.fillText(`Nivel alcanzado: ${G.level+1}`,VW/2,128);
-  ctx.fillStyle=C.orange;ctx.font='9px monospace';
-  const blink=Math.sin(G.frameCount*0.08)>0;
-  if(blink)ctx.fillText('Presiona ESPACIO para reintentar',VW/2,170);
-  ctx.textAlign='left';
-}
-
-// === NIVEL COMPLETO ===
-function drawLevelComplete(){
-  ctx.fillStyle='rgba(0,10,20,0.85)';ctx.fillRect(0,0,VW,VH);
-  ctx.fillStyle=C.primary;ctx.font='bold 16px monospace';ctx.textAlign='center';
-  ctx.fillText('NIVEL COMPLETO',VW/2,70);
-  ctx.fillStyle='#ffffff';ctx.font='11px monospace';
-  const names=['Neon Streets','Circuit Factory','Data Abyss','Core Tower','Glitch Nexus'];
-  ctx.fillText(names[G.level]||'',VW/2,95);
-  ctx.fillText(`Score: ${G.score}`,VW/2,118);
-  ctx.fillStyle=C.green;ctx.font='9px monospace';
-  const blink=Math.sin(G.frameCount*0.08)>0;
-  if(blink)ctx.fillText('Presiona ESPACIO para continuar',VW/2,155);
-  ctx.textAlign='left';
-}
-
-// === VICTORIA ===
-function drawVictory(){
-  ctx.fillStyle='rgba(0,5,15,0.88)';ctx.fillRect(0,0,VW,VH);
-  // Partículas de celebración
-  if(G.frameCount%5===0)spawnParticles(Math.random()*VW,Math.random()*VH*0.5,[C.primary,C.magenta,C.green,C.orange][Math.floor(Math.random()*4)],2,2,30);
-  ctx.fillStyle=C.primary;ctx.font='bold 18px monospace';ctx.textAlign='center';
-  ctx.fillText('NEOTRON SALVADA',VW/2,55);
-  ctx.fillStyle='#ffffff';ctx.font='11px monospace';
-  ctx.fillText('FERTO restauró el sistema',VW/2,80);
-  ctx.fillText(`Score final: ${G.score}`,VW/2,105);
-  ctx.fillText(`Núcleos: ${G.cores}`,VW/2,122);
-  ctx.fillStyle=C.magenta;ctx.font='9px monospace';
-  const blink=Math.sin(G.frameCount*0.08)>0;
-  if(blink)ctx.fillText('ESPACIO para volver al menú',VW/2,165);
-  ctx.textAlign='left';
-}
-
-// === PAUSA ===
-function drawPause(){
-  ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,VW,VH);
-  ctx.fillStyle=C.primary;ctx.font='bold 18px monospace';ctx.textAlign='center';
-  ctx.fillText('PAUSA',VW/2,VH/2-10);
-  ctx.fillStyle='#aaaaaa';ctx.font='9px monospace';
-  ctx.fillText('ESC para continuar',VW/2,VH/2+15);
-  ctx.textAlign='left';
-}
-
-// === AJUSTE DE PANTALLA ===
-function resize(){
-  const w=window.innerWidth,h=window.innerHeight;
-  const aspect=VW/VH;
-  let cw,ch;
-  if(w/h>aspect){ch=h;cw=h*aspect}else{cw=w;ch=w/aspect}
-  canvas.width=VW;canvas.height=VH;
-  canvas.style.width=Math.floor(cw)+'px';
-  canvas.style.height=Math.floor(ch)+'px';
-  scale=cw/VW;
-}
-window.addEventListener('resize',resize);
-
-// === MANEJO DE ESTADOS DE ENTRADA ===
-function handleMenuInput(){
-  if(Keys.jump&&jumpReleased){
-    jumpPressed=true;
-    SFX.resume();
-    switch(G.menuSel){
-      case 0: // Jugar
-        G.state='playing';G.lives=3;G.score=0;G.energy=G.maxEnergy;G.cores=0;G.keys=0;G.powerUp=null;G.powerUpT=0;
-        loadLevel(0);Music.play(0);break;
-      case 1: // Continuar
-        G.state='playing';G.lives=Math.max(1,G.lives);G.energy=G.maxEnergy;
-        loadLevel(G.level);Music.play(G.level%3);break;
-      case 2: // Controles
-        G.state='controls';break;
-      case 3: // Leaderboard
-        G.state='credits';FB.loadScores();break;
-    }
-  }
-  if(Keys.pause){G.state='controls'}
-}
-function handlePlayingInput(){
-  if(Keys.pause){G.state='paused';Music.stop()}
-}
-function handlePausedInput(){
-  if(Keys.pause){G.state='playing';Music.play(G.level%3)}
-}
-function handleGameOverInput(){
-  if(Keys.jump){G.state='menu';G.menuSel=0;FB.loadScores()}
-}
-function handleLevelCompleteInput(){
-  if(Keys.jump){
-    G.level++;G.energy=G.maxEnergy;
-    loadLevel(G.level);
-    G.state='playing';Music.play(G.level%3);
-  }
-}
-function handleVictoryInput(){
-  if(Keys.jump){G.state='menu';G.menuSel=0;FB.loadScores()}
-}
-function handleControlsInput(){
-  if(Keys.pause||Keys.jump){G.state='menu'}
-}
-function handleCreditsInput(){
-  if(Keys.pause||Keys.jump){G.state='menu'}
-}
-
-// Navegación menú con teclas
-let menuCD=0;
-function handleMenuNavigation(){
-  if(menuCD>0){menuCD--;return}
-  if(Keys.left||Keys.up){G.menuSel=(G.menuSel-1+4)%4;menuCD=10;SFX.play('coin')}
-  if(Keys.right||Keys.down){G.menuSel=(G.menuSel+1)%4;menuCD=10;SFX.play('coin')}
-}
-
-// === BUCLE PRINCIPAL ===
-function update(){
-  G.frameCount++;
-  switch(G.state){
-    case'menu':handleMenuNavigation();handleMenuInput();break;
-    case'playing':
-      handlePlayingInput();
-      updatePlayer();updateEnemies();updateProjectiles();updateParticles();updateCamera();
-      break;
-    case'paused':handlePausedInput();break;
-    case'gameover':handleGameOverInput();updateParticles();break;
-    case'levelcomplete':handleLevelCompleteInput();updateParticles();break;
-    case'victory':handleVictoryInput();updateParticles();break;
-    case'controls':handleControlsInput();break;
-    case'credits':handleCreditsInput();break;
-  }
-  // Reset de input de salto
-  if(!Keys.jump)jumpReleased=true;
-  jumpPressed=false;
-}
-
-function render(){
-  ctx.clearRect(0,0,VW,VH);
-  switch(G.state){
-    case'menu':drawMenu();break;
-    case'playing':
-      ctx.save();ctx.translate(G.shakeX,G.shakeY);
-      drawBg();drawTiles();drawExit();drawItems();
-      G.entities.forEach(e=>{if(e.alive)drawEnemy(e)});
-      drawProjectiles();drawFERTO();drawParticles(G.camX,G.camY);
-      ctx.restore();drawHUD();
-      // Efecto glitch en nivel 3
-      if(G.level===2&&G.frameCount%300<10){
-        ctx.fillStyle=`rgba(255,0,170,${0.05+Math.random()*0.1})`;
-        ctx.fillRect(0,Math.random()*VH,VW,2+Math.random()*6);
-      }
-      break;
-    case'paused':drawBg();drawTiles();drawFERTO();drawHUD();drawPause();break;
-    case'gameover':drawGameOver();drawParticles(0,0);break;
-    case'levelcomplete':drawLevelComplete();drawParticles(0,0);break;
-    case'victory':drawVictory();drawParticles(0,0);break;
-    case'controls':drawControls();break;
-    case'credits':drawLeaderboard();break;
-  }
-}
-
-function gameLoop(){
-  update();render();requestAnimationFrame(gameLoop);
-}
-
-// === TOQUE EN PANTALLA PARA MENÚ ===
-canvas.addEventListener('click',()=>{
-  SFX.resume();
-  if(G.state==='menu'){jumpPressed=true;Keys.jump=true;setTimeout(()=>{Keys.jump=false},100)}
-  else if(G.state==='gameover'||G.state==='victory'){jumpPressed=true;Keys.jump=true;setTimeout(()=>{Keys.jump=false},100)}
-  else if(G.state==='levelcomplete'){jumpPressed=true;Keys.jump=true;setTimeout(()=>{Keys.jump=false},100)}
-  else if(G.state==='controls'||G.state==='credits'){Keys.pause=true;setTimeout(()=>{Keys.pause=false},100)}
-});
-
-// Swipe para menú
-let touchStartY=0;
-canvas.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:true});
-canvas.addEventListener('touchend',e=>{
-  const dy=e.changedTouches[0].clientY-touchStartY;
-  if(Math.abs(dy)>30){
-    if(dy<0)G.menuSel=Math.min(3,G.menuSel+1);
-    else G.menuSel=Math.max(0,G.menuSel-1);
-    SFX.play('coin');
-  }
-},{passive:true});
-
-// === INICIALIZACIÓN ===
-function init(){
-  resize();SFX.init();Music.init();
-  FB.signInAnon();FB.loadScores();
-  G.state='menu';G.menuSel=0;
-  gameLoop();
-}
-window.onload=init;
+// Inicializar Firebase
+const firebaseConfig={apiKey:"AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",authDomain:"celulakmt.firebaseapp.com",databaseURL:"https://celulakmt-default-rtdb.firebaseio.com",projectId:"celulakmt",storageBucket:"celulakmt.firebasestorage.app",messagingSenderId:"623088700057",appId:"1:623088700057:web:fffb8fccbae5ff6d834608",measurementId:"G-CY1HY229XX"};
+firebase.initializeApp(firebaseConfig);
+let firebaseUid=null;
+firebase.auth().signInAnonymously().then(cred=>{firebaseUid=cred.user.uid;console.log('Firebase auth OK:',firebaseUid)}).catch(e=>console.warn('Auth error:',e));
+const dbRef=firebase.database().ref('klis123');
+
+// Chart.js defaults
+Chart.defaults.color='#888';
+Chart.defaults.borderColor='#222';
+Chart.defaults.font.family='Cinzel';
 </script>
-</body>
-</html>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback,useMemo,createContext,useContext}=React;
+
+// ============ CONTEXTO GLOBAL ============
+const AppContext=createContext();
+const useApp=()=>useContext(AppContext);
+
+const DEFAULT_BUTTONS=['Participó','Expuso','Entregó tarea','Respondió','Leyó','Investigó','Presentó trabajo'];
+const STORAGE_PREFIX='klis123_';
+
+// Utilidades
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const now=()=>{const d=new Date();return{date:d.toISOString().split('T')[0],time:d.toTimeString().slice(0,8),timestamp:d.getTime()}};
+const loadLocal=(key,fallback)=>{try{const v=localStorage.getItem(STORAGE_PREFIX+key);return v?JSON.parse(v):fallback}catch{return fallback}};
+const saveLocal=(key,val)=>{try{localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify(val))}catch{}};
+
+// Proveedor de datos
+function AppProvider({children}){
+  const [courses,setCourses]=useState(()=>loadLocal('courses',[]));
+  const [students,setStudents]=useState(()=>loadLocal('students',[]));
+  const [records,setRecords]=useState(()=>loadLocal('records',[]));
+  const [observations,setObservations]=useState(()=>loadLocal('observations',[]));
+  const [customButtons,setCustomButtons]=useState(()=>loadLocal('customButtons',[]));
+  const [settings,setSettings]=useState(()=>loadLocal('settings',{teacherName:'',secondaryColor:'#dc2626',animations:true,sound:false,fontSize:14}));
+  const [syncStatus,setSyncStatus]=useState('offline');
+  const [undoStack,setUndoStack]=useState([]);
+
+  // Persistir en localStorage
+  useEffect(()=>{saveLocal('courses',courses)},[courses]);
+  useEffect(()=>{saveLocal('students',students)},[students]);
+  useEffect(()=>{saveLocal('records',records)},[records]);
+  useEffect(()=>{saveLocal('observations',observations)},[observations]);
+  useEffect(()=>{saveLocal('customButtons',customButtons)},[customButtons]);
+  useEffect(()=>{saveLocal('settings',settings)},[settings]);
+
+  // Sincronizar con Firebase
+  useEffect(()=>{
+    if(!firebaseUid)return;
+    setSyncStatus('saving');
+    const data={courses,students,records,observations,customButtons,settings,updatedAt:Date.now()};
+    dbRef.child('data').set(data).then(()=>setSyncStatus('synced')).catch(()=>setSyncStatus('error'));
+  },[courses,students,records,observations,customButtons,settings]);
+
+  // Cargar desde Firebase al inicio
+  useEffect(()=>{
+    if(!firebaseUid)return;
+    dbRef.child('data').once('value').then(snap=>{
+      const d=snap.val();
+      if(d){
+        if(d.courses&&d.courses.length)setCourses(d.courses);
+        if(d.students&&d.students.length)setStudents(d.students);
+        if(d.records&&d.records.length)setRecords(d.records);
+        if(d.observations&&d.observations.length)setObservations(d.observations);
+        if(d.customButtons&&d.customButtons.length)setCustomButtons(d.customButtons);
+        if(d.settings)setSettings(s=>({...s,...d.settings}));
+        setSyncStatus('synced');
+      }
+    }).catch(()=>setSyncStatus('error'));
+  },[]);
+
+  // Operaciones CRUD
+  const addCourse=c=>setCourses(p=>[...p,{...c,id:uid(),createdAt:Date.now()}]);
+  const updateCourse=(id,data)=>setCourses(p=>p.map(c=>c.id===id?{...c,...data}:c));
+  const deleteCourse=id=>{setCourses(p=>p.filter(c=>c.id!==id));setStudents(p=>p.filter(s=>s.courseId!==id));setRecords(p=>p.filter(r=>r.courseId!==id));setObservations(p=>p.filter(o=>o.courseId!==id))};
+  const duplicateCourse=id=>{const c=courses.find(x=>x.id===id);if(!c)return;const nc={...c,id:uid(),name:c.name+' (copia)',createdAt:Date.now()};setCourses(p=>[...p,nc]);const ss=students.filter(s=>s.courseId===id).map(s=>({...s,id:uid(),courseId:nc.id}));setStudents(p=>[...p,...ss])};
+
+  const addStudent=s=>setStudents(p=>[...p,{...s,id:uid(),createdAt:Date.now()}]);
+  const updateStudent=(id,data)=>setStudents(p=>p.map(s=>s.id===id?{...s,...data}:s));
+  const deleteStudent=id=>{setStudents(p=>p.filter(s=>s.id!==id));setRecords(p=>p.filter(r=>r.studentId!==id));setObservations(p=>p.filter(o=>o.studentId!==id))};
+
+  const addRecord=(r,skipUndo)=>{
+    // Anti duplicado
+    const{timestamp}=now();
+    const isDup=records.some(x=>x.studentId===r.studentId&&x.courseId===r.courseId&&x.type===r.type&&Math.abs(x.timestamp-timestamp)<5000);
+    if(isDup)return'duplicate';
+    const rec={...r,id:uid(),...now()};
+    setRecords(p=>[...p,rec]);
+    if(!skipUndo)setUndoStack(p=>[...p,{type:'addRecord',id:rec.id}]);
+    return rec.id;
+  };
+  const deleteRecord=id=>{const rec=records.find(r=>r.id===id);if(rec)setUndoStack(p=>[...p,{type:'deleteRecord',data:rec}]);setRecords(p=>p.filter(r=>r.id!==id))};
+  const undoLast=()=>{if(!undoStack.length)return;const last=undoStack[undoStack.length-1];setUndoStack(p=>p.slice(0,-1));if(last.type==='addRecord'){setRecords(p=>p.filter(r=>r.id!==last.id))}else if(last.type==='deleteRecord'){setRecords(p=>[...p,last.data])}return true};
+
+  const addObservation=o=>setObservations(p=>[...p,{...o,id:uid(),...now()}]);
+  const updateObservation=(id,data)=>setObservations(p=>p.map(o=>o.id===id?{...o,...data}:o));
+  const deleteObservation=id=>setObservations(p=>p.filter(o=>o.id!==id));
+
+  const addCustomButton=name=>setCustomButtons(p=>[...p,{id:uid(),name}]);
+  const removeCustomButton=id=>setCustomButtons(p=>p.filter(b=>b.id!==id));
+
+  const updateSettings=data=>setSettings(p=>({...p,...data}));
+
+  const getStudentRecords=(sid,cid)=>records.filter(r=>r.studentId===sid&&(!cid||r.courseId===cid));
+  const getStudentObservations=(sid)=>observations.filter(o=>o.studentId===sid);
+  const getCourseStudents=(cid)=>students.filter(s=>s.courseId===cid).sort((a,b)=>(a.listNumber||0)-(b.listNumber||0));
+  const getCourseRecords=(cid)=>records.filter(r=>r.courseId===cid);
+  const getParticipationCount=(sid,cid)=>records.filter(r=>r.studentId===sid&&r.courseId===cid).length;
+  const getParticipationLevel=(sid,cid)=>{const c=getParticipationCount(sid,cid);if(c>=8)return'high';if(c>=3)return'mid';return'low'};
+
+  const value={courses,students,records,observations,customButtons,settings,syncStatus,undoStack,
+    addCourse,updateCourse,deleteCourse,duplicateCourse,
+    addStudent,updateStudent,deleteStudent,
+    addRecord,deleteRecord,undoLast,
+    addObservation,updateObservation,deleteObservation,
+    addCustomButton,removeCustomButton,updateSettings,
+    getStudentRecords,getStudentObservations,getCourseStudents,getCourseRecords,getParticipationCount,getParticipationLevel};
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+}
+
+// ============ TOAST SYSTEM ============
+const ToastContext=createContext();
+function ToastProvider({children}){
+  const[toasts,setToasts]=useState([]);
+  const addToast=(msg,type='success',action=null,duration=4000)=>{
+    const id=uid();setToasts(p=>[...p,{id,msg,type,action}]);
+    if(duration>0)setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),duration);
+  };
+  const removeToast=id=>setToasts(p=>p.filter(t=>t.id!==id));
+  return <ToastContext.Provider value={{addToast,removeToast}}>
+    {children}
+    <div className="toast-container">{toasts.map(t=>(
+      <div key={t.id} className={`toast toast-${t.type}`}>
+        <i className={`fa-solid ${t.type==='success'?'fa-check-circle':t.type==='error'?'fa-exclamation-circle':t.type==='warning'?'fa-triangle-exclamation':'fa-info-circle'}`}></i>
+        <span style={{flex:1}}>{t.msg}</span>
+        {t.action&&<button onClick={t.action.fn} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',padding:'4px 12px',borderRadius:'4px',cursor:'pointer',fontFamily:'Cinzel',fontWeight:700,fontSize:'.7rem'}}>{t.action.label}</button>}
+        <button onClick={()=>removeToast(t.id)} style={{background:'none',border:'none',color:'#888',cursor:'pointer',fontSize:'1rem'}}>&times;</button>
+      </div>
+    ))}</div>
+  </ToastContext.Provider>
+}
+const useToast=()=>useContext(ToastContext);
+
+// ============ COMPONENTES UI ============
+
+function ConfirmModal({open,title,message,onConfirm,onCancel}){
+  if(!open)return null;
+  return <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-box" onClick={e=>e.stopPropagation()}>
+      <h3 className="font-cinzel text-lg font-bold mb-3" style={{color:'#dc2626'}}>{title||'Confirmar'}</h3>
+      <p className="text-sm mb-6" style={{color:'#999'}}>{message||'¿Seguro que deseas continuar?'}</p>
+      <div className="flex gap-3 justify-end">
+        <button className="btn-ghost" onClick={onCancel}>Cancelar</button>
+        <button className="btn-blood" onClick={onConfirm}>Confirmar</button>
+      </div>
+    </div>
+  </div>
+}
+
+function FormModal({open,title,onClose,children}){
+  if(!open)return null;
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-box" onClick={e=>e.stopPropagation()} style={{maxWidth:480}}>
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="font-cinzel text-lg font-bold" style={{color:'#dc2626'}}>{title}</h3>
+        <button onClick={onClose} style={{background:'none',border:'none',color:'#666',cursor:'pointer',fontSize:'1.2rem'}}><i className="fa-solid fa-xmark"/></button>
+      </div>
+      {children}
+    </div>
+  </div>
+}
+
+function SyncIndicator(){
+  const{syncStatus}=useApp();
+  const cls=syncStatus==='synced'?'sync-on':syncStatus==='saving'?'sync-sav':'sync-off';
+  const lbl=syncStatus==='synced'?'Sincronizado':syncStatus==='saving'?'Guardando':'Sin conexión';
+  return <div className="flex items-center gap-2 text-xs" style={{color:'#666'}}><span className={`sync-dot ${cls}`}></span>{lbl}</div>
+}
+
+// ============ SPLASH SCREEN ============
+function SplashScreen({onDone}){
+  const[phase,setPhase]=useState(0);
+  useEffect(()=>{
+    const t1=setTimeout(()=>setPhase(1),600);
+    const t2=setTimeout(()=>setPhase(2),1800);
+    const t3=setTimeout(()=>setPhase(3),2800);
+    const t4=setTimeout(()=>onDone(),4200);
+    return()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);clearTimeout(t4)}
+  },[]);
+  const smokes=Array.from({length:6},(_,i)=>i);
+  return <div className={`splash-screen ${phase>=3?'hide':''}`}>
+    <div className="smoke-container">
+      {smokes.map(i=><div key={i} className="smoke" style={{left:`${10+i*16}%`,animationDelay:`${i*1.3}s`,animationDuration:`${6+i}s`}}/>)}
+    </div>
+    <div style={{position:'relative',zIndex:2,textAlign:'center'}}>
+      <div className="glitch-text" data-text="KLIS123" style={{opacity:phase>=0?1:0}}>KLIS123</div>
+      <div className="font-gothic subtitle-anim" style={{fontSize:'clamp(2rem,8vw,5rem)',color:'#dc2626',letterSpacing:'6px',opacity:phase>=1?undefined:0}}>CLLASKM</div>
+      <div className="tagline-anim font-cinzel" style={{fontSize:'clamp(.7rem,2vw,1rem)',color:'#666',letterSpacing:'4px',textTransform:'uppercase',marginTop:'20px',opacity:phase>=2?undefined:0}}>Control Docente Inteligente</div>
+    </div>
+  </div>
+}
+
+// ============ SIDEBAR ============
+function Sidebar({current,setCurrent,open,setOpen}){
+  const{settings}=useApp();
+  const items=[
+    {id:'dashboard',icon:'fa-gauge-high',label:'Dashboard'},
+    {id:'courses',icon:'fa-book-open',label:'Cursos'},
+    {id:'calendar',icon:'fa-calendar-days',label:'Calendario'},
+    {id:'stats',icon:'fa-chart-bar',label:'Estadísticas'},
+    {id:'reports',icon:'fa-file-export',label:'Reportes'},
+    {id:'history',icon:'fa-clock-rotate-left',label:'Historial'},
+    {id:'settings',icon:'fa-gear',label:'Configuración'},
+  ];
+  return <>
+    <div className={`sidebar-overlay ${open?'open':''}`} onClick={()=>setOpen(false)}/>
+    <aside className={`sidebar ${open?'open':''}`}>
+      <div style={{padding:'20px 16px',borderBottom:'1px solid #1a1a1a'}}>
+        <div className="font-gothic" style={{fontSize:'1.6rem',color:'#fff',lineHeight:1}}>KLIS123</div>
+        <div className="font-gothic" style={{fontSize:'.9rem',color:'#dc2626',letterSpacing:'2px'}}>CLLASKM</div>
+        <div style={{fontSize:'.55rem',color:'#555',letterSpacing:'2px',textTransform:'uppercase',marginTop:'4px'}}>Control Docente Inteligente</div>
+      </div>
+      <nav style={{padding:'12px 8px'}}>
+        {items.map(it=>(
+          <div key={it.id} onClick={()=>{setCurrent(it.id);setOpen(false)}}
+            style={{display:'flex',alignItems:'center',gap:'12px',padding:'11px 14px',borderRadius:'8px',cursor:'pointer',transition:'all .2s',
+              background:current===it.id?'rgba(220,38,38,.1)':'transparent',
+              color:current===it.id?'#dc2626':'#777',borderLeft:current===it.id?'3px solid #dc2626':'3px solid transparent'}}
+            onMouseEnter={e=>{if(current!==it.id){e.currentTarget.style.background='rgba(255,255,255,.03)';e.currentTarget.style.color='#aaa'}}}
+            onMouseLeave={e=>{if(current!==it.id){e.currentTarget.style.background='transparent';e.currentTarget.style.color='#777'}}}>
+            <i className={`fa-solid ${it.icon}`} style={{width:'18px',textAlign:'center',fontSize:'.85rem'}}/>
+            <span style={{fontSize:'.78rem',fontWeight:600}}>{it.label}</span>
+          </div>
+        ))}
+      </nav>
+      <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'14px 16px',borderTop:'1px solid #1a1a1a'}}>
+        <SyncIndicator/>
+        {settings.teacherName&&<div style={{fontSize:'.65rem',color:'#555',marginTop:'6px'}}><i className="fa-solid fa-user" style={{marginRight:'4px'}}/>Docente: {settings.teacherName}</div>}
+      </div>
+    </aside>
+  </>
+}
+
+function BottomNav({current,setCurrent}){
+  const items=[
+    {id:'dashboard',icon:'fa-gauge-high',label:'Inicio'},
+    {id:'courses',icon:'fa-book-open',label:'Cursos'},
+    {id:'stats',icon:'fa-chart-bar',label:'Stats'},
+    {id:'calendar',icon:'fa-calendar-days',label:'Calendario'},
+    {id:'settings',icon:'fa-gear',label:'Config'},
+  ];
+  return <div className="bottom-nav no-print">
+    {items.map(it=>(
+      <div key={it.id} className={`bottom-nav-item ${current===it.id?'active':''}`} onClick={()=>setCurrent(it.id)}>
+        <i className={`fa-solid ${it.icon}`} style={{fontSize:'1.1rem'}}/>
+        <span>{it.label}</span>
+      </div>
+    ))}
+  </div>
+}
+
+// ============ DASHBOARD ============
+function Dashboard({setCurrent,setCourseId}){
+  const{courses,records,students,observations}=useApp();
+  const today=new Date().toISOString().split('T')[0];
+  const todayRecords=records.filter(r=>r.date===today);
+  const recentRecords=records.slice(-10).reverse();
+  const topStudents=useMemo(()=>{
+    const counts={};
+    records.forEach(r=>{counts[r.studentId]=(counts[r.studentId]||0)+1});
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([sid,c])=>{
+      const s=students.find(x=>x.id===sid);
+      return s?{...s,count:c}:null
+    }).filter(Boolean);
+  },[records,students]);
+
+  return <div>
+    <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h1 className="font-gothic" style={{fontSize:'2.2rem',color:'#fff',lineHeight:1}}>KLIS123</h1>
+        <span className="font-gothic" style={{fontSize:'1rem',color:'#dc2626',letterSpacing:'2px'}}>CLLASKM</span>
+      </div>
+      <button className="btn-blood" onClick={()=>{setCurrent('courses');setTimeout(()=>document.getElementById('btn-new-course')?.click(),100)}}>
+        <i className="fa-solid fa-plus" style={{marginRight:'6px'}}/>Crear Curso
+      </button>
+    </div>
+
+    {/* Widgets */}
+    <div className="grid gap-4" style={{gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))'}}>
+      <div className="card-dark p-4">
+        <div style={{fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Cursos Activos</div>
+        <div className="font-cinzel" style={{fontSize:'2rem',fontWeight:900,color:'#dc2626'}}>{courses.length}</div>
+      </div>
+      <div className="card-dark p-4">
+        <div style={{fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Participaciones Hoy</div>
+        <div className="font-cinzel" style={{fontSize:'2rem',fontWeight:900,color:'#22c55e'}}>{todayRecords.length}</div>
+      </div>
+      <div className="card-dark p-4">
+        <div style={{fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Estudiantes</div>
+        <div className="font-cinzel" style={{fontSize:'2rem',fontWeight:900,color:'#3b82f6'}}>{students.length}</div>
+      </div>
+      <div className="card-dark p-4">
+        <div style={{fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Total Registros</div>
+        <div className="font-cinzel" style={{fontSize:'2rem',fontWeight:900,color:'#eab308'}}>{records.length}</div>
+      </div>
+    </div>
+
+    {/* Cursos */}
+    <h2 className="font-cinzel text-sm font-bold mt-8 mb-4" style={{color:'#888',letterSpacing:'2px',textTransform:'uppercase'}}>Tus Cursos</h2>
+    {courses.length===0?<div className="card-dark p-8 text-center">
+      <i className="fa-solid fa-book-open" style={{fontSize:'2.5rem',color:'#333',marginBottom:'12px'}}/>
+      <p style={{color:'#555',fontSize:'.85rem'}}>No hay cursos creados</p>
+      <p style={{color:'#444',fontSize:'.7rem',marginTop:'4px'>Comienza creando tu primer curso</p>
+    </div>:<div className="grid gap-3" style={{gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))'}}>
+      {courses.map(c=>{
+        const cst=getCourseStudentsSimple(students,c.id);
+        const crc=records.filter(r=>r.courseId===c.id);
+        const lastRec=crc.length?crc[crc.length-1]:null;
+        return <div key={c.id} className="card-dark p-4 cursor-pointer" onClick={()=>{setCourseId(c.id);setCurrent('courseDetail')}}>
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <div className="font-cinzel font-bold text-sm" style={{color:'#e5e5e5'}}>{c.name}</div>
+              <div style={{fontSize:'.65rem',color:'#666'}}>{c.parallel} · {c.level} · {c.subject}</div>
+            </div>
+            <span className="status-dot status-high"/>
+          </div>
+          <div className="flex gap-4 mt-3" style={{fontSize:'.7rem',color:'#555'}}>
+            <span><i className="fa-solid fa-users" style={{marginRight:'4px'}}/>{cst.length}</span>
+            <span><i className="fa-solid fa-clipboard-check" style={{marginRight:'4px'}}/>{crc.length}</span>
+          </div>
+          {lastRec&&<div style={{fontSize:'.6rem',color:'#444',marginTop:'8px'}}>Último: {lastRec.date} {lastRec.time}</div>}
+        </div>
+      })}
+    </div>}
+
+    {/* Ranking rápido */}
+    {topStudents.length>0&&<div className="mt-8">
+      <h2 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'2px',textTransform:'uppercase'}}>Ranking Rápido</h2>
+      <div className="card-dark p-4">
+        {topStudents.map((s,i)=>(
+          <div key={s.id} className="flex items-center gap-3 py-2" style={{borderBottom:i<topStudents.length-1?'1px solid #1a1a1a':'none'}}>
+            <span className="font-cinzel font-bold" style={{width:'24px',color:i===0?'#eab308':i===1?'#94a3b8':i===2?'#cd7f32':'#555',fontSize:'.85rem'}}>#{i+1}</span>
+            <span style={{flex:1,fontSize:'.8rem',color:'#ccc'}}>{s.fullName}</span>
+            <span className="font-cinzel font-bold" style={{color:'#dc2626',fontSize:'.8rem'}}>{s.count}</span>
+          </div>
+        ))}
+      </div>
+    </div>}
+
+    {/* Actividad reciente */}
+    {recentRecords.length>0&&<div className="mt-8">
+      <h2 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'2px',textTransform:'uppercase'}}>Actividad Reciente</h2>
+      <div className="card-dark p-4">
+        {recentRecords.slice(0,6).map(r=>{
+          const s=students.find(x=>x.id===r.studentId);
+          return <div key={r.id} className="flex items-center gap-3 py-2" style={{borderBottom:'1px solid #1a1a1a'}}>
+            <span className="status-dot status-high"/>
+            <span style={{flex:1,fontSize:'.75rem',color:'#bbb'}}>{s?.fullName||'Estudiante'}</span>
+            <span style={{fontSize:'.65rem',color:'#dc2626',fontWeight:600}}>{r.type}</span>
+            <span style={{fontSize:'.6rem',color:'#555'}}>{r.date?.slice(5)}</span>
+          </div>
+        })}
+      </div>
+    </div>}
+
+    {/* Alertas */}
+    {students.length>0&&<div className="mt-8 mb-20 md:mb-6">
+      <h2 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'2px',textTransform:'uppercase'}}>Alertas Académicas</h2>
+      <div className="card-dark p-4">
+        {students.filter(s=>{
+          const c=records.filter(r=>r.studentId===s.id).length;return c<3&&records.length>5
+        }).slice(0,5).map(s=>(
+          <div key={s.id} className="flex items-center gap-3 py-2" style={{borderBottom:'1px solid #1a1a1a'}}>
+            <span className="status-dot status-low"/>
+            <span style={{flex:1,fontSize:'.75rem',color:'#bbb'}}>{s.fullName}</span>
+            <span style={{fontSize:'.6rem',color:'#ef4444'}}>Baja participación</span>
+          </div>
+        ))}
+        {students.filter(s=>{const c=records.filter(r=>r.studentId===s.id).length;return c<3&&records.length>5}).length===0&&<p style={{color:'#555',fontSize:'.75rem',textAlign:'center',padding:'10px'}}>Sin alertas por ahora</p>}
+      </div>
+    </div>}
+  </div>
+}
+
+function getCourseStudentsSimple(students,cid){return students.filter(s=>s.courseId===cid).sort((a,b)=>(a.listNumber||0)-(b.listNumber||0))}
+
+// ============ CURSOS ============
+function CoursesPage({setCurrent,setCourseId}){
+  const{courses,addCourse,updateCourse,deleteCourse,duplicateCourse}=useApp();
+  const{addToast}=useToast();
+  const[modalOpen,setModalOpen]=useState(false);
+  const[editCourse,setEditCourse]=useState(null);
+  const[form,setForm]=useState({name:'',parallel:'',level:'',subject:''});
+  const[confirm,setConfirm]=useState({open:false,id:null});
+
+  const openNew=()=>{setForm({name:'',parallel:'',level:'',subject:''});setEditCourse(null);setModalOpen(true)};
+  const openEdit=c=>{setForm({name:c.name,parallel:c.parallel||'',level:c.level||'',subject:c.subject||''});setEditCourse(c);setModalOpen(true)};
+  const saveCourse=()=>{
+    if(!form.name.trim()){addToast('El nombre es obligatorio','error');return}
+    if(editCourse){updateCourse(editCourse.id,form);addToast('Curso actualizado','success')}
+    else{addCourse(form);addToast('Curso creado','success')}
+    setModalOpen(false);
+  };
+
+  return <div>
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="font-cinzel text-xl font-bold">Cursos</h2>
+      <button id="btn-new-course" className="btn-blood" onClick={openNew}><i className="fa-solid fa-plus" style={{marginRight:'6px'}}/>Nuevo Curso</button>
+    </div>
+
+    {courses.length===0?<div className="card-dark p-12 text-center">
+      <i className="fa-solid fa-book-open" style={{fontSize:'3rem',color:'#222',marginBottom:'16px'}}/>
+      <p style={{color:'#555'}}>No hay cursos creados aún</p>
+    </div>:<div className="grid gap-4" style={{gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))'}}>
+      {courses.map(c=>(
+        <div key={c.id} className="card-dark p-5">
+          <div className="flex justify-between items-start mb-3">
+            <div className="cursor-pointer" onClick={()=>{setCourseId(c.id);setCurrent('courseDetail')}} style={{flex:1}}>
+              <div className="font-cinzel font-bold" style={{color:'#e5e5e5',fontSize:'.95rem'}}>{c.name}</div>
+              <div style={{fontSize:'.7rem',color:'#666',marginTop:'2px'}}>{[c.parallel,c.level,c.subject].filter(Boolean).join(' · ')}</div>
+            </div>
+          </div>
+          <div className="flex gap-2 flex-wrap mt-3">
+            <button className="btn-ghost" style={{fontSize:'.65rem',padding:'5px 10px'}} onClick={()=>openEdit(c)}><i className="fa-solid fa-pen" style={{marginRight:'3px'}}/>Editar</button>
+            <button className="btn-ghost" style={{fontSize:'.65rem',padding:'5px 10px'}} onClick={()=>{duplicateCourse(c.id);addToast('Curso duplicado','success')}}><i className="fa-solid fa-copy" style={{marginRight:'3px'}}/>Duplicar</button>
+            <button className="btn-ghost" style={{fontSize:'.65rem',padding:'5px 10px',borderColor:'#991b1b',color:'#ef4444'}} onClick={()=>setConfirm({open:true,id:c.id})}><i className="fa-solid fa-trash" style={{marginRight:'3px'}}/>Eliminar</button>
+          </div>
+        </div>
+      ))}
+    </div>}
+
+    <FormModal open={modalOpen} title={editCourse?'Editar Curso':'Nuevo Curso'} onClose={()=>setModalOpen(false)}>
+      <div className="flex flex-col gap-4">
+        <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Nombre del curso</label><input className="input-dark" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="Ej: Historia"/></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Paralelo</label><input className="input-dark" value={form.parallel} onChange={e=>setForm(p=>({...p,parallel:e.target.value}))} placeholder="Ej: B"/></div>
+          <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Nivel</label><input className="input-dark" value={form.level} onChange={e=>setForm(p=>({...p,level:e.target.value}))} placeholder="Ej: 4to Secundaria"/></div>
+        </div>
+        <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Materia</label><input className="input-dark" value={form.subject} onChange={e=>setForm(p=>({...p,subject:e.target.value}))} placeholder="Ej: Ciencias Sociales"/></div>
+        <button className="btn-blood w-full mt-2" onClick={saveCourse}>{editCourse?'Guardar Cambios':'Crear Curso'}</button>
+      </div>
+    </FormModal>
+
+    <ConfirmModal open={confirm.open} title="Eliminar Curso" message="Se eliminarán todos los estudiantes, registros y observaciones asociados." onConfirm={()=>{deleteCourse(confirm.id);setConfirm({open:false,id:null});addToast('Curso eliminado','success')}} onCancel={()=>setConfirm({open:false,id:null})}/>
+  </div>
+}
+
+// ============ DETALLE DE CURSO ============
+function CourseDetail({courseId,setCurrent}){
+  const{courses,students,records,observations,customButtons,addStudent,updateStudent,deleteStudent,addRecord,deleteRecord,addObservation,deleteObservation,addCustomButton,removeCustomButton,getParticipationCount,getParticipationLevel}=useApp();
+  const{addToast}=useToast();
+  const course=courses.find(c=>c.id===courseId);
+  const cStudents=getCourseStudentsSimple(students,courseId);
+  const[studentModal,setStudentModal]=useState(false);
+  const[editStudent,setEditStudent]=useState(null);
+  const[form,setForm]=useState({listNumber:'',fullName:'',obs:''});
+  const[obsModal,setObsModal]=useState(null);
+  const[obsText,setObsText]=useState('');
+  const[histModal,setHistModal]=useState(null);
+  const[confirmDel,setConfirmDel]=useState({open:false,id:null,type:''});
+  const[search,setSearch]=useState('');
+  const[filter,setFilter]=useState('all');
+  const[liveMode,setLiveMode]=useState(false);
+  const[customBtnModal,setCustomBtnModal]=useState(false);
+  const[newBtnName,setNewBtnName]=useState('');
+  const[undoInfo,setUndoInfo]=useState(null);
+  const undoTimer=useRef(null);
+
+  const allButtons=[...DEFAULT_BUTTONS,...customButtons.map(b=>b.name)];
+
+  const filtered=cStudents.filter(s=>{
+    if(search&&!s.fullName.toLowerCase().includes(search.toLowerCase()))return false;
+    if(filter==='today'){const t=new Date().toISOString().split('T')[0];return records.some(r=>r.studentId===s.id&&r.date===t)}
+    if(filter==='week'){const now2=Date.now();return records.some(r=>r.studentId===s.id&&now2-r.timestamp<7*86400000)}
+    if(filter==='month'){const now2=Date.now();return records.some(r=>r.studentId===s.id&&now2-r.timestamp<30*86400000)}
+    if(filter==='nopart')return getParticipationCount(s.id,courseId)===0;
+    if(filter==='obs')return observations.some(o=>o.studentId===s.id);
+    if(filter==='low')return getParticipationLevel(s.id,courseId)==='low';
+    return true;
+  });
+
+  const saveStudent=()=>{
+    if(!form.fullName.trim()){addToast('Nombre obligatorio','error');return}
+    if(editStudent){updateStudent(editStudent.id,{listNumber:parseInt(form.listNumber)||0,fullName:form.fullName});if(form.obs?.trim())addObservation({studentId:editStudent.id,courseId,obsType:'initial',text:form.obs});addToast('Estudiante actualizado','success')}
+    else{const sid=addStudent({listNumber:parseInt(form.listNumber)||0,fullName:form.fullName,courseId});if(form.obs?.trim())addObservation({studentId:sid,courseId,obsType:'initial',text:form.obs});addToast('Estudiante agregado','success')}
+    setStudentModal(false);
+  };
+
+  const handleRecord=(sid,type)=>{
+    const result=addRecord({studentId:sid,courseId,type});
+    if(result==='duplicate'){addToast('Registro duplicado detectado','warning');return}
+    const s=students.find(x=>x.id===sid);
+    addToast(`Registro guardado: ${type}`,  'success',
+      {label:'DESHACER',fn:()=>{deleteRecord(result);addToast('Registro deshecho','info')}},8000);
+    setUndoInfo({id:result,type});
+    clearTimeout(undoTimer.current);
+    undoTimer.current=setTimeout(()=>setUndoInfo(null),8000);
+  };
+
+  const addObs=()=>{
+    if(!obsText.trim())return;
+    addObservation({studentId:obsModal,courseId,text:obsText});
+    setObsText('');setObsModal(null);addToast('Observación guardada','success');
+  };
+
+  const addCustBtn=()=>{
+    if(!newBtnName.trim())return;
+    addCustomButton(newBtnName.trim());
+    setNewBtnName('');setCustomBtnModal(false);addToast('Botón personalizado agregado','success');
+  };
+
+  const exportCSV=()=>{
+    const hdr='Nro,Nombre,'+allButtons.join(',')+',Total\n';
+    const rows=cStudents.map(s=>{
+      const counts=allButtons.map(b=>records.filter(r=>r.studentId===s.id&&r.courseId===courseId&&r.type===b).length);
+      return `${s.listNumber||''},${s.fullName},${counts.join(',')},${getParticipationCount(s.id,courseId)}`
+    }).join('\n');
+    const blob=new Blob(['\ufeff'+hdr+rows],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${course?.name||'curso'}_registros.csv`;a.click();
+    addToast('CSV exportado','success');
+  };
+
+  const exportPDF=()=>{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    doc.setFillColor(10,10,10);doc.rect(0,0,220,300,'F');
+    doc.setFont('helvetica','bold');doc.setTextColor(220,38,38);doc.setFontSize(28);
+    doc.text('KLIS123',105,25,{align:'center'});
+    doc.setFontSize(14);doc.text('CLLASKM',105,35,{align:'center'});
+    doc.setFontSize(8);doc.setTextColor(150);doc.text('Control Docente Inteligente',105,42,{align:'center'});
+    doc.setDrawColor(220,38,38);doc.line(20,46,190,46);
+    doc.setTextColor(200);doc.setFontSize(12);
+    doc.text(`${course?.name||'Curso'}`,105,56,{align:'center'});
+    doc.setFontSize(8);doc.setTextColor(130);
+    doc.text([course?.parallel,course?.level,course?.subject].filter(Boolean).join(' · ')||'',105,63,{align:'center'});
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`,105,69,{align:'center'});
+
+    const tData=cStudents.map(s=>{
+      const counts=allButtons.map(b=>records.filter(r=>r.studentId===s.id&&r.courseId===courseId&&r.type===b).length);
+      return[s.listNumber||'',s.fullName,...counts,getParticipationCount(s.id,courseId)]
+    });
+    doc.autoTable({
+      startY:76,
+      head:[['Nro','Nombre',...allButtons,'Total']],
+      body:tData,
+      theme:'grid',
+      styles:{fillColor:[17,17,17],textColor:[200,200,200],fontSize:7,font:'helvetica',cellPadding:2},
+      headStyles:{fillColor:[40,10,10],textColor:[220,38,38],fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[22,22,22]},
+    });
+    doc.save(`KLIS123_${course?.name||'curso'}_reporte.pdf`);
+    addToast('PDF exportado','success');
+  };
+
+  if(!course)return <div className="card-dark p-8 text-center"><p style={{color:'#555'}}>Curso no encontrado</p><button className="btn-blood mt-4" onClick={()=>setCurrent('courses')}>Volver a Cursos</button></div>;
+
+  // MODO CLASE EN VIVO
+  if(liveMode)return <div className="live-mode">
+    <div style={{padding:'12px 16px',background:'#0a0a0a',borderBottom:'1px solid #1a1a1a',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:10}}>
+      <div><span className="font-cinzel font-bold" style={{color:'#e5e5e5',fontSize:'.9rem'}}>{course.name}</span><span style={{color:'#dc2626',marginLeft:'8px',fontSize:'.7rem',fontWeight:700}}>EN VIVO</span></div>
+      <button className="btn-ghost" style={{fontSize:'.7rem',padding:'6px 12px'}} onClick={()=>setLiveMode(false)}><i className="fa-solid fa-xmark" style={{marginRight:'4px'}}/>Salir</button>
+    </div>
+    <div style={{padding:'12px'}}>
+      {cStudents.map(s=>{
+        const level=getParticipationLevel(s.id,courseId);
+        return <div key={s.id} className="card-dark p-3 mb-2">
+          <div className="flex items-center gap-3 mb-2">
+            <span className={`status-dot status-${level}`}/>
+            <span style={{fontSize:'.85rem',color:'#e5e5e5',fontWeight:600}}>{s.fullName}</span>
+            <span className="font-cinzel font-bold" style={{color:'#dc2626',fontSize:'.75rem',marginLeft:'auto'}}>{getParticipationCount(s.id,courseId)}</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {allButtons.map(b=><button key={b} className="reg-btn" onClick={()=>handleRecord(s.id,b)}>{b}</button>)}
+          </div>
+        </div>
+      })}
+    </div>
+  </div>;
+
+  return <div>
+    <div className="flex items-center gap-3 mb-5 flex-wrap">
+      <button className="btn-ghost" onClick={()=>setCurrent('courses')}><i className="fa-solid fa-arrow-left" style={{marginRight:'4px'}}/>Cursos</button>
+      <div style={{flex:1}}>
+        <h2 className="font-cinzel text-lg font-bold" style={{color:'#e5e5e5'}}>{course.name}</h2>
+        <div style={{fontSize:'.7rem',color:'#666'}}>{[course.parallel,course.level,course.subject].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button className="btn-blood" onClick={()=>setLiveMode(true)}><i className="fa-solid fa-bolt" style={{marginRight:'4px'}}/>Modo en Vivo</button>
+    </div>
+
+    {/* Controles */}
+    <div className="flex gap-3 mb-4 flex-wrap items-center">
+      <button className="btn-blood" onClick={()=>{setForm({listNumber:'',fullName:'',obs:''});setEditStudent(null);setStudentModal(true)}}><i className="fa-solid fa-user-plus" style={{marginRight:'4px'}}/>Agregar Estudiante</button>
+      <button className="btn-ghost" onClick={exportPDF}><i className="fa-solid fa-file-pdf" style={{marginRight:'4px'}}/>PDF</button>
+      <button className="btn-ghost" onClick={exportCSV}><i className="fa-solid fa-file-csv" style={{marginRight:'4px'}}/>CSV</button>
+      <button className="btn-ghost" onClick={()=>setCustomBtnModal(true)}><i className="fa-solid fa-plus" style={{marginRight:'4px'}}/>Botón</button>
+    </div>
+
+    {/* Búsqueda y filtros */}
+    <div className="flex gap-3 mb-4 flex-wrap">
+      <div style={{flex:1,minWidth:'200px',position:'relative'}}>
+        <i className="fa-solid fa-search" style={{position:'absolute',left:'12px',top:'50%',transform:'translateY(-50%)',color:'#555',fontSize:'.8rem'}}/>
+        <input className="input-dark" style={{paddingLeft:'36px'}} placeholder="Buscar estudiante..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+      <select className="input-dark" style={{width:'auto',minWidth:'140px'}} value={filter} onChange={e=>setFilter(e.target.value)}>
+        <option value="all">Todos</option>
+        <option value="today">Hoy</option>
+        <option value="week">Esta semana</option>
+        <option value="month">Este mes</option>
+        <option value="nopart">Sin participación</option>
+        <option value="obs">Con observaciones</option>
+        <option value="low">Baja participación</option>
+      </select>
+    </div>
+
+    {/* Lista de estudiantes - Escritorio: tabla, Móvil: tarjetas */}
+    <div className="hidden md:block">
+      <div className="card-dark overflow-x-auto">
+        <table style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead>
+            <tr style={{borderBottom:'1px solid #222'}}>
+              <th style={{padding:'10px 12px',textAlign:'left',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Nro</th>
+              <th style={{padding:'10px 12px',textAlign:'left',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Nombre</th>
+              <th style={{padding:'10px 12px',textAlign:'left',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Estado</th>
+              <th style={{padding:'10px 12px',textAlign:'left',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Part.</th>
+              <th style={{padding:'10px 12px',textAlign:'left',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Registros</th>
+              <th style={{padding:'10px 12px',textAlign:'center',fontSize:'.65rem',color:'#666',textTransform:'uppercase',letterSpacing:'1px'}}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(s=>{
+              const level=getParticipationLevel(s.id,courseId);
+              const count=getParticipationCount(s.id,courseId);
+              const maxCount=Math.max(1,...cStudents.map(cs=>getParticipationCount(cs.id,courseId)));
+              return <tr key={s.id} style={{borderBottom:'1px solid #1a1a1a'}}>
+                <td style={{padding:'8px 12px',fontSize:'.8rem',color:'#666'}}>{s.listNumber||'-'}</td>
+                <td style={{padding:'8px 12px',fontSize:'.8rem',color:'#e5e5e5',fontWeight:600}}>{s.fullName}</td>
+                <td style={{padding:'8px 12px'}}><span className={`status-dot status-${level}`}/></td>
+                <td style={{padding:'8px 12px'}}>
+                  <div className="flex items-center gap-2">
+                    <div className="part-bar"><div className="part-bar-fill" style={{width:`${(count/Math.max(1,maxCount))*100}%`,background:level==='high'?'#22c55e':level==='mid'?'#eab308':'#ef4444'}}/></div>
+                    <span className="font-cinzel font-bold" style={{fontSize:'.75rem',color:'#ccc'}}>{count}</span>
+                  </div>
+                </td>
+                <td style={{padding:'8px 12px'}}>
+                  <div className="flex gap-1 flex-wrap" style={{maxWidth:'320px'}}>
+                    {allButtons.slice(0,4).map(b=><button key={b} className="reg-btn" style={{fontSize:'.6rem',padding:'3px 6px'}} onClick={()=>handleRecord(s.id,b)}>{b}</button>)}
+                    {allButtons.length>4&&<button className="reg-btn" style={{fontSize:'.6rem',padding:'3px 6px'}} onClick={()=>setHistModal(s.id)}>+Más</button>}
+                  </div>
+                </td>
+                <td style={{padding:'8px 12px',textAlign:'center'}}>
+                  <div className="flex gap-1 justify-center">
+                    <button title="Observaciones" style={{background:'none',border:'none',color:'#666',cursor:'pointer',padding:'4px'}} onClick={()=>{setObsModal(s.id);setObsText('')}}><i className="fa-solid fa-comment-dots"/></button>
+                    <button title="Historial" style={{background:'none',border:'none',color:'#666',cursor:'pointer',padding:'4px'}} onClick={()=>setHistModal(s.id)}><i className="fa-solid fa-clock-rotate-left"/></button>
+                    <button title="Editar" style={{background:'none',border:'none',color:'#666',cursor:'pointer',padding:'4px'}} onClick={()=>{setForm({listNumber:s.listNumber||'',fullName:s.fullName,obs:''});setEditStudent(s);setStudentModal(true)}}><i className="fa-solid fa-pen"/></button>
+                    <button title="Eliminar" style={{background:'none',border:'none',color:'#991b1b',cursor:'pointer',padding:'4px'}} onClick={()=>setConfirmDel({open:true,id:s.id,type:'student'})}><i className="fa-solid fa-trash"/></button>
+                  </div>
+                </td>
+              </tr>
+            })}
+          </tbody>
+        </table>
+        {filtered.length===0&&<div className="p-8 text-center" style={{color:'#555',fontSize:'.8rem'}}>Sin resultados</div>}
+      </div>
+    </div>
+
+    {/* Vista móvil: tarjetas */}
+    <div className="md:hidden flex flex-col gap-3 mb-24">
+      {filtered.map(s=>{
+        const level=getParticipationLevel(s.id,courseId);
+        const count=getParticipationCount(s.id,courseId);
+        return <div key={s.id} className="card-dark p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <span className={`status-dot status-${level}`}/>
+            <span style={{flex:1,fontWeight:700,fontSize:'.85rem',color:'#e5e5e5'}}>{s.fullName}</span>
+            <span className="font-cinzel font-bold" style={{color:'#dc2626',fontSize:'.85rem'}}>{count}</span>
+          </div>
+          <div className="flex gap-1.5 flex-wrap mb-2">
+            {allButtons.map(b=><button key={b} className="reg-btn" style={{fontSize:'.6rem',padding:'5px 8px'}} onClick={()=>handleRecord(s.id,b)}>{b}</button>)}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button className="btn-ghost" style={{fontSize:'.6rem',padding:'4px 8px'}} onClick={()=>{setObsModal(s.id);setObsText('')}}><i className="fa-solid fa-comment-dots" style={{marginRight:'2px'}}/>Obs</button>
+            <button className="btn-ghost" style={{fontSize:'.6rem',padding:'4px 8px'}} onClick={()=>setHistModal(s.id)}><i className="fa-solid fa-clock-rotate-left" style={{marginRight:'2px'}}/>Hist</button>
+            <button className="btn-ghost" style={{fontSize:'.6rem',padding:'4px 8px'}} onClick={()=>{setForm({listNumber:s.listNumber||'',fullName:s.fullName,obs:''});setEditStudent(s);setStudentModal(true)}}><i className="fa-solid fa-pen" style={{marginRight:'2px'}}/>Edit</button>
+            <button className="btn-ghost" style={{fontSize:'.6rem',padding:'4px 8px',borderColor:'#991b1b',color:'#ef4444'}} onClick={()=>setConfirmDel({open:true,id:s.id,type:'student'})}><i className="fa-solid fa-trash"/></button>
+          </div>
+        </div>
+      })}
+      {filtered.length===0&&<div className="card-dark p-8 text-center" style={{color:'#555'}}>Sin resultados</div>}
+    </div>
+
+    {/* Modal: Agregar/Editar estudiante */}
+    <FormModal open={studentModal} title={editStudent?'Editar Estudiante':'Agregar Estudiante'} onClose={()=>setStudentModal(false)}>
+      <div className="flex flex-col gap-4">
+        <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Numero de lista</label><input className="input-dark" type="number" value={form.listNumber} onChange={e=>setForm(p=>({...p,listNumber:e.target.value}))} placeholder="Ej: 1"/></div>
+        <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Nombre completo</label><input className="input-dark" value={form.fullName} onChange={e=>setForm(p=>({...p,fullName:e.target.value}))} placeholder="Ej: Juan Pérez"/></div>
+        <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Observación inicial (opcional)</label><textarea className="input-dark" rows="2" value={form.obs} onChange={e=>setForm(p=>({...p,obs:e.target.value}))} placeholder="Observación..."/></div>
+        <button className="btn-blood w-full" onClick={saveStudent}>{editStudent?'Guardar':'Agregar'}</button>
+      </div>
+    </FormModal>
+
+    {/* Modal: Observaciones */}
+    <FormModal open={!!obsModal} title="Observaciones" onClose={()=>setObsModal(null)}>
+      <div className="mb-4">
+        <textarea className="input-dark" rows="3" value={obsText} onChange={e=>setObsText(e.target.value)} placeholder="Escribir observación..."/>
+        <button className="btn-blood w-full mt-2" onClick={addObs}>Guardar Observación</button>
+      </div>
+      <div style={{maxHeight:'200px',overflowY:'auto'}}>
+        {observations.filter(o=>o.studentId===obsModal).map(o=>(
+          <div key={o.id} style={{padding:'8px 0',borderBottom:'1px solid #1a1a1a'}}>
+            <div className="flex justify-between items-start">
+              <span style={{fontSize:'.8rem',color:'#ccc',flex:1}}>{o.text}</span>
+              <button style={{background:'none',border:'none',color:'#991b1b',cursor:'pointer',fontSize:'.7rem'}} onClick={()=>{deleteObservation(o.id);addToast('Observación eliminada','info')}}><i className="fa-solid fa-trash"/></button>
+            </div>
+            <div style={{fontSize:'.6rem',color:'#555',marginTop:'2px'}}>{o.date} {o.time}</div>
+          </div>
+        ))}
+        {observations.filter(o=>o.studentId===obsModal).length===0&&<p style={{color:'#555',fontSize:'.75rem',textAlign:'center',padding:'16px'}}>Sin observaciones</p>}
+      </div>
+    </FormModal>
+
+    {/* Modal: Historial */}
+    <FormModal open={!!histModal} title="Historial de Registros" onClose={()=>setHistModal(null)}>
+      <div style={{maxHeight:'400px',overflowY:'auto'}}>
+        {(()=>{const sRecs=records.filter(r=>r.studentId===histModal).sort((a,b)=>b.timestamp-a.timestamp);const s=students.find(x=>x.id===histModal);
+          return sRecs.length?sRecs.map(r=>(
+            <div key={r.id} style={{padding:'8px 0',borderBottom:'1px solid #1a1a1a',display:'flex',alignItems:'center',gap:'8px'}}>
+              <span style={{fontSize:'.75rem',color:'#dc2626',fontWeight:700,minWidth:'100px'}}>{r.type}</span>
+              <span style={{fontSize:'.7rem',color:'#888',flex:1}}>{r.date} {r.time}</span>
+              <button style={{background:'none',border:'none',color:'#991b1b',cursor:'pointer',fontSize:'.7rem'}} onClick={()=>{deleteRecord(r.id);addToast('Registro eliminado','info')}}><i className="fa-solid fa-trash"/></button>
+            </div>
+          )):<p style={{color:'#555',fontSize:'.75rem',textAlign:'center',padding:'16px'}}>Sin registros</p>
+        })()}
+      </div>
+    </FormModal>
+
+    {/* Modal: Botón personalizado */}
+    <FormModal open={customBtnModal} title="Botones de Registro" onClose={()=>setCustomBtnModal(false)}>
+      <div className="flex gap-2 mb-4">
+        <input className="input-dark" style={{flex:1}} placeholder="Nombre del botón" value={newBtnName} onChange={e=>setNewBtnName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addCustBtn()}/>
+        <button className="btn-blood" onClick={addCustBtn}>Agregar</button>
+      </div>
+      <div style={{fontSize:'.7rem',color:'#666',marginBottom:'8px'}}>Botones predeterminados:</div>
+      {DEFAULT_BUTTONS.map(b=><div key={b} style={{padding:'6px 0',fontSize:'.8rem',color:'#888',borderBottom:'1px solid #1a1a1a'}}>{b}</div>)}
+      <div style={{fontSize:'.7rem',color:'#666',margin:'8px 0'}}>Botones personalizados:</div>
+      {customButtons.map(b=><div key={b.id} className="flex items-center justify-between" style={{padding:'6px 0',borderBottom:'1px solid #1a1a1a'}}>
+        <span style={{fontSize:'.8rem',color:'#ccc'}}>{b.name}</span>
+        <button style={{background:'none',border:'none',color:'#991b1b',cursor:'pointer'}} onClick={()=>{removeCustomButton(b.id);addToast('Botón eliminado','info')}}><i className="fa-solid fa-trash"/></button>
+      </div>)}
+    </FormModal>
+
+    <ConfirmModal open={confirmDel.open} title="Eliminar" message="Esta acción no se puede deshacer." onConfirm={()=>{if(confirmDel.type==='student')deleteStudent(confirmDel.id);setConfirmDel({open:false,id:null,type:''});addToast('Eliminado','success')}} onCancel={()=>setConfirmDel({open:false,id:null,type:''})}/>
+
+    {/* Botón deshacer flotante móvil */}
+    {undoInfo&&<div className="undo-float" onClick={()=>{deleteRecord(undoInfo.id);setUndoInfo(null);addToast('Registro deshecho','info')}}>DESHACER <i className="fa-solid fa-rotate-left" style={{marginLeft:'6px'}}/></div>}
+  </div>
+}
+
+// ============ CALENDARIO ============
+function CalendarPage(){
+  const{records,students}=useApp();
+  const[year,setYear]=useState(new Date().getFullYear());
+  const[month,setMonth]=useState(new Date().getMonth());
+  const[selectedDay,setSelectedDay]=useState(null);
+
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const firstDay=new Date(year,month,1).getDay();
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dayNames=['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  const today=new Date().toISOString().split('T')[0];
+
+  const getRecordsForDay=day=>{
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    return records.filter(r=>r.date===dateStr);
+  };
+
+  const days=[];
+  for(let i=0;i<firstDay;i++)days.push(null);
+  for(let d=1;d<=daysInMonth;d++)days.push(d);
+
+  const selectedRecords=selectedDay?getRecordsForDay(selectedDay):[];
+
+  return <div>
+    <h2 className="font-cinzel text-xl font-bold mb-6">Calendario</h2>
+    <div className="card-dark p-4 md:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <button className="btn-ghost" onClick={()=>{if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1)}}><i className="fa-solid fa-chevron-left"/></button>
+        <h3 className="font-cinzel font-bold" style={{color:'#e5e5e5'}}>{monthNames[month]} {year}</h3>
+        <button className="btn-ghost" onClick={()=>{if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1)}}><i className="fa-solid fa-chevron-right"/></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dayNames.map(d=><div key={d} style={{textAlign:'center',fontSize:'.65rem',color:'#555',padding:'4px'}}>{d}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((d,i)=>{
+          if(!d)return <div key={`e${i}`}/>;
+          const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          const recs=getRecordsForDay(d);
+          const isToday=dateStr===today;
+          return <div key={d} className={`cal-day ${isToday?'today':''} ${recs.length?'has-activity':''}`} onClick={()=>setSelectedDay(d)}>
+            <span style={{color:isToday?'#dc2626':'#aaa',fontWeight:isToday?700:400}}>{d}</span>
+            {recs.length>0&&<span style={{fontSize:'.5rem',color:'#dc2626'}}>{recs.length}</span>}
+          </div>
+        })}
+      </div>
+    </div>
+
+    {selectedDay&&<div className="card-dark p-4 mt-4 mb-20">
+      <h3 className="font-cinzel font-bold mb-3" style={{color:'#e5e5e5',fontSize:'.9rem'}}>Registros del {selectedDay} de {monthNames[month]}</h3>
+      {selectedRecords.length?selectedRecords.map(r=>{
+        const s=students.find(x=>x.id===r.studentId);
+        return <div key={r.id} className="flex items-center gap-3 py-2" style={{borderBottom:'1px solid #1a1a1a'}}>
+          <span style={{fontSize:'.8rem',color:'#ccc',flex:1}}>{s?.fullName||'Estudiante'}</span>
+          <span style={{fontSize:'.7rem',color:'#dc2626',fontWeight:700}}>{r.type}</span>
+          <span style={{fontSize:'.65rem',color:'#555'}}>{r.time}</span>
+        </div>
+      }):<p style={{color:'#555',fontSize:'.8rem',textAlign:'center',padding:'12px'}}>Sin registros este día</p>}
+    </div>}
+  </div>
+}
+
+// ============ ESTADÍSTICAS ============
+function StatsPage(){
+  const{courses,students,records}=useApp();
+  const[selectedCourse,setSelectedCourse]=useState('all');
+  const chartRef1=useRef(null);const chartRef2=useRef(null);const chartRef3=useRef(null);
+  const chart1=useRef(null);const chart2=useRef(null);const chart3=useRef(null);
+
+  const filteredRecords=selectedCourse==='all'?records:records.filter(r=>r.courseId===selectedCourse);
+  const filteredStudents=selectedCourse==='all'?students:students.filter(s=>s.courseId===selectedCourse||courses.some(c=>students.filter(st=>st.courseId===c.id).includes(s)));
+
+  // Datos para gráficas
+  const rankingData=useMemo(()=>{
+    const counts={};
+    filteredRecords.forEach(r=>{counts[r.studentId]=(counts[r.studentId]||0)+1});
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([sid,c])=>{
+      const s=students.find(x=>x.id===sid);
+      return{name:s?.fullName||'?',count:c}
+    });
+  },[filteredRecords,students]);
+
+  const typeData=useMemo(()=>{
+    const counts={};
+    filteredRecords.forEach(r=>{counts[r.type]=(counts[r.type]||0)+1});
+    return Object.entries(counts).map(([type,c])=>({type,count:c}));
+  },[filteredRecords]);
+
+  const weeklyData=useMemo(()=>{
+    const now2=Date.now();const weeks=[];
+    for(let i=6;i>=0;i--){
+      const start=now2-(i+1)*7*86400000;const end=now2-i*7*86400000;
+      const count=filteredRecords.filter(r=>r.timestamp>=start&&r.timestamp<end).length;
+      const d=new Date(start);weeks.push({label:`${d.getDate()}/${d.getMonth()+1}`,count});
+    }
+    return weeks;
+  },[filteredRecords]);
+
+  useEffect(()=>{
+    if(chart1.current)chart1.current.destroy();
+    if(chart2.current)chart2.current.destroy();
+    if(chart3.current)chart3.current.destroy();
+
+    const ctx1=chartRef1.current?.getContext('2d');
+    const ctx2=chartRef2.current?.getContext('2d');
+    const ctx3=chartRef3.current?.getContext('2d');
+
+    if(ctx1){
+      chart1.current=new Chart(ctx1,{type:'bar',data:{labels:rankingData.map(d=>d.name.slice(0,15)),datasets:[{label:'Participaciones',data:rankingData.map(d=>d.count),backgroundColor:'rgba(220,38,38,.7)',borderColor:'#dc2626',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1a1a1a'},ticks:{color:'#666',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#999',font:{size:10,family:'Cinzel'}}}}}});
+    }
+    if(ctx2){
+      chart2.current=new Chart(ctx2,{type:'doughnut',data:{labels:typeData.map(d=>d.type),datasets:[{data:typeData.map(d=>d.count),backgroundColor:['#dc2626','#ef4444','#f87171','#991b1b','#7f1d1d','#b91c1c','#fca5a5'],borderColor:'#111',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#888',font:{size:10,family:'Cinzel'},padding:8}}}}});
+    }
+    if(ctx3){
+      chart3.current=new Chart(ctx3,{type:'line',data:{labels:weeklyData.map(d=>d.label),datasets:[{label:'Registros',data:weeklyData.map(d=>d.count),borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.1)',fill:true,tension:.4,pointBackgroundColor:'#dc2626',pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1a1a1a'},ticks:{color:'#666',font:{size:10}}},y:{grid:{color:'#1a1a1a'},ticks:{color:'#666',font:{size:10}},beginAtZero:true}}}});
+    }
+
+    return()=>{chart1.current?.destroy();chart2.current?.destroy();chart3.current?.destroy()};
+  },[rankingData,typeData,weeklyData]);
+
+  return <div>
+    <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <h2 className="font-cinzel text-xl font-bold">Estadísticas</h2>
+      <select className="input-dark" style={{width:'auto'}} value={selectedCourse} onChange={e=>setSelectedCourse(e.target.value)}>
+        <option value="all">Todos los cursos</option>
+        {courses.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+    </div>
+
+    {filteredRecords.length===0?<div className="card-dark p-12 text-center">
+      <i className="fa-solid fa-chart-bar" style={{fontSize:'3rem',color:'#222',marginBottom:'12px'}}/>
+      <p style={{color:'#555'}}>Sin datos suficientes</p>
+    </div>:<div className="flex flex-col gap-6 mb-20">
+      <div className="card-dark p-4 md:p-6">
+        <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'1px'}}>Ranking de Participación</h3>
+        <div className="chart-wrap" style={{height:Math.max(200,rankingData.length*35)+'px'}}><canvas ref={chartRef1}/></div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card-dark p-4 md:p-6">
+          <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'1px'}}>Tipos de Registro</h3>
+          <div className="chart-wrap" style={{height:250}}><canvas ref={chartRef2}/></div>
+        </div>
+        <div className="card-dark p-4 md:p-6">
+          <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#888',letterSpacing:'1px'}}>Evolución Semanal</h3>
+          <div className="chart-wrap" style={{height:250}}><canvas ref={chartRef3}/></div>
+        </div>
+      </div>
+    </div>}
+  </div>
+}
+
+// ============ REPORTES ============
+function ReportsPage(){
+  const{courses,students,records,observations}=useApp();
+  const{addToast}=useToast();
+  const[selectedCourse,setSelectedCourse]=useState('');
+
+  const exportPDF=()=>{
+    const c=courses.find(x=>x.id===selectedCourse);
+    if(!c){addToast('Selecciona un curso','error');return}
+    const cStudents=getCourseStudentsSimple(students,c.id);
+    const cRecords=records.filter(r=>r.courseId===c.id);
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+
+    doc.setFillColor(10,10,10);doc.rect(0,0,220,300,'F');
+    doc.setFont('helvetica','bold');doc.setTextColor(220,38,38);doc.setFontSize(28);
+    doc.text('KLIS123',105,22,{align:'center'});
+    doc.setFontSize(14);doc.text('CLLASKM',105,32,{align:'center'});
+    doc.setFontSize(7);doc.setTextColor(150);doc.text('Control Docente Inteligente',105,39,{align:'center'});
+    doc.setDrawColor(220,38,38);doc.line(20,43,190,43);
+    doc.setTextColor(220);doc.setFontSize(11);doc.text(c.name,105,52,{align:'center'});
+    doc.setFontSize(7);doc.setTextColor(130);
+    doc.text([c.parallel,c.level,c.subject].filter(Boolean).join(' · '),105,58,{align:'center'});
+    doc.text(`Generado: ${new Date().toLocaleString()}`,105,63,{align:'center'});
+
+    const btns=DEFAULT_BUTTONS;
+    const tData=cStudents.map(s=>{
+      const counts=btns.map(b=>cRecords.filter(r=>r.studentId===s.id&&r.type===b).length);
+      const total=counts.reduce((a,b)=>a+b,0);
+      const obs=observations.filter(o=>o.studentId===s.id).map(o=>o.text).join('; ');
+      return[s.listNumber||'',s.fullName,...counts,total,obs]
+    });
+    doc.autoTable({
+      startY:70,
+      head:[['Nro','Nombre',...btns,'Total','Observaciones']],
+      body:tData,
+      theme:'grid',
+      styles:{fillColor:[17,17,17],textColor:[200,200,200],fontSize:6,font:'helvetica',cellPadding:1.5},
+      headStyles:{fillColor:[40,10,10],textColor:[220,38,38],fontStyle:'bold',fontSize:5.5},
+      alternateRowStyles:{fillColor:[22,22,22]},
+      columnStyles:{[btns.length+2]:{fontStyle:'bold',textColor:[220,38,38]}}
+    });
+    doc.save(`KLIS123_${c.name}_reporte.pdf`);
+    addToast('PDF exportado correctamente','success');
+  };
+
+  const exportCSV=()=>{
+    const c=courses.find(x=>x.id===selectedCourse);
+    if(!c){addToast('Selecciona un curso','error');return}
+    const cStudents=getCourseStudentsSimple(students,c.id);
+    const cRecords=records.filter(r=>r.courseId===c.id);
+    const hdr='Nro,Nombre,'+DEFAULT_BUTTONS.join(',')+',Total,Observaciones\n';
+    const rows=cStudents.map(s=>{
+      const counts=DEFAULT_BUTTONS.map(b=>cRecords.filter(r=>r.studentId===s.id&&r.type===b).length);
+      const total=counts.reduce((a,b)=>a+b,0);
+      const obs=observations.filter(o=>o.studentId===s.id).map(o=>`"${o.text}"`).join('; ');
+      return `${s.listNumber||''},"${s.fullName}",${counts.join(',')},${total},"${obs}"`
+    }).join('\n');
+    const blob=new Blob(['\ufeff'+hdr+rows],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${c.name}_reporte.csv`;a.click();
+    addToast('CSV exportado','success');
+  };
+
+  return <div>
+    <h2 className="font-cinzel text-xl font-bold mb-6">Reportes</h2>
+    <div className="card-dark p-6">
+      <div className="mb-4">
+        <label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Seleccionar Curso</label>
+        <select className="input-dark" value={selectedCourse} onChange={e=>setSelectedCourse(e.target.value)}>
+          <option value="">-- Seleccionar --</option>
+          {courses.map(c=><option key={c.id} value={c.id}>{c.name} ({[c.parallel,c.level].filter(Boolean).join(' - ')})</option>)}
+        </select>
+      </div>
+      <div className="flex gap-3 flex-wrap">
+        <button className="btn-blood" onClick={exportPDF}><i className="fa-solid fa-file-pdf" style={{marginRight:'6px'}}/>Exportar PDF</button>
+        <button className="btn-ghost" onClick={exportCSV}><i className="fa-solid fa-file-csv" style={{marginRight:'6px'}}/>Exportar CSV</button>
+      </div>
+      {selectedCourse&&(()=>{
+        const c=courses.find(x=>x.id===selectedCourse);
+        const cStudents=getCourseStudentsSimple(students,selectedCourse);
+        const cRecords=records.filter(r=>r.courseId===selectedCourse);
+        return <div className="mt-6" style={{borderTop:'1px solid #1a1a1a',paddingTop:'16px'}}>
+          <div className="grid gap-3" style={{gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))'}}>
+            <div style={{textAlign:'center'}}><div style={{fontSize:'.6rem',color:'#666',textTransform:'uppercase'}}>Estudiantes</div><div className="font-cinzel font-bold" style={{color:'#dc2626',fontSize:'1.5rem'}}>{cStudents.length}</div></div>
+            <div style={{textAlign:'center'}}><div style={{fontSize:'.6rem',color:'#666',textTransform:'uppercase'}}>Registros</div><div className="font-cinzel font-bold" style={{color:'#22c55e',fontSize:'1.5rem'}}>{cRecords.length}</div></div>
+            <div style={{textAlign:'center'}}><div style={{fontSize:'.6rem',color:'#666',textTransform:'uppercase'}}>Promedio</div><div className="font-cinzel font-bold" style={{color:'#3b82f6',fontSize:'1.5rem'}}>{cStudents.length?(cRecords.length/cStudents.length).toFixed(1):'0'}</div></div>
+          </div>
+        </div>
+      })()}
+    </div>
+  </div>
+}
+
+// ============ HISTORIAL ============
+function HistoryPage(){
+  const{records,students,courses}=useApp();
+  const[filterCourse,setFilterCourse]=useState('all');
+  const[filterType,setFilterType]=useState('all');
+  const[search,setSearch]=useState('');
+
+  const filtered=records.filter(r=>{
+    if(filterCourse!=='all'&&r.courseId!==filterCourse)return false;
+    if(filterType!=='all'&&r.type!==filterType)return false;
+    if(search){const s=students.find(x=>x.id===r.studentId);if(!s||!s.fullName.toLowerCase().includes(search.toLowerCase()))return false}
+    return true;
+  }).sort((a,b)=>b.timestamp-a.timestamp);
+
+  const types=[...new Set(records.map(r=>r.type))];
+
+  return <div>
+    <h2 className="font-cinzel text-xl font-bold mb-6">Historial</h2>
+    <div className="flex gap-3 mb-4 flex-wrap">
+      <input className="input-dark" style={{flex:1,minWidth:'180px'}} placeholder="Buscar estudiante..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="input-dark" style={{width:'auto'}} value={filterCourse} onChange={e=>setFilterCourse(e.target.value)}>
+        <option value="all">Todos los cursos</option>
+        {courses.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+      <select className="input-dark" style={{width:'auto'}} value={filterType} onChange={e=>setFilterType(e.target.value)}>
+        <option value="all">Todos los tipos</option>
+        {types.map(t=><option key={t} value={t}>{t}</option>)}
+      </select>
+    </div>
+    <div className="card-dark">
+      {filtered.slice(0,50).map(r=>{
+        const s=students.find(x=>x.id===r.studentId);
+        const c=courses.find(x=>x.id===r.courseId);
+        return <div key={r.id} className="flex items-center gap-3 p-3" style={{borderBottom:'1px solid #1a1a1a'}}>
+          <span className="status-dot status-high"/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:'.8rem',color:'#ccc'}}>{s?.fullName||'Estudiante'}</div>
+            <div style={{fontSize:'.65rem',color:'#555'}}>{c?.name||'Curso'}</div>
+          </div>
+          <span style={{fontSize:'.7rem',color:'#dc2626',fontWeight:700}}>{r.type}</span>
+          <span style={{fontSize:'.65rem',color:'#555',minWidth:'80px',textAlign:'right'}}>{r.date?.slice(5)} {r.time}</span>
+        </div>
+      })}
+      {filtered.length===0&&<div className="p-8 text-center" style={{color:'#555'}}>Sin registros</div>}
+      {filtered.length>50&&<div className="p-3 text-center" style={{color:'#555',fontSize:'.7rem'}}>Mostrando 50 de {filtered.length}</div>}
+    </div>
+    <div style={{height:'80px'}}/>
+  </div>
+}
+
+// ============ CONFIGURACIÓN ============
+function SettingsPage(){
+  const{settings,updateSettings,customButtons,addCustomButton,removeCustomButton}=useApp();
+  const{addToast}=useToast();
+  const[newBtn,setNewBtn]=useState('');
+
+  return <div>
+    <h2 className="font-cinzel text-xl font-bold mb-6">Configuración</h2>
+    <div className="flex flex-col gap-4 max-w-lg">
+      <div className="card-dark p-5">
+        <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#dc2626'}}>General</h3>
+        <div className="flex flex-col gap-4">
+          <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Nombre del docente</label><input className="input-dark" value={settings.teacherName} onChange={e=>updateSettings({teacherName:e.target.value})} placeholder="Tu nombre"/></div>
+          <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'4px'}}>Tamaño de fuente</label><input type="range" min="12" max="20" value={settings.fontSize||14} onChange={e=>updateSettings({fontSize:parseInt(e.target.value)})} style={{width:'100%'}}/><span style={{fontSize:'.7rem',color:'#666'}}>{settings.fontSize||14}px</span></div>
+        </div>
+      </div>
+      <div className="card-dark p-5">
+        <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#dc2626'}}>Botones de Registro</h3>
+        <div className="mb-3">
+          <div style={{fontSize:'.65rem',color:'#666',marginBottom:'6px'}}>Predeterminados:</div>
+          <div className="flex gap-1.5 flex-wrap">{DEFAULT_BUTTONS.map(b=><span key={b} className="reg-btn" style={{cursor:'default'}}>{b}</span>)}</div>
+        </div>
+        <div style={{fontSize:'.65rem',color:'#666',marginBottom:'6px'}}>Personalizados:</div>
+        {customButtons.map(b=><div key={b.id} className="flex items-center justify-between py-1.5" style={{borderBottom:'1px solid #1a1a1a'}}>
+          <span style={{fontSize:'.8rem',color:'#ccc'}}>{b.name}</span>
+          <button style={{background:'none',border:'none',color:'#991b1b',cursor:'pointer'}} onClick={()=>{removeCustomButton(b.id);addToast('Botón eliminado','info')}}><i className="fa-solid fa-trash"/></button>
+        </div>)}
+        <div className="flex gap-2 mt-3">
+          <input className="input-dark" style={{flex:1}} placeholder="Nuevo botón" value={newBtn} onChange={e=>setNewBtn(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&newBtn.trim()){addCustomButton(newBtn.trim());setNewBtn('');addToast('Botón agregado','success')}}}/>
+          <button className="btn-blood" onClick={()=>{if(newBtn.trim()){addCustomButton(newBtn.trim());setNewBtn('');addToast('Botón agregado','success')}}}>Agregar</button>
+        </div>
+      </div>
+      <div className="card-dark p-5">
+        <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#dc2626'}}>Atajos de Teclado</h3>
+        <div className="flex flex-col gap-2" style={{fontSize:'.75rem',color:'#888'}}>
+          <div><kbd style={{background:'#222',padding:'2px 6px',borderRadius:'3px',color:'#ccc',fontSize:'.7rem'}}>N</kbd> Nuevo estudiante</div>
+          <div><kbd style={{background:'#222',padding:'2px 6px',borderRadius:'3px',color:'#ccc',fontSize:'.7rem'}}>C</kbd> Nuevo curso</div>
+          <div><kbd style={{background:'#222',padding:'2px 6px',borderRadius:'3px',color:'#ccc',fontSize:'.7rem'}}>Ctrl+Z</kbd> Deshacer</div>
+          <div><kbd style={{background:'#222',padding:'2px 6px',borderRadius:'3px',color:'#ccc',fontSize:'.7rem'}}>Ctrl+P</kbd> Exportar</div>
+        </div>
+      </div>
+      <div className="card-dark p-5">
+        <h3 className="font-cinzel text-sm font-bold mb-4" style={{color:'#dc2626'}}>Datos</h3>
+        <button className="btn-ghost w-full" onClick={()=>{if(confirm('Esto eliminará TODOS los datos locales. ¿Continuar?')){Object.keys(localStorage).filter(k=>k.startsWith(STORAGE_PREFIX)).forEach(k=>localStorage.removeItem(k));window.location.reload()}}}>
+          <i className="fa-solid fa-trash" style={{marginRight:'6px'}}/>Limpiar datos locales
+        </button>
+      </div>
+    </div>
+    <div style={{height:'80px'}}/>
+  </div>
+}
+
+// ============ APP PRINCIPAL ============
+function MainApp(){
+  const[splashDone,setSplashDone]=useState(false);
+  const[page,setPage]=useState('dashboard');
+  const[courseId,setCourseId]=useState(null);
+  const[sidebarOpen,setSidebarOpen]=useState(false);
+  const{undoLast}=useApp();
+  const{addToast}=useToast();
+
+  // Atajos de teclado
+  useEffect(()=>{
+    const handler=e=>{
+      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+      if(e.ctrlKey&&e.key==='z'){e.preventDefault();if(undoLast())addToast('Acción deshecha','info');return}
+      if(e.ctrlKey&&e.key==='p'){e.preventDefault();setPage('reports');return}
+      if(e.key==='n'){setPage('courses');return}
+      if(e.key==='c'&&!e.ctrlKey){setPage('courses');return}
+      if(e.key==='r'){setPage('courses');return}
+    };
+    window.addEventListener('keydown',handler);
+    return()=>window.removeEventListener('keydown',handler);
+  },[undoLast]);
+
+  const renderPage=()=>{
+    switch(page){
+      case 'dashboard':return <Dashboard setCurrent={setPage} setCourseId={setCourseId}/>;
+      case 'courses':return <CoursesPage setCurrent={setPage} setCourseId={setCourseId}/>;
+      case 'courseDetail':return <CourseDetail courseId={courseId} setCurrent={setPage}/>;
+      case
