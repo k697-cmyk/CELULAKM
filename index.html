@@ -3,2763 +3,853 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookTranslate — Traductor y Lector de EPUB</title>
-
-    <!-- Fuentes -->
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Iconos -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- JSZip para descomprimir EPUB -->
+    <title>BookTranslate — Traductor Instantáneo de EPUBs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- jsPDF para exportar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
-        /* ============================
-           VARIABLES Y RESET
-           ============================ */
+        /* ============================ VARIABLES Y RESET ============================ */
         :root {
-            --bg: #FAF7F2;
-            --fg: #1C1917;
-            --muted: #78716C;
-            --accent: #047857;
-            --accent-hover: #065F46;
-            --accent-light: #D1FAE5;
-            --gold: #B45309;
-            --gold-light: #FEF3C7;
-            --card: #FFFFFF;
-            --border: #E7E5E4;
-            --shadow: 0 4px 24px rgba(0,0,0,0.07);
-            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --font-ui: 'DM Sans', sans-serif;
-            --font-display: 'Crimson Pro', serif;
-            --sidebar-w: 280px;
-            --topbar-h: 60px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --accent: #B8621B;
+            --accent-hover: #D4781F;
+            --accent-glow: rgba(184,98,27,0.25);
+            --sidebar-bg: #111216;
+            --sidebar-surface: #1A1B20;
+            --sidebar-text: #A8A4A0;
+            --sidebar-heading: #E8E4E0;
+            --reading-bg: #FDFAF5;
+            --reading-text: #2A2724;
+            --card-bg: #FFFFFF;
+            --border: #E8E2DA;
+            --success: #2D8F4E;
+            --error: #C9413B;
+            --warning: #C48A1A;
+            --progress-track: #2A2B30;
+            --progress-fill: #C17817;
+            --reader-font-size: 18px;
+            --reader-font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+            --toast-bg: #1E1F24;
+            --toast-text: #E8E4E0;
         }
-
-        [data-theme="dark"] {
-            --bg: #0C1222;
-            --fg: #E2E8F0;
-            --muted: #94A3B8;
-            --accent: #10B981;
-            --accent-hover: #34D399;
-            --accent-light: #064E3B;
-            --gold: #FBBF24;
-            --gold-light: #422006;
-            --card: #1A2332;
-            --border: #2D3A4A;
-            --shadow: 0 4px 24px rgba(0,0,0,0.25);
-            --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
+        body.dark-mode {
+            --reading-bg: #1A1B1F;
+            --reading-text: #CDC8C2;
+            --card-bg: #222328;
+            --border: #333438;
         }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: var(--font-ui);
-            background: var(--bg);
-            color: var(--fg);
-            line-height: 1.6;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
             min-height: 100vh;
-            transition: background var(--transition), color var(--transition);
-            overflow-x: hidden;
-        }
-
-        /* ============================
-           FONDO DECORATIVO
-           ============================ */
-        .bg-decor {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
             overflow: hidden;
-            pointer-events: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
 
-        .bg-decor .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.15;
-            animation: blobFloat 20s ease-in-out infinite;
-        }
-
-        .bg-decor .blob:nth-child(1) {
-            width: 600px; height: 600px;
-            background: var(--accent);
-            top: -200px; left: -100px;
-        }
-
-        .bg-decor .blob:nth-child(2) {
-            width: 500px; height: 500px;
-            background: var(--gold);
-            bottom: -150px; right: -100px;
-            animation-delay: -7s;
-        }
-
-        .bg-decor .blob:nth-child(3) {
-            width: 400px; height: 400px;
-            background: var(--accent);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -14s;
-        }
-
-        @keyframes blobFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.05); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-
-        /* ============================
-           TOAST NOTIFICATIONS
-           ============================ */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .toast {
-            padding: 14px 20px;
-            border-radius: var(--radius-sm);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 500;
-            pointer-events: auto;
-            transform: translateX(120%);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--shadow-lg);
-            max-width: 360px;
-        }
-
-        .toast.show { transform: translateX(0); }
-
-        .toast-success { background: #059669; }
-        .toast-error { background: #DC2626; }
-        .toast-info { background: #2563EB; }
-        .toast-warning { background: #D97706; }
-
-        /* ============================
-           VISTAS (SECCIONES)
-           ============================ */
-        .view {
-            display: none;
-            width: 100%;
+        /* ============================ LAYOUT PRINCIPAL ============================ */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 310px 1fr;
             min-height: 100vh;
-        }
-
-        .view.active {
-            display: flex;
-        }
-
-        /* ============================
-           VISTA: CARGA DE ARCHIVO
-           ============================ */
-        #view-upload {
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            gap: 30px;
-        }
-
-        .upload-hero {
-            text-align: center;
-            max-width: 600px;
-        }
-
-        .upload-hero h1 {
-            font-family: var(--font-display);
-            font-size: clamp(2.2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            color: var(--fg);
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .upload-hero h1 span {
-            color: var(--accent);
-        }
-
-        .upload-hero p {
-            color: var(--muted);
-            font-size: 1.05rem;
-            max-width: 440px;
-            margin: 0 auto;
-        }
-
-        .drop-zone {
-            width: 100%;
-            max-width: 560px;
-            border: 2.5px dashed var(--border);
-            border-radius: 20px;
-            padding: 60px 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition);
-            background: var(--card);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .drop-zone::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--accent-light), transparent);
-            opacity: 0;
-            transition: opacity var(--transition);
-        }
-
-        .drop-zone:hover, .drop-zone.drag-over {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .drop-zone:hover::before, .drop-zone.drag-over::before {
-            opacity: 1;
-        }
-
-        .drop-zone .icon {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .drop-zone h3 {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .drop-zone p {
-            color: var(--muted);
-            font-size: 0.9rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .drop-zone input[type="file"] {
-            display: none;
-        }
-
-        /* ============================
-           VISTA: VISTA PREVIA
-           ============================ */
-        #view-preview {
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            gap: 24px;
-        }
-
-        .preview-card {
-            background: var(--card);
-            border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .preview-cover {
-            width: 120px;
-            height: 170px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
-        }
-
-        .preview-cover-placeholder {
-            width: 120px;
-            height: 170px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: #fff;
-            font-size: 2.5rem;
-        }
-
-        .preview-card h2 {
-            font-family: var(--font-display);
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .preview-card .author {
-            color: var(--muted);
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-        }
-
-        .preview-stats {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 20px;
-        }
-
-        .preview-stat {
-            text-align: center;
-        }
-
-        .preview-stat .num {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .preview-stat .label {
-            font-size: 0.8rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .lang-selector {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 24px;
-        }
-
-        .lang-selector label {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .lang-selector select {
-            padding: 8px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--bg);
-            color: var(--fg);
-            font-family: var(--font-ui);
-            font-size: 0.9rem;
-            cursor: pointer;
-            outline: none;
-            transition: border-color var(--transition);
-        }
-
-        .lang-selector select:focus {
-            border-color: var(--accent);
-        }
-
-        /* ============================
-           BOTONES
-           ============================ */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 28px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-family: var(--font-ui);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition);
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        .btn:focus-visible {
-            outline: 3px solid var(--accent);
-            outline-offset: 2px;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(4, 120, 87, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--border);
-            color: var(--fg);
-        }
-
-        .btn-secondary:hover {
-            background: var(--muted);
-            color: #fff;
-        }
-
-        .btn-gold {
-            background: var(--gold);
-            color: #fff;
-        }
-
-        .btn-gold:hover {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
-        }
-
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-        }
-
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        /* ============================
-           VISTA: PROGRESO
-           ============================ */
-        #view-progress {
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            gap: 24px;
-        }
-
-        .progress-card {
-            background: var(--card);
-            border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            padding: 48px;
-            max-width: 520px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .progress-card h2 {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .progress-card .sub {
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-bottom: 28px;
-        }
-
-        .progress-bar-track {
-            width: 100%;
-            height: 14px;
-            background: var(--border);
-            border-radius: 99px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 99px;
-            background: linear-gradient(90deg, var(--accent), #34D399);
-            width: 0%;
-            transition: width 0.4s ease;
-            position: relative;
-        }
-
-        .progress-bar-fill::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .progress-percent {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-top: 16px;
-        }
-
-        .progress-chapter {
-            color: var(--muted);
-            font-size: 0.85rem;
-            margin-top: 8px;
-        }
-
-        /* ============================
-           VISTA: LECTOR
-           ============================ */
-        #view-reader {
-            flex-direction: column;
             height: 100vh;
         }
-
-        /* Barra superior */
-        .topbar {
-            height: var(--topbar-h);
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
+        /* ============================ SIDEBAR ============================ */
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(255,255,255,0.05);
             display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 8px;
-            z-index: 100;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: #333 var(--sidebar-bg);
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .sidebar-header {
+            padding: 24px 22px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
-            transition: background var(--transition), border-color var(--transition);
         }
-
-        .topbar .book-title-bar {
-            font-family: var(--font-display);
-            font-weight: 600;
-            font-size: 1rem;
-            margin-left: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex: 1;
-            min-width: 0;
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 18px; font-weight: 700; color: var(--sidebar-heading);
+            letter-spacing: -0.5px;
         }
-
-        .topbar .spacer { flex: 1; }
-
-        .topbar-controls {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .sidebar-logo i { color: var(--accent); font-size: 20px; }
+        .sidebar-logo span { color: var(--accent); }
+        .sidebar-section {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .sidebar-section:last-child { border-bottom: none; }
+        .section-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.2px; color: #555; margin-bottom: 12px;
+        }
+        /* Upload area */
+        .upload-zone {
+            border: 2px dashed #333; border-radius: 12px;
+            padding: 28px 16px; text-align: center; cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent); background: rgba(184,98,27,0.06);
+        }
+        .upload-zone i { font-size: 28px; color: #444; margin-bottom: 10px; display: block; }
+        .upload-zone:hover i { color: var(--accent); }
+        .upload-zone p { font-size: 13px; color: #666; line-height: 1.5; }
+        .upload-zone .browse-link { color: var(--accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+        #file-input { display: none; }
+        /* Book info */
+        .book-info { display: none; }
+        .book-info.visible { display: block; }
+        .book-title-display {
+            font-size: 16px; font-weight: 700; color: var(--sidebar-heading);
+            line-height: 1.3; margin-bottom: 4px;
+        }
+        .book-author { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .book-chapters-count { font-size: 11px; color: #555; }
+        /* Botones */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; border: none;
+            transition: all 0.2s ease; width: 100%;
+        }
+        .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .btn-primary {
+            background: var(--accent); color: #fff;
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary {
+            background: var(--sidebar-surface); color: var(--sidebar-text);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover { background: #222328; border-color: rgba(255,255,255,0.14); }
+        .btn-danger { background: rgba(201,65,59,0.15); color: var(--error); border: 1px solid rgba(201,65,59,0.2); }
+        .btn-danger:hover { background: rgba(201,65,59,0.25); }
+        .btn-row { display: flex; gap: 8px; }
+        .btn-row .btn { flex: 1; }
+        /* Progress */
+        .progress-area { display: none; }
+        .progress-area.visible { display: block; }
+        .progress-bar-track {
+            width: 100%; height: 6px; background: var(--progress-track);
+            border-radius: 3px; overflow: hidden; margin-bottom: 8px;
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent), #D4781F);
+            border-radius: 3px; transition: width 0.3s ease; width: 0%;
+        }
+        .progress-stats {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px; color: #777;
+        }
+        .progress-percent { color: var(--accent); font-weight: 700; }
+        .progress-chapters { color: #666; }
+        /* Controles de lectura */
+        .controls-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .control-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 500;
+            background: var(--sidebar-surface); color: var(--sidebar-text);
+            border: 1px solid rgba(255,255,255,0.06); cursor: pointer;
+            transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+        }
+        .control-btn:hover { background: #222328; border-color: rgba(255,255,255,0.12); }
+        .control-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .control-btn i { font-size: 13px; }
+        .font-size-display { font-weight: 700; color: var(--sidebar-heading); min-width: 28px; text-align: center; }
+        .font-select {
+            width: 100%; padding: 8px 10px; border-radius: 8px; font-size: 12px;
+            background: var(--sidebar-surface); color: var(--sidebar-text);
+            border: 1px solid rgba(255,255,255,0.06); cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .font-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        /* Search */
+        .search-wrap {
+            position: relative; margin-bottom: 8px;
+        }
+        .search-wrap i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: #555; font-size: 13px;
+        }
+        .search-input {
+            width: 100%; padding: 9px 12px 9px 34px; border-radius: 8px;
+            font-size: 13px; background: var(--sidebar-surface); color: var(--sidebar-text);
+            border: 1px solid rgba(255,255,255,0.06); font-family: 'DM Sans', sans-serif;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        .search-count { font-size: 11px; color: #666; margin-top: 4px; }
+        /* Notice */
+        .notice-box {
+            padding: 10px 12px; border-radius: 8px; font-size: 11px;
+            line-height: 1.5; margin-top: 10px; display: none;
+        }
+        .notice-box.visible { display: block; }
+        .notice-warning { background: rgba(196,138,26,0.12); color: #D4A840; border: 1px solid rgba(196,138,26,0.2); }
+        .notice-success { background: rgba(45,143,78,0.12); color: #4CAF6A; border: 1px solid rgba(45,143,78,0.2); }
+        .completion-msg {
+            font-size: 13px; color: var(--success); font-weight: 600;
+            text-align: center; padding: 8px; display: none;
+        }
+        .completion-msg.visible { display: block; }
 
-        /* Panel de ajustes desplegable */
-        .settings-panel {
-            position: absolute;
-            top: var(--topbar-h);
-            right: 16px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            padding: 20px;
-            z-index: 200;
+        /* ============================ AREA PRINCIPAL ============================ */
+        .main-area {
+            background: var(--reading-bg);
+            color: var(--reading-text);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            transition: background 0.4s ease, color 0.4s ease;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) var(--reading-bg);
+        }
+        .main-area::-webkit-scrollbar { width: 8px; }
+        .main-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Welcome screen */
+        .welcome-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100%; padding: 40px 20px; text-align: center; position: relative;
+        }
+        .welcome-bg-shapes {
+            position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+        }
+        .welcome-shape {
+            position: absolute; border-radius: 50%; opacity: 0.08;
+            animation: floatShape 20s ease-in-out infinite;
+        }
+        .welcome-shape:nth-child(1) { width: 400px; height: 400px; background: var(--accent); top: -100px; right: -80px; animation-delay: 0s; }
+        .welcome-shape:nth-child(2) { width: 250px; height: 250px; background: #8B5E3C; bottom: -60px; left: -40px; animation-delay: -7s; }
+        .welcome-shape:nth-child(3) { width: 180px; height: 180px; background: var(--accent); top: 40%; left: 20%; animation-delay: -13s; }
+        @keyframes floatShape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.05); }
+            66% { transform: translate(-20px, 15px) scale(0.95); }
+        }
+        .welcome-icon {
+            font-size: 56px; color: var(--accent); margin-bottom: 24px;
+            position: relative; z-index: 1;
+            animation: pulseIcon 3s ease-in-out infinite;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .welcome-title {
+            font-family: 'Crimson Pro', serif; font-size: 36px; font-weight: 700;
+            color: var(--reading-text); margin-bottom: 12px; position: relative; z-index: 1;
+        }
+        .welcome-sub {
+            font-size: 15px; color: #888; max-width: 420px; line-height: 1.6;
+            position: relative; z-index: 1; margin-bottom: 30px;
+        }
+        .welcome-features {
+            display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+            position: relative; z-index: 1;
+        }
+        .welcome-feature {
+            display: flex; align-items: center; gap: 8px; font-size: 13px;
+            color: #777; background: var(--card-bg); padding: 8px 16px;
+            border-radius: 20px; border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+        .welcome-feature i { color: var(--accent); }
+
+        /* Reader */
+        .reader-container {
+            max-width: 780px; margin: 0 auto; padding: 40px 32px 80px;
             display: none;
-            width: 280px;
         }
-
-        .settings-panel.open {
-            display: block;
-            animation: fadeInDown 0.25s ease;
+        .reader-container.visible { display: block; }
+        .reader-book-title {
+            font-family: var(--reader-font-family); font-size: 28px; font-weight: 700;
+            text-align: center; margin-bottom: 6px; color: var(--reading-text);
         }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-8px); }
+        .reader-book-author {
+            text-align: center; font-size: 14px; color: #999; margin-bottom: 40px;
+            font-style: italic;
+        }
+        .chapter-block {
+            margin-bottom: 48px;
+            animation: fadeInChapter 0.6s ease forwards;
+            opacity: 0;
+        }
+        @keyframes fadeInChapter {
+            from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .settings-group {
-            margin-bottom: 16px;
-        }
-
-        .settings-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .settings-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-
-        .settings-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .settings-row select,
-        .settings-row input[type="range"] {
-            flex: 1;
-        }
-
-        .size-display {
-            min-width: 36px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--accent);
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border);
-            outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-        }
-
-        /* Contenido principal del lector */
-        .reader-body {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar de capítulos */
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--card);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: transform var(--transition), background var(--transition), border-color var(--transition);
-            flex-shrink: 0;
-            z-index: 90;
-        }
-
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sidebar-header i { color: var(--accent); }
-
-        .chapter-list {
-            list-style: none;
-            overflow-y: auto;
-            flex: 1;
-            padding: 8px;
-        }
-
-        .chapter-list li {
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: 0.88rem;
-            color: var(--muted);
-            transition: all 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .chapter-list li:hover {
-            background: var(--accent-light);
-            color: var(--fg);
-        }
-
-        .chapter-list li.active {
-            background: var(--accent);
-            color: #fff;
-            font-weight: 600;
-        }
-
-        /* Área de contenido */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 40px;
-            scroll-behavior: smooth;
-        }
-
-        .content-inner {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-
-        /* Pestañas original / traducido */
-        .tab-bar {
-            display: flex;
-            gap: 0;
-            margin-bottom: 32px;
+        .chapter-heading {
+            font-family: var(--reader-font-family); font-weight: 700;
+            font-size: calc(var(--reader-font-size) * 1.4);
+            color: var(--reading-text); margin-bottom: 20px; padding-bottom: 10px;
             border-bottom: 2px solid var(--border);
+            line-height: 1.3;
         }
-
-        .tab-btn {
-            padding: 10px 24px;
-            background: none;
-            border: none;
-            font-family: var(--font-ui);
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--muted);
-            cursor: pointer;
-            position: relative;
-            transition: color 0.2s;
+        .chapter-paragraph {
+            font-family: var(--reader-font-family);
+            font-size: var(--reader-font-size);
+            line-height: 1.7; text-align: justify;
+            margin-bottom: 14px; color: var(--reading-text);
+            text-indent: 1.5em; hyphens: auto;
+            transition: font-size 0.3s ease;
         }
-
-        .tab-btn.active {
-            color: var(--accent);
-            font-weight: 600;
+        .chapter-paragraph:first-of-type { text-indent: 0; }
+        .chapter-blockquote {
+            font-family: var(--reader-font-family);
+            font-size: var(--reader-font-size);
+            line-height: 1.7; text-align: justify;
+            margin: 16px 0 16px 24px; padding-left: 16px;
+            border-left: 3px solid var(--accent); color: var(--reading-text);
+            font-style: italic;
         }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--accent);
-            border-radius: 2px 2px 0 0;
+        /* Search highlight */
+        mark.search-hl {
+            background: #FFD966; color: #333; border-radius: 2px;
+            padding: 0 2px; box-shadow: 0 0 0 2px rgba(255,217,102,0.3);
         }
-
-        .chapter-title {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
+        /* Loading skeleton */
+        .skeleton-line {
+            height: 14px; background: linear-gradient(90deg, var(--border) 25%, rgba(0,0,0,0.04) 50%, var(--border) 75%);
+            background-size: 200% 100%; border-radius: 4px; margin-bottom: 10px;
+            animation: shimmer 1.5s ease-in-out infinite;
         }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .reader-text p {
-            margin-bottom: 16px;
-            text-align: justify;
+        /* ============================ TOAST ============================ */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px;
         }
-
-        .reader-text h1, .reader-text h2, .reader-text h3 {
-            font-family: var(--font-display);
-            margin-top: 32px;
-            margin-bottom: 16px;
+        .toast {
+            background: var(--toast-bg); color: var(--toast-text);
+            padding: 12px 20px; border-radius: 10px; font-size: 13px;
+            font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; gap: 10px;
+            border-left: 3px solid var(--accent);
         }
+        .toast.show { transform: translateX(0); }
+        .toast.toast-success { border-left-color: var(--success); }
+        .toast.toast-error { border-left-color: var(--error); }
 
-        .reader-text h1 { font-size: 1.6em; }
-        .reader-text h2 { font-size: 1.35em; }
-        .reader-text h3 { font-size: 1.15em; }
-
-        /* Resaltado de búsqueda */
-        .search-highlight {
-            background: var(--gold-light);
-            color: var(--gold);
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-weight: 600;
+        /* ============================ MOBILE ============================ */
+        .mobile-toggle {
+            display: none; position: fixed; top: 12px; left: 12px; z-index: 100;
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--sidebar-bg); color: var(--sidebar-heading);
+            border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+            font-size: 18px; align-items: center; justify-content: center;
         }
-
-        [data-theme="dark"] .search-highlight {
-            background: #422006;
-            color: #FBBF24;
+        .mobile-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 49; opacity: 0; transition: opacity 0.3s;
         }
+        .mobile-overlay.visible { opacity: 1; }
 
-        /* Barra inferior */
-        .bottombar {
-            height: 44px;
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            flex-shrink: 0;
-            transition: background var(--transition), border-color var(--transition);
-        }
-
-        /* ============================
-           MODAL DE BÚSQUEDA
-           ============================ */
-        .search-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 500;
-            display: none;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 80px;
-        }
-
-        .search-overlay.open {
-            display: flex;
-            animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .search-modal {
-            background: var(--card);
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            width: 90%;
-            max-width: 560px;
-            max-height: 70vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .search-input-row {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            gap: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .search-input-row i {
-            color: var(--muted);
-            font-size: 1.1rem;
-        }
-
-        .search-input-row input {
-            flex: 1;
-            border: none;
-            outline: none;
-            font-family: var(--font-ui);
-            font-size: 1rem;
-            background: transparent;
-            color: var(--fg);
-        }
-
-        .search-results {
-            overflow-y: auto;
-            padding: 12px;
-            flex: 1;
-        }
-
-        .search-result-item {
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .search-result-item:hover {
-            background: var(--accent-light);
-        }
-
-        .search-result-item .chapter-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-
-        .search-result-item .context {
-            font-size: 0.88rem;
-            color: var(--muted);
-        }
-
-        .search-no-results {
-            text-align: center;
-            padding: 40px;
-            color: var(--muted);
-        }
-
-        /* ============================
-           MODAL REANUDAR LECTURA
-           ============================ */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 600;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .modal-box {
-            background: var(--card);
-            border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            padding: 36px;
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .modal-box h3 {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-        }
-
-        .modal-box p {
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-        }
-
-        /* ============================
-           RESPONSIVE
-           ============================ */
-        @media (max-width: 768px) {
+        @media (max-width: 860px) {
+            .app-layout { grid-template-columns: 1fr; }
             .sidebar {
-                position: fixed;
-                top: var(--topbar-h);
-                left: 0;
-                bottom: 44px;
-                transform: translateX(-100%);
-                z-index: 150;
-                box-shadow: var(--shadow-lg);
+                position: fixed; left: -320px; top: 0; bottom: 0; width: 310px;
+                z-index: 50; transition: left 0.35s cubic-bezier(0.16,1,0.3,1);
             }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .sidebar-backdrop {
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.4);
-                z-index: 140;
-                display: none;
-            }
-
-            .sidebar-backdrop.open {
-                display: block;
-            }
-
-            .content-area {
-                padding: 24px 16px;
-            }
-
-            .preview-card {
-                padding: 24px;
-            }
-
-            .progress-card {
-                padding: 32px 24px;
-            }
-
-            .settings-panel {
-                right: 8px;
-                left: 8px;
-                width: auto;
-            }
+            .sidebar.open { left: 0; }
+            .mobile-toggle { display: flex; }
+            .mobile-overlay.visible { display: block; }
+            .reader-container { padding: 60px 18px 80px; }
+            .welcome-title { font-size: 26px; }
         }
-
         @media (max-width: 480px) {
-            .topbar .book-title-bar {
-                display: none;
-            }
-
-            .btn-group {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .btn-group .btn {
-                width: 100%;
-            }
+            .sidebar { width: 290px; }
+            .welcome-features { gap: 10px; }
+            .welcome-feature { font-size: 12px; padding: 6px 12px; }
+            .reader-container { padding: 50px 14px 60px; }
         }
 
-        /* ============================
-           ANIMACIONES REDUCIDAS
-           ============================ */
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
+        /* Spinner */
+        .spinner {
+            width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.6s linear infinite; display: inline-block;
         }
-
-        /* ============================
-           SCROLLBAR PERSONALIZADO
-           ============================ */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--muted);
-        }
-
-        /* Utilidad */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0,0,0,0);
-            border: 0;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Hidden utility */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- Fondo decorativo -->
-    <div class="bg-decor">
-        <div class="blob"></div>
-        <div class="blob"></div>
-        <div class="blob"></div>
-    </div>
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+    <!-- Mobile toggle -->
+    <button class="mobile-toggle" id="mobile-toggle" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
 
-    <!-- Contenedor de toasts -->
-    <div id="toast-container" aria-live="polite"></div>
-
-    <!-- ============================
-         VISTA: CARGA DE ARCHIVO
-         ============================ -->
-    <section id="view-upload" class="view active" role="main">
-        <div class="upload-hero">
-            <h1>Book<span>Translate</span></h1>
-            <p>Traduce y lee tus libros EPUB al español de forma sencilla, directamente en tu navegador.</p>
-        </div>
-
-        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Subir archivo EPUB">
-            <div class="icon"><i class="fas fa-book-open"></i></div>
-            <h3>Arrastra tu archivo EPUB aqui</h3>
-            <p>o haz clic para seleccionar el archivo</p>
-            <input type="file" id="fileInput" accept=".epub">
-        </div>
-
-        <p style="color:var(--muted); font-size:0.82rem; text-align:center; max-width:400px;">
-            Tu archivo se procesa localmente. La traduccion usa la API gratuita de MyMemory.
-        </p>
-    </section>
-
-    <!-- ============================
-         VISTA: VISTA PREVIA
-         ============================ -->
-    <section id="view-preview" class="view" role="main">
-        <div class="preview-card" id="previewCard">
-            <!-- Se llena dinámicamente -->
-        </div>
-
-        <div class="lang-selector">
-            <label for="sourceLang"><i class="fas fa-language"></i> Idioma origen:</label>
-            <select id="sourceLang">
-                <option value="en">Ingles</option>
-                <option value="fr">Frances</option>
-                <option value="de">Aleman</option>
-                <option value="it">Italiano</option>
-                <option value="pt">Portugues</option>
-                <option value="ja">Japones</option>
-                <option value="ko">Coreano</option>
-                <option value="zh">Chino</option>
-                <option value="ru">Ruso</option>
-                <option value="ar">Arabe</option>
-                <option value="nl">Holandes</option>
-                <option value="pl">Polaco</option>
-                <option value="sv">Sueco</option>
-                <option value="tr">Turco</option>
-                <option value="ro">Rumano</option>
-                <option value="ca">Catalan</option>
-                <option value="eu">Euskera</option>
-                <option value="gl">Gallego</option>
-                <option value="la">Latin</option>
-            </select>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-primary" id="btnTranslate">
-                <i class="fas fa-language"></i> Traducir al espanol
-            </button>
-            <button class="btn btn-secondary" id="btnBackUpload">
-                <i class="fas fa-arrow-left"></i> Cambiar archivo
-            </button>
-        </div>
-    </section>
-
-    <!-- ============================
-         VISTA: PROGRESO
-         ============================ -->
-    <section id="view-progress" class="view" role="main">
-        <div class="progress-card">
-            <h2>Traduciendo tu libro</h2>
-            <p class="sub" id="progressSub">Preparando...</p>
-            <div class="progress-bar-track">
-                <div class="progress-bar-fill" id="progressFill"></div>
+    <div class="app-layout">
+        <!-- =================== SIDEBAR =================== -->
+        <aside class="sidebar" id="sidebar" role="complementary">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-book-open"></i>
+                    Book<span>Translate</span>
+                </div>
             </div>
-            <div class="progress-percent" id="progressPercent">0%</div>
-            <div class="progress-chapter" id="progressChapter"></div>
-        </div>
-    </section>
 
-    <!-- ============================
-         VISTA: LECTOR
-         ============================ -->
-    <section id="view-reader" class="view" role="main">
-        <!-- Barra superior -->
-        <header class="topbar">
-            <button class="btn btn-icon btn-secondary" id="btnToggleSidebar" aria-label="Menu de capítulos">
-                <i class="fas fa-bars"></i>
-            </button>
-            <span class="book-title-bar" id="readerTitle">Libro</span>
-            <div class="spacer"></div>
-            <div class="topbar-controls">
-                <button class="btn btn-icon btn-secondary" id="btnSearch" aria-label="Buscar texto">
+            <!-- Carga de EPUB -->
+            <div class="sidebar-section">
+                <div class="section-label">Cargar EPUB</div>
+                <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Subir archivo EPUB">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Arrastra tu EPUB aqui<br>o <span class="browse-link">selecciona archivo</span></p>
+                </div>
+                <input type="file" id="file-input" accept=".epub">
+            </div>
+
+            <!-- Información del libro -->
+            <div class="sidebar-section book-info" id="book-info">
+                <div class="section-label">Libro cargado</div>
+                <div class="book-title-display" id="book-title-side"></div>
+                <div class="book-author" id="book-author-side"></div>
+                <div class="book-chapters-count" id="book-chapters-side"></div>
+            </div>
+
+            <!-- Traducción -->
+            <div class="sidebar-section" id="translate-section" style="display:none;">
+                <div class="section-label">Traduccion</div>
+                <button class="btn btn-primary" id="btn-translate" aria-label="Traducir a español">
+                    <i class="fas fa-language"></i> Traducir a espanol
+                </button>
+                <div class="progress-area" id="progress-area">
+                    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+                    <div class="progress-stats">
+                        <span class="progress-percent" id="progress-percent">0%</span>
+                        <span class="progress-chapters" id="progress-chapters">0 de 0 capitulos</span>
+                    </div>
+                </div>
+                <button class="btn btn-danger hidden" id="btn-cancel" style="margin-top:8px;" aria-label="Cancelar traducción">
+                    <i class="fas fa-stop"></i> Cancelar
+                </button>
+                <div class="completion-msg" id="completion-msg"></div>
+                <div class="notice-box notice-warning" id="demo-notice">
+                    <i class="fas fa-exclamation-triangle"></i> API no disponible. Usando modo demostracion con diccionario basico.
+                </div>
+            </div>
+
+            <!-- Herramientas de lectura -->
+            <div class="sidebar-section" id="tools-section" style="display:none;">
+                <div class="section-label">Herramientas de lectura</div>
+                <div class="controls-grid" style="margin-bottom:10px;">
+                    <button class="control-btn" id="btn-font-dec" aria-label="Disminuir fuente"><i class="fas fa-minus"></i> <span class="font-size-display" id="font-size-val">18</span></button>
+                    <button class="control-btn" id="btn-font-inc" aria-label="Aumentar fuente"><i class="fas fa-plus"></i> Fuente</button>
+                    <button class="control-btn" id="btn-dark-toggle" aria-label="Modo oscuro"><i class="fas fa-moon"></i> Oscuro</button>
+                    <button class="control-btn" id="btn-font-sans" aria-label="Sans-serif"><i class="fas fa-font"></i> Sans</button>
+                </div>
+                <select class="font-select" id="font-select" aria-label="Tipo de fuente">
+                    <option value="'Crimson Pro', Georgia, 'Times New Roman', serif">Serif (Crimson Pro)</option>
+                    <option value="'DM Sans', 'Segoe UI', Helvetica, sans-serif">Sans-serif (DM Sans)</option>
+                    <option value="'Courier New', Courier, monospace">Monoespaciada</option>
+                </select>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="sidebar-section" id="search-section" style="display:none;">
+                <div class="section-label">Buscar en el texto</div>
+                <div class="search-wrap">
                     <i class="fas fa-search"></i>
-                </button>
-                <button class="btn btn-icon btn-secondary" id="btnSettings" aria-label="Ajustes de lectura">
-                    <i class="fas fa-sliders-h"></i>
-                </button>
-                <button class="btn btn-icon btn-secondary" id="btnThemeToggle" aria-label="Cambiar tema">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <button class="btn btn-sm btn-gold" id="btnExportPDF">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </button>
-                <button class="btn btn-sm btn-secondary" id="btnCopyAll">
-                    <i class="fas fa-copy"></i> Copiar
-                </button>
+                    <input type="text" class="search-input" id="search-input" placeholder="Buscar palabra..." aria-label="Buscar en texto traducido">
+                </div>
+                <div class="search-count" id="search-count"></div>
             </div>
-        </header>
 
-        <!-- Panel de ajustes -->
-        <div class="settings-panel" id="settingsPanel">
-            <div class="settings-group">
-                <div class="settings-label">Tamanio de letra</div>
-                <div class="settings-row">
-                    <button class="btn btn-icon btn-sm btn-secondary" id="btnFontMinus" aria-label="Reducir letra"><i class="fas fa-minus"></i></button>
-                    <span class="size-display" id="fontSizeDisplay">16px</span>
-                    <button class="btn btn-icon btn-sm btn-secondary" id="btnFontPlus" aria-label="Aumentar letra"><i class="fas fa-plus"></i></button>
+            <!-- Acciones -->
+            <div class="sidebar-section" id="actions-section" style="display:none;">
+                <div class="section-label">Acciones</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button class="btn btn-secondary" id="btn-copy" aria-label="Copiar todo el texto">
+                        <i class="fas fa-copy"></i> Copiar todo el texto
+                    </button>
+                    <button class="btn btn-secondary" id="btn-pdf" aria-label="Exportar a PDF">
+                        <i class="fas fa-file-pdf"></i> Exportar a PDF
+                    </button>
                 </div>
             </div>
-            <div class="settings-group">
-                <div class="settings-label">Tipo de fuente</div>
-                <div class="settings-row">
-                    <select id="fontFamily" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);font-family:var(--font-ui);">
-                        <option value="'Crimson Pro', serif">Serif (Crimson Pro)</option>
-                        <option value="'DM Sans', sans-serif">Sans-serif (DM Sans)</option>
-                        <option value="'Courier New', monospace">Monoespaciada</option>
-                    </select>
+        </aside>
+
+        <!-- =================== AREA PRINCIPAL =================== -->
+        <main class="main-area" id="main-area">
+            <!-- Pantalla de bienvenida -->
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-bg-shapes">
+                    <div class="welcome-shape"></div>
+                    <div class="welcome-shape"></div>
+                    <div class="welcome-shape"></div>
+                </div>
+                <div class="welcome-icon"><i class="fas fa-book-reader"></i></div>
+                <h1 class="welcome-title">Traductor Instantaneo de EPUBs</h1>
+                <p class="welcome-sub">Sube cualquier libro en formato EPUB y obtenlo traducido al espanol en segundos. Lectura comoda, copia el texto o exporta a PDF.</p>
+                <div class="welcome-features">
+                    <div class="welcome-feature"><i class="fas fa-bolt"></i> Traduccion rapida</div>
+                    <div class="welcome-feature"><i class="fas fa-align-justify"></i> Texto justificado</div>
+                    <div class="welcome-feature"><i class="fas fa-file-pdf"></i> Exportar PDF</div>
+                    <div class="welcome-feature"><i class="fas fa-moon"></i> Modo oscuro</div>
                 </div>
             </div>
-            <div class="settings-group">
-                <div class="settings-label">Espaciado entre lineas: <span id="lineHeightDisplay">1.8</span></div>
-                <div class="settings-row">
-                    <input type="range" id="lineHeightRange" min="1.2" max="2.0" step="0.1" value="1.8">
-                </div>
+            <!-- Área de lectura -->
+            <div class="reader-container" id="reader-container">
+                <h1 class="reader-book-title" id="reader-book-title"></h1>
+                <p class="reader-book-author" id="reader-book-author"></p>
+                <div id="reader-content"></div>
             </div>
-        </div>
-
-        <!-- Cuerpo del lector -->
-        <div class="reader-body">
-            <!-- Backdrop para sidebar en móvil -->
-            <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-            <!-- Sidebar de capítulos -->
-            <nav class="sidebar" id="sidebar" aria-label="Capítulos del libro">
-                <div class="sidebar-header">
-                    <i class="fas fa-list-ol"></i> Capitulos
-                </div>
-                <ul class="chapter-list" id="chapterList">
-                    <!-- Se llena dinámicamente -->
-                </ul>
-            </nav>
-
-            <!-- Área de contenido -->
-            <div class="content-area" id="contentArea">
-                <div class="content-inner">
-                    <!-- Pestañas -->
-                    <div class="tab-bar">
-                        <button class="tab-btn active" data-tab="translated">Traducido</button>
-                        <button class="tab-btn" data-tab="original">Original</button>
-                    </div>
-
-                    <div id="readerContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Barra inferior -->
-        <footer class="bottombar">
-            <span id="wordCount">0 palabras</span>
-            <span id="pageEstimate">~0 paginas</span>
-            <span id="currentChapter"></span>
-        </footer>
-    </section>
-
-    <!-- ============================
-         MODAL DE BÚSQUEDA
-         ============================ -->
-    <div class="search-overlay" id="searchOverlay">
-        <div class="search-modal">
-            <div class="search-input-row">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Buscar en el libro..." autocomplete="off">
-                <button class="btn btn-sm btn-secondary" id="btnCloseSearch">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="search-results" id="searchResults">
-                <div class="search-no-results">Escribe para buscar</div>
-            </div>
-        </div>
+        </main>
     </div>
 
-    <!-- ============================
-         MODAL REANUDAR LECTURA
-         ============================ -->
-    <div class="modal-overlay" id="resumeModal">
-        <div class="modal-box">
-            <h3>Continuar leyendo</h3>
-            <p id="resumeInfo">Tienes un libro guardado. Deseas retomar donde lo dejaste?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" id="btnResumeYes">
-                    <i class="fas fa-book-reader"></i> Continuar
-                </button>
-                <button class="btn btn-secondary" id="btnResumeNo">
-                    <i class="fas fa-plus"></i> Nuevo libro
-                </button>
-            </div>
-        </div>
-    </div>
+<script>
+/* ========================================================================
+   BookTranslate — Traductor Instantáneo de EPUBs
+   ======================================================================== */
 
-    <!-- ============================
-         JAVASCRIPT
-         ============================ -->
-    <script>
-    /* ============================================================
-       CONFIGURACIÓN Y CONSTANTES
-       ============================================================ */
+/* ============================ 1. FIREBASE ============================ */
+const firebaseConfig = {
+    apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
+    authDomain: "celulakmt.firebaseapp.com",
+    databaseURL: "https://celulakmt-default-rtdb.firebaseio.com",
+    projectId: "celulakmt",
+    storageBucket: "celulakmt.firebasestorage.app",
+    messagingSenderId: "623088700057",
+    appId: "1:623088700057:web:fffb8fccbae5ff6d834608",
+    measurementId: "G-CY1HY229XX"
+};
+let fbDB = null;
+try {
+    const fbApp = firebase.initializeApp(firebaseConfig);
+    fbDB = firebase.database();
+    // Autenticación anónima para poder escribir en la BD
+    firebase.auth().signInAnonymously().catch(() => {});
+} catch(e) {
+    console.warn('Firebase no disponible:', e);
+}
 
-    // Configuración de Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
-        authDomain: "celulakmt.firebaseapp.com",
-        databaseURL: "https://celulakmt-default-rtdb.firebaseio.com",
-        projectId: "celulakmt",
-        storageBucket: "celulakmt.firebasestorage.app",
-        messagingSenderId: "623088700057",
-        appId: "1:623088700057:web:fffb8fccbae5ff6d834608",
-        measurementId: "G-CY1HY229XX"
-    };
-
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database();
-    let firebaseReady = false;
-
-    // Autenticación anónima para permitir escritura
-    firebase.auth().signInAnonymously().catch(err => {
-        console.warn('Firebase auth error:', err.message);
-    });
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            firebaseReady = true;
-            console.log('Firebase autenticado:', user.uid);
-        }
-    });
-
-    // URL base de la API de traducción MyMemory
-    const MYMEMORY_API = 'https://api.mymemory.translated.net/get';
-
-    // Diccionario de respaldo para traducción demo (inglés -> español)
-    const FALLBACK_DICT = {
-        'the':'el','a':'un','an':'un','is':'es','are':'son','was':'era','were':'eran',
-        'and':'y','or':'o','but':'pero','in':'en','on':'en','at':'en','to':'a',
-        'for':'para','of':'de','with':'con','from':'desde','by':'por','he':'el',
-        'she':'ella','it':'eso','they':'ellos','we':'nosotros','you':'tu','i':'yo',
-        'not':'no','yes':'si','hello':'hola','goodbye':'adios','please':'por favor',
-        'thank':'gracias','thanks':'gracias','book':'libro','chapter':'capitulo',
-        'story':'historia','man':'hombre','woman':'mujer','child':'nino',
-        'house':'casa','door':'puerta','window':'ventana','day':'dia','night':'noche',
-        'morning':'manana','water':'agua','fire':'fuego','earth':'tierra',
-        'love':'amor','hate':'odio','fear':'miedo','time':'tiempo','year':'ano',
-        'month':'mes','week':'semana','today':'hoy','tomorrow':'manana',
-        'yesterday':'ayer','now':'ahora','then':'entonces','here':'aqui',
-        'there':'alli','very':'muy','much':'mucho','little':'poco','big':'grande',
-        'small':'pequeno','good':'bueno','bad':'malo','new':'nuevo','old':'viejo',
-        'long':'largo','short':'corto','high':'alto','low':'bajo','fast':'rapido',
-        'slow':'lento','hot':'caliente','cold':'frio','dark':'oscuro','light':'luz',
-        'white':'blanco','black':'negro','red':'rojo','blue':'azul','green':'verde',
-        'said':'dijo','say':'decir','went':'fue','go':'ir','come':'venir',
-        'see':'ver','look':'mirar','know':'saber','think':'pensar','want':'querer',
-        'give':'dar','take':'tomar','make':'hacer','do':'hacer','get':'obtener',
-        'put':'poner','seem':'parecer','leave':'dejar','call':'llamar',
-        'have':'tener','has':'tiene','had':'tenia','been':'sido','being':'siendo',
-        'would':'seria','could':'podria','should':'deberia','will':'serra',
-        'shall':'debera','may':'puede','might':'podria','must':'debe','can':'puede',
-        'this':'esto','that':'eso','these':'estos','those':'esos','my':'mi',
-        'your':'tu','his':'su','her':'su','its':'su','our':'nuestro','their':'su',
-        'what':'que','which':'cual','who':'quien','whom':'a quien','whose':'cuyo',
-        'where':'donde','when':'cuando','why':'por que','how':'como',
-        'all':'todo','each':'cada','every':'cada','both':'ambos','few':'pocos',
-        'many':'muchos','most':'la mayoria','other':'otro','some':'alguno',
-        'such':'tal','no':'no','only':'solo','same':'mismo','so':'asi',
-        'than':'que','too':'tambien','very':'muy','just':'solo','also':'tambien',
-        'about':'acerca','after':'despues','before':'antes','between':'entre',
-        'under':'debajo','again':'de nuevo','once':'una vez','never':'nunca',
-        'always':'siempre','still':'todavia','already':'ya','perhaps':'quizas',
-        'nothing':'nada','everything':'todo','something':'algo','anything':'cualquier cosa',
-        'world':'mundo','life':'vida','people':'gente','way':'camino',
-        'thing':'cosa','place':'lugar','hand':'mano','head':'cabeza',
-        'eye':'ojo','face':'cara','heart':'corazon','voice':'voz',
-        'name':'nombre','word':'palabra','thought':'pensamiento',
-        'father':'padre','mother':'madre','brother':'hermano','sister':'hermana',
-        'son':'hijo','daughter':'hija','friend':'amigo','king':'rey',
-        'lord':'senor','lady':'senora','sir':'senor','master':'maestro',
-        'death':'muerte','blood':'sangre','sword':'espada','war':'guerra',
-        'peace':'paz','power':'poder','magic':'magia','shadow':'sombra',
-        'dream':'sueno','hope':'esperanza','truth':'verdad','secret':'secreto',
-        'city':'ciudad','land':'tierra','road':'camino','forest':'bosque',
-        'river':'rio','mountain':'montana','sea':'mar','sky':'cielo',
-        'sun':'sol','moon':'luna','star':'estrella','rain':'lluvia',
-        'snow':'nieve','wind':'viento','stone':'piedra','gold':'oro',
-        'silver':'plata','iron':'hierro','wood':'madera','glass':'vidrio'
-    };
-
-    /* ============================================================
-       ESTADO DE LA APLICACIÓN
-       ============================================================ */
-    const AppState = {
-        currentView: 'upload',   // upload | preview | progress | reader
-        bookData: null,          // Datos del libro parseado
-        translatedBook: null,    // Libro traducido completo
-        fileHash: '',            // Hash SHA-256 del archivo
-        fontSize: 16,
-        fontFamily: "'Crimson Pro', serif",
-        lineHeight: 1.8,
-        darkMode: false,
-        activeTab: 'translated', // translated | original
-        activeChapterIndex: 0,
-        isTranslating: false,
-        searchResults: []
-    };
-
-    /* ============================================================
-       UTILIDADES
-       ============================================================ */
-
-    // Mostrar notificación toast
-    function showToast(message, type = 'info') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        container.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('show'));
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 350);
-        }, 3500);
+/* ============================ 2. SISTEMA DE CACHÉ ============================ */
+function hashStr(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) - h) + str.charCodeAt(i);
+        h |= 0;
     }
+    return 'tr_' + Math.abs(h).toString(36);
+}
 
-    // Retardo promisificado
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+function getLocalCache(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
 
-    // Hash SHA-256 de un ArrayBuffer
-    async function hashBuffer(buffer) {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+function setLocalCache(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
 
-    // Contar palabras en un texto
-    function countWords(text) {
-        return text.split(/\s+/).filter(w => w.length > 0).length;
-    }
-
-    // Estimar páginas (250 palabras por página)
-    function estimatePages(wordCount) {
-        return Math.max(1, Math.ceil(wordCount / 250));
-    }
-
-    // Escapar HTML
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Dividir texto en oraciones respetando límite de caracteres
-    function splitIntoChunks(text, maxChars = 450) {
-        if (!text || text.trim().length === 0) return [];
-
-        // Intentar dividir por oraciones
-        const sentences = text.match(/[^.!?]+[.!?]+\s*/g) || [text];
-        const chunks = [];
-        let currentChunk = '';
-
-        for (const sentence of sentences) {
-            if (currentChunk.length + sentence.length > maxChars && currentChunk.length > 0) {
-                chunks.push(currentChunk.trim());
-                currentChunk = sentence;
-            } else {
-                currentChunk += sentence;
-            }
-        }
-        if (currentChunk.trim()) {
-            chunks.push(currentChunk.trim());
-        }
-        return chunks;
-    }
-
-    // Traducción de respaldo (modo demostración)
-    function fallbackTranslate(text) {
-        if (!text || text.trim().length < 2) return text;
-        return text.replace(/\b[a-zA-Z]+\b/g, word => {
-            const lower = word.toLowerCase();
-            return FALLBACK_DICT[lower] || word;
-        });
-    }
-
-    /* ============================================================
-       IndexedDB — Caché local de traducciones
-       ============================================================ */
-    class BookDB {
-        constructor() {
-            this.dbName = 'EpubTranslatorDB';
-            this.storeName = 'translated_books';
-            this.db = null;
-        }
-
-        async open() {
-            if (this.db) return this.db;
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(this.dbName, 1);
-                request.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains(this.storeName)) {
-                        db.createObjectStore(this.storeName, { keyPath: 'hash' });
-                    }
-                };
-                request.onsuccess = (e) => {
-                    this.db = e.target.result;
-                    resolve(this.db);
-                };
-                request.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        async save(bookData) {
-            await this.open();
-            return new Promise((resolve, reject) => {
-                const tx = this.db.transaction(this.storeName, 'readwrite');
-                tx.objectStore(this.storeName).put(bookData);
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        async get(hash) {
-            await this.open();
-            return new Promise((resolve, reject) => {
-                const tx = this.db.transaction(this.storeName, 'readonly');
-                const request = tx.objectStore(this.storeName).get(hash);
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = (e) => reject(e.target.error);
-            });
-        }
-    }
-
-    const bookDB = new BookDB();
-
-    /* ============================================================
-       FIREBASE — Almacenamiento en la nube
-       ============================================================ */
-    async function saveToFirebase(hash, data) {
-        if (!firebaseReady) return;
+async function getCached(original) {
+    const k = hashStr(original);
+    // LocalStorage primero (rápido)
+    const local = getLocalCache(k);
+    if (local && local.translated) return local.translated;
+    // Firebase como respaldo
+    if (fbDB) {
         try {
-            // Guardar datos sin el HTML extenso para no exceder límites
-            const slimData = {
-                title: data.title,
-                author: data.author,
-                sourceLanguage: data.sourceLanguage,
-                timestamp: data.timestamp,
-                totalWords: data.totalWords,
-                chapters: data.chapters.map(ch => ({
-                    title: ch.title,
-                    translatedParagraphs: ch.translatedParagraphs
-                }))
-            };
-            await dbRef.ref('translations/' + hash).set(slimData);
-            console.log('Guardado en Firebase');
-        } catch (err) {
-            console.warn('Error guardando en Firebase:', err.message);
-        }
+            const snap = await fbDB.ref('epub_cache/' + k).once('value');
+            if (snap.exists() && snap.val().translated) {
+                setLocalCache(k, snap.val());
+                return snap.val().translated;
+            }
+        } catch {}
+    }
+    return null;
+}
+
+async function setCached(original, translated) {
+    const k = hashStr(original);
+    const obj = { original, translated, ts: Date.now() };
+    setLocalCache(k, obj);
+    if (fbDB) {
+        try { await fbDB.ref('epub_cache/' + k).set(obj); } catch {}
+    }
+}
+
+/* ============================ 3. DICCIONARIO DEMO ============================ */
+// REEMPLAZAR AQUÍ CON API REAL — Este diccionario se usa cuando MyMemory no está disponible
+const DEMO_DICT = {
+    'the':'el','a':'un','an':'un','is':'es','are':'son','and':'y','or':'o','in':'en',
+    'on':'en','at':'en','to':'a','of':'de','for':'para','with':'con','from':'de',
+    'by':'por','this':'este','that':'ese','it':'eso','he':'él','she':'ella',
+    'they':'ellos','we':'nosotros','was':'fue','were':'fueron','had':'tenía',
+    'have':'tener','has':'ha','will':'irá','would':'iría','could':'podría',
+    'should':'debería','can':'puede','do':'hacer','did':'hizo','not':'no',
+    'but':'pero','if':'si','then':'entonces','when':'cuando','where':'dónde',
+    'how':'cómo','what':'qué','who':'quién','which':'cuál','why':'por qué',
+    'said':'dijo','his':'su','her':'su','their':'su','my':'mi','your':'tu',
+    'our':'nuestro','chapter':'capítulo','book':'libro','man':'hombre',
+    'woman':'mujer','girl':'chica','boy':'chico','time':'tiempo','day':'día',
+    'night':'noche','year':'año','world':'mundo','life':'vida','love':'amor',
+    'great':'gran','good':'bueno','bad':'malo','new':'nuevo','old':'viejo',
+    'long':'largo','small':'pequeño','big':'grande','little':'pequeño',
+    'first':'primero','last':'último','all':'todo','some':'algunos',
+    'many':'muchos','more':'más','very':'muy','much':'mucho','than':'que',
+    'also':'también','just':'solo','into':'en','like':'como','over':'sobre',
+    'after':'después','before':'antes','between':'entre','under':'debajo',
+    'never':'nunca','always':'siempre','now':'ahora','here':'aquí',
+    'there':'allí','again':'otra vez','well':'bien','only':'solo',
+    'still':'todavía','about':'sobre','up':'arriba','down':'abajo',
+    'out':'fuera','back':'atrás','through':'a través','during':'durante',
+    'without':'sin','every':'cada','other':'otro','such':'tal','being':'siendo',
+    'made':'hecho','one':'uno','two':'dos','three':'tres','four':'cuatro',
+    'five':'cinco','because':'porque','while':'mientras','however':'sin embargo',
+    'although':'aunque','since':'desde','until':'hasta','both':'ambos',
+    'each':'cada','few':'pocos','most':'la mayoría','another':'otro',
+    'own':'propio','same':'mismo','so':'así que','too':'también',
+    'any':'cualquier','may':'puede','might':'podría','must':'debe',
+    'thought':'pensó','know':'saber','see':'ver','think':'pensar',
+    'take':'tomar','come':'venir','make':'hacer','go':'ir','give':'dar',
+    'find':'encontrar','tell':'decir','ask':'preguntar','seem':'parecer',
+    'feel':'sentir','try':'intentar','leave':'dejar','call':'llamar',
+    'keep':'mantener','begin':'comenzar','show':'mostrar','hear':'oír',
+    'play':'jugar','run':'correr','move':'mover','live':'vivir',
+    'believe':'creer','hold':'sostener','bring':'traer','happen':'ocurrir',
+    'write':'escribir','sit':'sentarse','stand':'estar de pie','lose':'perder',
+    'pay':'pagar','meet':'reunirse','include':'incluir','continue':'continuar',
+    'set':'establecer','learn':'aprender','change':'cambiar','lead':'liderar',
+    'understand':'entender','watch':'mirar','follow':'seguir','stop':'detener',
+    'create':'crear','speak':'hablar','read':'leer','allow':'permitir',
+    'add':'añadir','spend':'gastar','grow':'crecer','open':'abrir',
+    'walk':'caminar','win':'ganar','offer':'ofrecer','remember':'recordar',
+    'appear':'aparecer','buy':'comprar','wait':'esperar','serve':'servir',
+    'send':'enviar','expect':'esperar','build':'construir','stay':'quedarse',
+    'fall':'caer','cut':'cortar','reach':'alcanzar','remain':'permanecer',
+    'suggest':'sugerir','raise':'levantar','pass':'pasar','sell':'vender',
+    'require':'requerir','decide':'decidir','pull':'tirar','push':'empujar',
+    'room':'habitación','house':'casa','door':'puerta','hand':'mano',
+    'head':'cabeza','eye':'ojo','face':'cara','place':'lugar','case':'caso',
+    'point':'punto','fact':'hecho','group':'grupo','number':'número',
+    'water':'agua','home':'hogar','family':'familia','children':'niños',
+    'father':'padre','mother':'madre','friend':'amigo','country':'país',
+    'city':'ciudad','school':'escuela','state':'estado','power':'poder',
+    'study':'estudio','question':'pregunta','problem':'problema',
+    'answer':'respuesta','story':'historia','word':'palabra',
+    'name':'nombre','part':'parte','thing':'cosa','side':'lado',
+    'kind':'tipo','work':'trabajo','way':'camino','end':'fin',
+    'right':'derecho','left':'izquierdo','high':'alto','young':'joven',
+    'important':'importante','different':'diferente','possible':'posible',
+    'large':'grande','social':'social','national':'nacional','early':'temprano',
+    'sure':'seguro','real':'real','whole':'entero','free':'libre',
+    'clear':'claro','strong':'fuerte','full':'lleno','true':'verdadero',
+    'country':'campo','upon':'sobre','nothing':'nada','around':'alrededor',
+    'those':'esos','these':'estos','been':'sido','having':'teniendo',
+    'going':'yendo','doing':'haciendo','saying':'diciendo','looking':'mirando',
+    'getting':'consiguiendo','going':'yendo','came':'vino','went':'fue',
+    'got':'obtuvo','took':'tomó','saw':'vio','knew':'s supo',
+    'become':'convertirse','let':'dejar','put':'poner','turn':'girar',
+    'tell':'contar','ask':'pedir','seem':'parecer','feel':'sentirse',
+    'try':'probar','leave':'salir','call':'llamar','keep':'guardar',
+    'mr':'señor','mrs':'señora','miss':'señorita','sir':'señor',
+    'yes':'sí','no':'no','please':'por favor','thank':'gracias',
+    'hello':'hola','goodbye':'adiós','perhaps':'quizás','quite':'bastante',
+    'really':'realmente','already':'ya','enough':'suficiente',
+    'together':'juntos','almost':'casi','else':'más','yet':'sin embargo',
+    'often':'a menudo','along':'a lo largo','away':'lejos',
+    'upon':'sobre','among':'entre','perhaps':'tal vez',
+    'towards':'hacia','across':'a través','against':'contra',
+    'within':'dentro de','without':'sin','among':'entre',
+    'nothing':'nada','everything':'todo','something':'algo',
+    'someone':'alguien','anyone':'cualquiera','everyone':'todos',
+    'always':'siempre','never':'nunca','sometimes':'a veces',
+    'usually':'generalmente','often':'frecuentemente',
+    'quickly':'rápidamente','slowly':'lentamente','suddenly':'de repente',
+    'finally':'finalmente','actually':'en realidad','certainly':'ciertamente',
+    'probably':'probablemente','especially':'especialmente','simply':'simplemente',
+    'exactly':'exactamente','nearly':'casi','quite':'bastante'
+};
+
+function demoTranslate(text) {
+    // REEMPLAZAR AQUÍ CON API REAL
+    // Traducción demo: reemplazo palabra por palabra con diccionario
+    if (!text || !text.trim()) return text;
+    let result = text;
+    const entries = Object.entries(DEMO_DICT).sort((a,b) => b[0].length - a[0].length);
+    for (const [eng, spa] of entries) {
+        const re = new RegExp('\\b' + eng.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b', 'gi');
+        result = result.replace(re, spa);
+    }
+    return result;
+}
+
+/* ============================ 4. MOTOR DE TRADUCCIÓN ============================ */
+let useDemoMode = false;
+let translationCancelled = false;
+let currentFontSize = 18;
+
+async function translateTextAPI(text) {
+    if (!text || !text.trim()) return text;
+
+    // Comprobar caché
+    const cached = await getCached(text);
+    if (cached) return cached;
+
+    // Modo demo
+    if (useDemoMode) {
+        const result = demoTranslate(text);
+        await setCached(text, result);
+        return result;
     }
 
-    async function loadFromFirebase(hash) {
-        if (!firebaseReady) return null;
-        try {
-            const snapshot = await dbRef.ref('translations/' + hash).once('value');
-            return snapshot.val();
-        } catch (err) {
-            console.warn('Error leyendo Firebase:', err.message);
-            return null;
-        }
-    }
-
-    /* ============================================================
-       PARSING DE EPUB CON JSZip
-       ============================================================ */
-    async function parseEpub(arrayBuffer) {
-        const zip = await JSZip.loadAsync(arrayBuffer);
-
-        // 1. Leer container.xml para encontrar el archivo OPF
-        const containerFile = zip.file('META-INF/container.xml');
-        if (!containerFile) {
-            throw new Error('No se encontro META-INF/container.xml. El archivo no es un EPUB valido.');
-        }
-
-        const containerXml = await containerFile.async('text');
-        const containerDoc = new DOMParser().parseFromString(containerXml, 'application/xml');
-
-        // Verificar error de parseo
-        if (containerDoc.querySelector('parsererror')) {
-            throw new Error('Error al leer el manifiesto del EPUB.');
-        }
-
-        const rootfileEl = containerDoc.getElementsByTagName('rootfile')[0];
-        if (!rootfileEl) {
-            throw new Error('No se encontro la referencia al contenido del EPUB.');
-        }
-
-        const opfPath = rootfileEl.getAttribute('full-path');
-
-        // 2. Leer el archivo OPF
-        const opfFile = zip.file(opfPath);
-        if (!opfFile) {
-            throw new Error('No se encontro el archivo de metadatos del EPUB.');
-        }
-
-        const opfXml = await opfFile.async('text');
-        const opfDoc = new DOMParser().parseFromString(opfXml, 'application/xml');
-
-        if (opfDoc.querySelector('parsererror')) {
-            throw new Error('Error al leer los metadatos del EPUB.');
-        }
-
-        // 3. Extraer metadatos
-        const getTitle = () => {
-            const el = opfDoc.getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'title')[0]
-                || opfDoc.getElementsByTagName('dc:title')[0]
-                || opfDoc.getElementsByTagName('title')[0];
-            return el ? el.textContent.trim() : 'Sin titulo';
-        };
-
-        const getAuthor = () => {
-            const el = opfDoc.getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'creator')[0]
-                || opfDoc.getElementsByTagName('dc:creator')[0]
-                || opfDoc.getElementsByTagName('creator')[0];
-            return el ? el.textContent.trim() : 'Autor desconocido';
-        };
-
-        const getLanguage = () => {
-            const el = opfDoc.getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'language')[0]
-                || opfDoc.getElementsByTagName('dc:language')[0]
-                || opfDoc.getElementsByTagName('language')[0];
-            return el ? el.textContent.trim().substring(0, 2) : 'en';
-        };
-
-        const title = getTitle();
-        const author = getAuthor();
-        const language = getLanguage();
-
-        // 4. Obtener el manifiesto (id -> href)
-        const manifest = {};
-        const manifestItems = opfDoc.getElementsByTagName('manifest')[0];
-        if (manifestItems) {
-            const items = manifestItems.getElementsByTagName('item');
-            for (const item of items) {
-                const id = item.getAttribute('id');
-                const href = item.getAttribute('href');
-                const mediaType = item.getAttribute('media-type') || '';
-                if (id && href) {
-                    manifest[id] = { href, mediaType };
-                }
-            }
-        }
-
-        // 5. Obtener el spine (orden de lectura)
-        const spine = [];
-        const spineEl = opfDoc.getElementsByTagName('spine')[0];
-        if (spineEl) {
-            const itemrefs = spineEl.getElementsByTagName('itemref');
-            for (const ref of itemrefs) {
-                const idref = ref.getAttribute('idref');
-                if (idref) spine.push(idref);
-            }
-        }
-
-        // 6. Directorio base del OPF para resolver rutas
-        const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
-
-        // 7. Intentar obtener la portada
-        let coverUrl = null;
-        try {
-            const coverMeta = opfDoc.querySelector('meta[name="cover"]');
-            let coverId = coverMeta ? coverMeta.getAttribute('content') : null;
-
-            // También buscar por properties="cover-image"
-            if (!coverId) {
-                for (const id in manifest) {
-                    if (manifest[id].mediaType && manifest[id].mediaType.startsWith('image/')) {
-                        if (id.toLowerCase().includes('cover')) {
-                            coverId = id;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (coverId && manifest[coverId]) {
-                const coverPath = opfDir + manifest[coverId].href;
-                const coverBlob = await zip.file(coverPath)?.async('blob');
-                if (coverBlob) {
-                    coverUrl = URL.createObjectURL(coverBlob);
-                }
-            }
-        } catch (e) {
-            // No hay portada, continuar sin ella
-        }
-
-        // 8. Leer cada capítulo del spine
-        const chapters = [];
-        const processedPaths = new Set();
-
-        for (const idref of spine) {
-            const manifestEntry = manifest[idref];
-            if (!manifestEntry) continue;
-
-            const fullPath = opfDir + manifestEntry.href;
-
-            // Evitar duplicados
-            if (processedPaths.has(fullPath)) continue;
-            processedPaths.add(fullPath);
-
-            // Solo procesar documentos HTML/XHTML
-            if (!manifestEntry.mediaType.includes('html') && !fullPath.match(/\.(x?html?|htm)$/i)) {
-                continue;
-            }
-
-            try {
-                const file = zip.file(fullPath);
-                if (!file) continue;
-
-                const htmlContent = await file.async('text');
-                const doc = new DOMParser().parseFromString(htmlContent, 'application/xhtml+xml');
-
-                if (doc.querySelector('parsererror')) {
-                    // Reintentar como HTML
-                    const doc2 = new DOMParser().parseFromString(htmlContent, 'text/html');
-                    extractChapterContent(doc2, chapters);
-                } else {
-                    extractChapterContent(doc, chapters);
-                }
-            } catch (e) {
-                console.warn('Error leyendo capitulo:', fullPath, e.message);
-            }
-        }
-
-        // Si no se encontraron capítulos en el spine, buscar todos los HTML
-        if (chapters.length === 0) {
-            for (const [path, file] of Object.entries(zip.files)) {
-                if (path.match(/\.(x?html?|htm)$/i) && !path.includes('toc') && !path.includes('nav')) {
-                    try {
-                        const htmlContent = await file.async('text');
-                        const doc = new DOMParser().parseFromString(htmlContent, 'application/xhtml+xml');
-                        if (doc.querySelector('parsererror')) {
-                            const doc2 = new DOMParser().parseFromString(htmlContent, 'text/html');
-                            extractChapterContent(doc2, chapters);
-                        } else {
-                            extractChapterContent(doc, chapters);
-                        }
-                    } catch (e) { /* ignorar */ }
-                }
-            }
-        }
-
-        return { title, author, language, chapters, coverUrl };
-    }
-
-    // Extraer contenido estructurado de un documento HTML
-    function extractChapterContent(doc, chapters) {
-        const body = doc.body || doc.getElementsByTagName('body')[0] || doc;
-        if (!body) return;
-
-        // Obtener el título del capítulo
-        const heading = body.querySelector('h1, h2, h3');
-        const chapterTitle = heading ? heading.textContent.trim() : `Capitulo ${chapters.length + 1}`;
-
-        // Extraer párrafos estructurados
-        const paragraphs = [];
-        const blockElements = body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, div > text, pre');
-
-        if (blockElements.length > 0) {
-            blockElements.forEach(el => {
-                const text = el.textContent.trim();
-                if (text.length > 1) {
-                    const tag = el.tagName.toLowerCase();
-                    if (['h1','h2','h3','h4','h5','h6'].includes(tag)) {
-                        paragraphs.push({ tag, text });
-                    } else {
-                        paragraphs.push({ tag: 'p', text });
-                    }
-                }
-            });
-        }
-
-        // Si no se encontraron elementos de bloque, extraer texto plano
-        if (paragraphs.length === 0) {
-            const text = body.textContent.trim();
-            if (text.length > 1) {
-                // Dividir por dobles saltos de línea
-                const parts = text.split(/\n\s*\n/);
-                parts.forEach(part => {
-                    const cleaned = part.replace(/\s+/g, ' ').trim();
-                    if (cleaned.length > 1) {
-                        paragraphs.push({ tag: 'p', text: cleaned });
-                    }
-                });
-            }
-        }
-
-        if (paragraphs.length > 0) {
-            chapters.push({
-                title: chapterTitle,
-                originalParagraphs: paragraphs,
-                translatedParagraphs: []
-            });
-        }
-    }
-
-    /* ============================================================
-       MOTOR DE TRADUCCIÓN
-       ============================================================ */
-
-    // Llamar a la API de MyMemory
-    async function callTranslationAPI(text, sourceLang, targetLang = 'es') {
-        const url = `${MYMEMORY_API}?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.responseStatus === 200 && data.responseData) {
+    // Intentar MyMemory API
+    try {
+        const q = encodeURIComponent(text.substring(0, 490));
+        const url = `https://api.mymemory.translated.net/get?q=${q}&langpair=en|es`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
             let translated = data.responseData.translatedText;
-            // MyMemory a veces devuelve el texto en mayúsculas si no puede traducir
-            if (translated === translated.toUpperCase() && text !== text.toUpperCase() && text.length > 10) {
-                // Probablemente no se tradujo bien, usar respaldo
-                return fallbackTranslate(text);
+            // MyMemory a veces devuelve el mismo texto en mayúsculas cuando falla
+            if (translated.toUpperCase() === text.toUpperCase() && text.length > 20) {
+                throw new Error('Posible traducción fallida');
             }
+            await setCached(text, translated);
             return translated;
-        } else {
-            throw new Error(data.responseDetails || 'Error en la traduccion');
         }
+        throw new Error('Respuesta inválida');
+    } catch(err) {
+        console.warn('API MyMemory falló, activando modo demo:', err.message);
+        useDemoMode = true;
+        document.getElementById('demo-notice').classList.add('visible');
+        const result = demoTranslate(text);
+        await setCached(text, result);
+        return result;
     }
+}
 
-    // Traducir un párrafo (maneja textos largos dividiéndolos)
-    async function translateParagraph(text, sourceLang, targetLang = 'es') {
-        if (!text || text.trim().length < 2) return text;
-
-        // Textos cortos: traducir directamente
-        if (text.length <= 450) {
-            try {
-                return await callTranslationAPI(text, sourceLang, targetLang);
-            } catch (err) {
-                console.warn('Error API, usando respaldo:', err.message);
-                return fallbackTranslate(text);
-            }
+function splitForTranslation(text, maxLen = 450) {
+    if (!text || text.length <= maxLen) return [text];
+    const chunks = [];
+    let remaining = text;
+    while (remaining.length > maxLen) {
+        let splitAt = -1;
+        // Intentar cortar en punto, luego en punto y coma, luego en coma, luego en espacio
+        for (const sep of ['. ', '.\n', '; ', ', ', ' ']) {
+            splitAt = remaining.lastIndexOf(sep, maxLen);
+            if (splitAt > 20) { splitAt += sep.length; break; }
         }
-
-        // Textos largos: dividir en chunks
-        const chunks = splitIntoChunks(text, 450);
-        let translated = '';
-
-        for (let i = 0; i < chunks.length; i++) {
-            try {
-                const result = await callTranslationAPI(chunks[i], sourceLang, targetLang);
-                translated += result + ' ';
-            } catch (err) {
-                console.warn('Error API en chunk, usando respaldo:', err.message);
-                translated += fallbackTranslate(chunks[i]) + ' ';
-            }
-            // Pausa entre peticiones para no saturar la API
-            if (i < chunks.length - 1) {
-                await delay(350);
-            }
-        }
-
-        return translated.trim();
+        if (splitAt <= 0) splitAt = maxLen;
+        chunks.push(remaining.substring(0, splitAt));
+        remaining = remaining.substring(splitAt).trim();
     }
+    if (remaining.trim()) chunks.push(remaining);
+    return chunks;
+}
 
-    // Traducir todo el libro
-    async function translateBook(bookData, sourceLang) {
-        const chapters = bookData.chapters;
-        let totalParagraphs = 0;
-        let translatedCount = 0;
+/* ============================ 5. PARSEO DE EPUB ============================ */
+let bookData = { title: '', author: '', chapters: [] };
 
-        // Contar párrafos totales
-        chapters.forEach(ch => {
-            totalParagraphs += ch.originalParagraphs.length;
-        });
-
-        if (totalParagraphs === 0) {
-            throw new Error('El libro no contiene texto para traducir.');
-        }
-
-        // Traducir capítulo por capítulo, párrafo por párrafo
-        for (let i = 0; i < chapters.length; i++) {
-            const chapter = chapters[i];
-            chapter.translatedParagraphs = [];
-
-            document.getElementById('progressChapter').textContent =
-                `Capitulo ${i + 1} de ${chapters.length}: ${chapter.title.substring(0, 40)}`;
-
-            for (let j = 0; j < chapter.originalParagraphs.length; j++) {
-                const para = chapter.originalParagraphs[j];
-
-                try {
-                    const translated = await translateParagraph(para.text, sourceLang);
-                    chapter.translatedParagraphs.push({
-                        tag: para.tag,
-                        text: translated
-                    });
-                } catch (err) {
-                    // En caso de error, usar respaldo
-                    chapter.translatedParagraphs.push({
-                        tag: para.tag,
-                        text: fallbackTranslate(para.text)
-                    });
-                }
-
-                translatedCount++;
-                const percent = Math.round((translatedCount / totalParagraphs) * 100);
-                document.getElementById('progressFill').style.width = percent + '%';
-                document.getElementById('progressPercent').textContent = percent + '%';
-                document.getElementById('progressSub').textContent =
-                    `${translatedCount} de ${totalParagraphs} parrafos traducidos`;
-
-                // Pausa entre párrafos para no saturar
-                await delay(300);
-            }
-        }
-
-        // Calcular totales
-        let totalWords = 0;
-        chapters.forEach(ch => {
-            ch.translatedParagraphs.forEach(p => {
-                totalWords += countWords(p.text);
-            });
-        });
-
-        return {
-            title: bookData.title,
-            author: bookData.author,
-            sourceLanguage: sourceLang,
-            chapters: chapters,
-            timestamp: Date.now(),
-            totalWords: totalWords
-        };
+function resolvePath(base, rel) {
+    if (!rel) return '';
+    if (rel.startsWith('/')) return rel.substring(1);
+    const bp = base.split('/'); bp.pop();
+    const rp = rel.split('/');
+    for (const p of rp) {
+        if (p === '..') bp.pop();
+        else if (p !== '.' && p !== '') bp.push(p);
     }
+    return bp.join('/');
+}
 
-    /* ============================================================
-       EXPORTACIÓN A PDF
-       ============================================================ */
-    async function exportToPDF(translatedBook) {
-        showToast('Generando PDF, por favor espera...', 'info');
+function extractTextFromDoc(doc) {
+    // Extraer elementos de bloque con su texto
+    const body = doc.querySelector('body') || doc.documentElement;
+    const elements = [];
 
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 20;
-            const maxWidth = pageWidth - 2 * margin;
-            let y = margin;
-
-            // Portada
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(24);
-            const titleLines = doc.splitTextToSize(translatedBook.title, maxWidth);
-            doc.text(titleLines, margin, y);
-            y += titleLines.length * 10 + 6;
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(14);
-            doc.text(translatedBook.author, margin, y);
-            y += 10;
-
-            doc.setFontSize(10);
-            doc.setTextColor(128);
-            doc.text('Traducido con BookTranslate', margin, y);
-            doc.setTextColor(0);
-            y += 20;
-
-            // Capítulos
-            for (const chapter of translatedBook.chapters) {
-                // Título del capítulo
-                if (y > pageHeight - 40) {
-                    doc.addPage();
-                    y = margin;
-                }
-
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(14);
-                const chTitleLines = doc.splitTextToSize(chapter.title, maxWidth);
-                doc.text(chTitleLines, margin, y);
-                y += chTitleLines.length * 7 + 8;
-
-                // Párrafos traducidos
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(11);
-
-                for (const para of chapter.translatedParagraphs) {
-                    if (!para.text || para.text.trim().length === 0) continue;
-
-                    const text = para.text;
-                    const lines = doc.splitTextToSize(text, maxWidth);
-
-                    for (const line of lines) {
-                        if (y > pageHeight - margin) {
-                            doc.addPage();
-                            y = margin;
-                        }
-                        doc.text(line, margin, y);
-                        y += 5.5;
-                    }
-                    y += 3; // Espacio entre párrafos
-                }
-
-                y += 8; // Espacio entre capítulos
-            }
-
-            doc.save('libro_traducido.pdf');
-            showToast('PDF descargado correctamente', 'success');
-        } catch (err) {
-            console.error('Error generando PDF:', err);
-            showToast('Error al generar el PDF: ' + err.message, 'error');
-        }
-    }
-
-    /* ============================================================
-       BÚSQUEDA DE TEXTO
-       ============================================================ */
-    function searchInBook(query) {
-        if (!query || query.length < 2) return [];
-
-        const results = [];
-        const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-
-        AppState.translatedBook.chapters.forEach((chapter, idx) => {
-            chapter.translatedParagraphs.forEach((para, pIdx) => {
-                const text = para.text;
-                const matches = [...text.matchAll(regex)];
-                if (matches.length > 0) {
-                    matches.forEach(m => {
-                        const start = Math.max(0, m.index - 50);
-                        const end = Math.min(text.length, m.index + query.length + 50);
-                        const context = (start > 0 ? '...' : '') +
-                            text.substring(start, end) +
-                            (end < text.length ? '...' : '');
-
-                        results.push({
-                            chapterIndex: idx,
-                            paragraphIndex: pIdx,
-                            chapterTitle: chapter.title,
-                            context: context,
-                            matchIndex: m.index
-                        });
-                    });
-                }
-            });
-        });
-
-        return results;
-    }
-
-    // Resaltar resultados de búsqueda en el texto
-    function highlightSearchInText(text, query) {
-        if (!query || query.length < 2) return escapeHtml(text);
-        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${escaped})`, 'gi');
-        return escapeHtml(text).replace(regex, '<span class="search-highlight">$1</span>');
-    }
-
-    /* ============================================================
-       GESTIÓN DE POSICIÓN DE LECTURA
-       ============================================================ */
-    function saveReadingPosition() {
-        if (!AppState.translatedBook) return;
-
-        const contentArea = document.getElementById('contentArea');
-        const data = {
-            bookHash: AppState.fileHash,
-            chapterIndex: AppState.activeChapterIndex,
-            scrollTop: contentArea.scrollTop,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('bt_reading_position', JSON.stringify(data));
-    }
-
-    function getReadingPosition() {
-        try {
-            const data = localStorage.getItem('bt_reading_position');
-            return data ? JSON.parse(data) : null;
-        } catch {
-            return null;
-        }
-    }
-
-    function saveBookToLocal(bookData) {
-        try {
-            // Guardar una versión ligera en localStorage (máximo ~5MB)
-            const slim = {
-                title: bookData.title,
-                author: bookData.author,
-                sourceLanguage: bookData.sourceLanguage,
-                totalWords: bookData.totalWords,
-                timestamp: bookData.timestamp,
-                hash: AppState.fileHash,
-                chapters: bookData.chapters.map(ch => ({
-                    title: ch.title,
-                    translatedParagraphs: ch.translatedParagraphs,
-                    originalParagraphs: ch.originalParagraphs
-                }))
-            };
-            localStorage.setItem('bt_last_book', JSON.stringify(slim));
-        } catch (e) {
-            console.warn('No se pudo guardar en localStorage:', e.message);
-        }
-    }
-
-    function loadBookFromLocal() {
-        try {
-            const data = localStorage.getItem('bt_last_book');
-            return data ? JSON.parse(data) : null;
-        } catch {
-            return null;
-        }
-    }
-
-    /* ============================================================
-       INTERFAZ DE USUARIO — NAVEGACIÓN ENTRE VISTAS
-       ============================================================ */
-    function showView(viewName) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        const view = document.getElementById('view-' + viewName);
-        if (view) {
-            view.classList.add('active');
-            AppState.currentView = viewName;
-        }
-    }
-
-    /* ============================================================
-       RENDERIZADO DEL LECTOR
-       ============================================================ */
-    function renderReader(bookData) {
-        AppState.translatedBook = bookData;
-
-        // Título en la barra superior
-        document.getElementById('readerTitle').textContent = bookData.title;
-
-        // Lista de capítulos
-        const chapterList = document.getElementById('chapterList');
-        chapterList.innerHTML = '';
-        bookData.chapters.forEach((ch, idx) => {
-            const li = document.createElement('li');
-            li.textContent = ch.title;
-            li.title = ch.title;
-            li.addEventListener('click', () => {
-                navigateToChapter(idx);
-                closeSidebar();
-            });
-            chapterList.appendChild(li);
-        });
-
-        // Contadores
-        updateWordCount();
-
-        // Navegar al primer capítulo
-        navigateToChapter(0);
-
-        // Mostrar vista de lector
-        showView('reader');
-    }
-
-    function navigateToChapter(index) {
-        if (!AppState.translatedBook || index < 0 || index >= AppState.translatedBook.chapters.length) return;
-
-        AppState.activeChapterIndex = index;
-        const chapter = AppState.translatedBook.chapters[index];
-
-        // Actualizar sidebar
-        document.querySelectorAll('#chapterList li').forEach((li, idx) => {
-            li.classList.toggle('active', idx === index);
-        });
-
-        // Renderizar contenido
-        renderChapterContent(chapter);
-
-        // Scroll al inicio
-        document.getElementById('contentArea').scrollTop = 0;
-
-        // Actualizar barra inferior
-        document.getElementById('currentChapter').textContent = chapter.title;
-
-        // Guardar posición
-        saveReadingPosition();
-    }
-
-    function renderChapterContent(chapter) {
-        const container = document.getElementById('readerContent');
-        const tab = AppState.activeTab;
-        const paragraphs = tab === 'translated' ? chapter.translatedParagraphs : chapter.originalParagraphs;
-
-        if (!paragraphs || paragraphs.length === 0) {
-            container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">No hay contenido disponible.</p>';
+    function walk(node, inBlock) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const t = node.textContent.trim();
+            if (t && inBlock) elements[elements.length - 1].text += ' ' + t;
             return;
         }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const tag = node.tagName.toLowerCase();
+        // Ignorar scripts, estilos, imágenes
+        if (['script','style','img','svg','image','link','meta'].includes(tag)) return;
 
-        let html = `<h2 class="chapter-title">${escapeHtml(chapter.title)}</h2>`;
-        html += '<div class="reader-text">';
+        const isHeading = /^h[1-6]$/.test(tag);
+        const isBlock = ['p','div','blockquote','li','td','th','dd','dt','pre','figcaption','caption'].includes(tag) || isHeading;
 
-        paragraphs.forEach(p => {
-            const text = escapeHtml(p.text);
-            if (['h1','h2','h3','h4','h5','h6'].includes(p.tag)) {
-                html += `<${p.tag}>${text}</${p.tag}>`;
-            } else {
-                html += `<p>${text}</p>`;
-            }
-        });
-
-        html += '</div>';
-        container.innerHTML = html;
-
-        // Aplicar estilos de lectura
-        applyReaderStyles();
-    }
-
-    function applyReaderStyles() {
-        const readerText = document.querySelector('.reader-text');
-        if (readerText) {
-            readerText.style.fontSize = AppState.fontSize + 'px';
-            readerText.style.fontFamily = AppState.fontFamily;
-            readerText.style.lineHeight = AppState.lineHeight;
-        }
-    }
-
-    function updateWordCount() {
-        if (!AppState.translatedBook) return;
-
-        let totalWords = AppState.translatedBook.totalWords || 0;
-        if (totalWords === 0) {
-            AppState.translatedBook.chapters.forEach(ch => {
-                ch.translatedParagraphs.forEach(p => {
-                    totalWords += countWords(p.text);
+        if (isBlock) {
+            const text = (node.textContent || '').trim();
+            if (text) {
+                elements.push({
+                    type: isHeading ? 'heading' : (tag === 'blockquote' ? 'blockquote' : 'paragraph'),
+                    level: isHeading ? tag : null,
+                    text: text
                 });
-            });
-        }
-
-        document.getElementById('wordCount').textContent = totalWords.toLocaleString() + ' palabras';
-        document.getElementById('pageEstimate').textContent = '~' + estimatePages(totalWords) + ' paginas';
-    }
-
-    /* ============================================================
-       SIDEBAR EN MÓVIL
-       ============================================================ */
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const backdrop = document.getElementById('sidebarBackdrop');
-        const isOpen = sidebar.classList.contains('open');
-        sidebar.classList.toggle('open', !isOpen);
-        backdrop.classList.toggle('open', !isOpen);
-    }
-
-    function closeSidebar() {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarBackdrop').classList.remove('open');
-    }
-
-    /* ============================================================
-       TEMA OSCURO / CLARO
-       ============================================================ */
-    function toggleTheme() {
-        AppState.darkMode = !AppState.darkMode;
-        document.documentElement.setAttribute('data-theme', AppState.darkMode ? 'dark' : '');
-        const icon = document.querySelector('#btnThemeToggle i');
-        icon.className = AppState.darkMode ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('bt_dark_mode', AppState.darkMode ? '1' : '0');
-    }
-
-    function loadTheme() {
-        const saved = localStorage.getItem('bt_dark_mode');
-        if (saved === '1') {
-            AppState.darkMode = true;
-            document.documentElement.setAttribute('data-theme', 'dark');
-            const icon = document.querySelector('#btnThemeToggle i');
-            if (icon) icon.className = 'fas fa-sun';
-        }
-    }
-
-    /* ============================================================
-       MANEJO DE EVENTOS
-       ============================================================ */
-    function initEventListeners() {
-        // === Carga de archivo ===
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                fileInput.click();
             }
-        });
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
-
-        // === Vista previa ===
-        document.getElementById('btnTranslate').addEventListener('click', startTranslation);
-        document.getElementById('btnBackUpload').addEventListener('click', () => showView('upload'));
-
-        // === Lector ===
-        document.getElementById('btnToggleSidebar').addEventListener('click', toggleSidebar);
-        document.getElementById('sidebarBackdrop').addEventListener('click', closeSidebar);
-
-        document.getElementById('btnThemeToggle').addEventListener('click', toggleTheme);
-
-        document.getElementById('btnSearch').addEventListener('click', () => {
-            document.getElementById('searchOverlay').classList.add('open');
-            document.getElementById('searchInput').focus();
-        });
-
-        document.getElementById('btnCloseSearch').addEventListener('click', () => {
-            document.getElementById('searchOverlay').classList.remove('open');
-            document.getElementById('searchInput').value = '';
-            // Quitar resaltados re-renderizando
-            if (AppState.translatedBook) {
-                renderChapterContent(AppState.translatedBook.chapters[AppState.activeChapterIndex]);
-            }
-        });
-
-        // Búsqueda en tiempo real
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            const resultsContainer = document.getElementById('searchResults');
-
-            if (query.length < 2) {
-                resultsContainer.innerHTML = '<div class="search-no-results">Escribe al menos 2 caracteres</div>';
-                return;
-            }
-
-            if (!AppState.translatedBook) {
-                resultsContainer.innerHTML = '<div class="search-no-results">No hay libro cargado</div>';
-                return;
-            }
-
-            const results = searchInBook(query);
-            AppState.searchResults = results;
-
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<div class="search-no-results">No se encontraron resultados</div>';
-                return;
-            }
-
-            let html = '';
-            results.slice(0, 50).forEach((r, idx) => {
-                html += `<div class="search-result-item" data-chapter="${r.chapterIndex}">
-                    <div class="chapter-name">${escapeHtml(r.chapterTitle)}</div>
-                    <div class="context">...${highlightSearchInText(r.context, query)}...</div>
-                </div>`;
-            });
-
-            if (results.length > 50) {
-                html += `<div class="search-no-results">...y ${results.length - 50} resultados mas</div>`;
-            }
-
-            resultsContainer.innerHTML = html;
-
-            // Click en resultado de búsqueda
-            resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const chIdx = parseInt(item.dataset.chapter);
-                    navigateToChapter(chIdx);
-                    document.getElementById('searchOverlay').classList.remove('open');
-
-                    // Resaltar en el contenido
-                    setTimeout(() => {
-                        const readerText = document.querySelector('.reader-text');
-                        if (readerText) {
-                            const query = document.getElementById('searchInput').value.trim();
-                            readerText.querySelectorAll('p').forEach(p => {
-                                const text = p.textContent;
-                                const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                                const regex = new RegExp(`(${escaped})`, 'gi');
-                                if (regex.test(text)) {
-                                    p.innerHTML = escapeHtml(text).replace(regex, '<span class="search-highlight">$1</span>');
-                                }
-                            });
-                        }
-                    }, 100);
-                });
-            });
-        });
-
-        // Cerrar búsqueda con Escape
-        document.getElementById('searchOverlay').addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.getElementById('searchOverlay').classList.remove('open');
-            }
-        });
-
-        // === Ajustes de lectura ===
-        document.getElementById('btnSettings').addEventListener('click', () => {
-            document.getElementById('settingsPanel').classList.toggle('open');
-        });
-
-        // Cerrar ajustes al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            const panel = document.getElementById('settingsPanel');
-            const btn = document.getElementById('btnSettings');
-            if (!panel.contains(e.target) && !btn.contains(e.target)) {
-                panel.classList.remove('open');
-            }
-        });
-
-        // Tamaño de fuente
-        document.getElementById('btnFontMinus').addEventListener('click', () => {
-            AppState.fontSize = Math.max(12, AppState.fontSize - 2);
-            document.getElementById('fontSizeDisplay').textContent = AppState.fontSize + 'px';
-            applyReaderStyles();
-        });
-
-        document.getElementById('btnFontPlus').addEventListener('click', () => {
-            AppState.fontSize = Math.min(36, AppState.fontSize + 2);
-            document.getElementById('fontSizeDisplay').textContent = AppState.fontSize + 'px';
-            applyReaderStyles();
-        });
-
-        // Tipo de fuente
-        document.getElementById('fontFamily').addEventListener('change', (e) => {
-            AppState.fontFamily = e.target.value;
-            applyReaderStyles();
-        });
-
-        // Espaciado entre líneas
-        document.getElementById('lineHeightRange').addEventListener('input', (e) => {
-            AppState.lineHeight = parseFloat(e.target.value);
-            document.getElementById('lineHeightDisplay').textContent = AppState.lineHeight.toFixed(1);
-            applyReaderStyles();
-        });
-
-        // === Pestañas original / traducido ===
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                AppState.activeTab = btn.dataset.tab;
-                if (AppState.translatedBook) {
-                    renderChapterContent(AppState.translatedBook.chapters[AppState.activeChapterIndex]);
-                }
-            });
-        });
-
-        // === Exportar PDF ===
-        document.getElementById('btnExportPDF').addEventListener('click', () => {
-            if (AppState.translatedBook) {
-                exportToPDF(AppState.translatedBook);
-            }
-        });
-
-        // === Copiar todo al portapapeles ===
-        document.getElementById('btnCopyAll').addEventListener('click', async () => {
-            if (!AppState.translatedBook) return;
-
-            let fullText = '';
-            AppState.translatedBook.chapters.forEach(ch => {
-                fullText += ch.title + '\n\n';
-                ch.translatedParagraphs.forEach(p => {
-                    fullText += p.text + '\n\n';
-                });
-                fullText += '\n---\n\n';
-            });
-
-            try {
-                await navigator.clipboard.writeText(fullText);
-                showToast('Texto copiado al portapapeles', 'success');
-            } catch (err) {
-                // Fallback para navegadores sin soporte
-                const textarea = document.createElement('textarea');
-                textarea.value = fullText;
-                textarea.style.position = 'fixed';
-                textarea.style.left = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showToast('Texto copiado al portapapeles', 'success');
-            }
-        });
-
-        // === Guardar posición al hacer scroll ===
-        document.getElementById('contentArea').addEventListener('scroll', () => {
-            clearTimeout(window._scrollTimer);
-            window._scrollTimer = setTimeout(saveReadingPosition, 500);
-        });
-
-        // === Modal reanudar lectura ===
-        document.getElementById('btnResumeYes').addEventListener('click', () => {
-            document.getElementById('resumeModal').classList.remove('open');
-            resumeReading();
-        });
-
-        document.getElementById('btnResumeNo').addEventListener('click', () => {
-            document.getElementById('resumeModal').classList.remove('open');
-            localStorage.removeItem('bt_reading_position');
-            localStorage.removeItem('bt_last_book');
-        });
-
-        // === Atajos de teclado ===
-        document.addEventListener('keydown', (e) => {
-            if (AppState.currentView !== 'reader') return;
-
-            // Ctrl+F para buscar
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-                e.preventDefault();
-                document.getElementById('searchOverlay').classList.add('open');
-                document.getElementById('searchInput').focus();
-            }
-
-            // Escape para cerrar paneles
-            if (e.key === 'Escape') {
-                document.getElementById('searchOverlay').classList.remove('open');
-                document.getElementById('settingsPanel').classList.remove('open');
-                closeSidebar();
-            }
-
-            // Flechas izquierda/derecha para cambiar capítulo
-            if (e.key === 'ArrowLeft' && e.altKey) {
-                e.preventDefault();
-                if (AppState.activeChapterIndex > 0) {
-                    navigateToChapter(AppState.activeChapterIndex - 1);
-                }
-            }
-            if (e.key === 'ArrowRight' && e.altKey) {
-                e.preventDefault();
-                if (AppState.translatedBook && AppState.activeChapterIndex < AppState.translatedBook.chapters.length - 1) {
-                    navigateToChapter(AppState.activeChapterIndex + 1);
-                }
-            }
-        });
-    }
-
-    /* ============================================================
-       MANEJO DE ARCHIVO EPUB
-       ============================================================ */
-    async function handleFile(file) {
-        // Verificar extensión
-        if (!file.name.toLowerCase().endsWith('.epub')) {
-            showToast('Por favor selecciona un archivo .epub valido', 'error');
-            return;
-        }
-
-        showToast('Leyendo archivo EPUB...', 'info');
-
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-
-            // Calcular hash del archivo
-            AppState.fileHash = await hashBuffer(arrayBuffer);
-
-            // Intentar cargar traducción cacheada
-            const cached = await bookDB.get(AppState.fileHash);
-            if (cached && cached.chapters) {
-                showToast('Traduccion encontrada en cache local', 'success');
-                AppState.bookData = cached;
-                AppState.translatedBook = cached;
-                renderReader(cached);
-                return;
-            }
-
-            // Verificar en Firebase
-            const firebaseData = await loadFromFirebase(AppState.fileHash);
-            if (firebaseData && firebaseData.chapters) {
-                showToast('Traduccion encontrada en la nube', 'success');
-                // Reconstruir originalParagraphs si no existen
-                firebaseData.chapters.forEach(ch => {
-                    if (!ch.originalParagraphs) {
-                        ch.originalParagraphs = ch.translatedParagraphs || [];
-                    }
-                });
-                AppState.bookData = firebaseData;
-                AppState.translatedBook = firebaseData;
-                await bookDB.save(firebaseData);
-                renderReader(firebaseData);
-                return;
-            }
-
-            // Parsear el EPUB
-            const bookData = await parseEpub(arrayBuffer);
-            AppState.bookData = bookData;
-
-            // Mostrar vista previa
-            renderPreview(bookData);
-            showView('preview');
-
-            // Auto-seleccionar idioma según metadatos
-            const langSelect = document.getElementById('sourceLang');
-            const langMap = { 'en': 'en', 'fr': 'fr', 'de': 'de', 'it': 'it', 'pt': 'pt',
-                              'ja': 'ja', 'ko': 'ko', 'zh': 'zh', 'ru': 'ru', 'ar': 'ar',
-                              'nl': 'nl', 'pl': 'pl', 'sv': 'sv', 'tr': 'tr', 'ro': 'ro',
-                              'ca': 'ca', 'eu': 'eu', 'gl': 'gl', 'la': 'la' };
-            if (langMap[bookData.language]) {
-                langSelect.value = langMap[bookData.language];
-            }
-
-            showToast('EPUB leido correctamente', 'success');
-        } catch (err) {
-            console.error('Error al leer EPUB:', err);
-            showToast('Error al leer el EPUB: ' + err.message, 'error');
-        }
-    }
-
-    // Renderizar vista previa del libro
-    function renderPreview(bookData) {
-        const card = document.getElementById('previewCard');
-        const totalParas = bookData.chapters.reduce((s, ch) => s + ch.originalParagraphs.length, 0);
-        const totalWords = bookData.chapters.reduce((s, ch) => {
-            return s + ch.originalParagraphs.reduce((ps, p) => ps + countWords(p.text), 0);
-        }, 0);
-
-        let coverHtml = '';
-        if (bookData.coverUrl) {
-            coverHtml = `<img src="${bookData.coverUrl}" class="preview-cover" alt="Portada">`;
         } else {
-            coverHtml = '<div class="preview-cover-placeholder"><i class="fas fa-book"></i></div>';
-        }
-
-        card.innerHTML = `
-            ${coverHtml}
-            <h2>${escapeHtml(bookData.title)}</h2>
-            <p class="author">${escapeHtml(bookData.author)}</p>
-            <div class="preview-stats">
-                <div class="preview-stat">
-                    <div class="num">${bookData.chapters.length}</div>
-                    <div class="label">Capitulos</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="num">${totalParas}</div>
-                    <div class="label">Parrafos</div>
-                </div>
-                <div class="preview-stat">
-                    <div class="num">${totalWords.toLocaleString()}</div>
-                    <div class="label">Palabras</div>
-                </div>
-            </div>
-        `;
-    }
-
-    /* ============================================================
-       INICIAR TRADUCCIÓN
-       ============================================================ */
-    async function startTranslation() {
-        if (!AppState.bookData || AppState.isTranslating) return;
-
-        AppState.isTranslating = true;
-        const sourceLang = document.getElementById('sourceLang').value;
-
-        // Mostrar vista de progreso
-        showView('progress');
-        document.getElementById('progressFill').style.width = '0%';
-        document.getElementById('progressPercent').textContent = '0%';
-        document.getElementById('progressSub').textContent = 'Iniciando traduccion...';
-        document.getElementById('progressChapter').textContent = '';
-
-        try {
-            const translatedBook = await translateBook(AppState.bookData, sourceLang);
-
-            // Guardar hash
-            translatedBook.hash = AppState.fileHash;
-
-            // Guardar en IndexedDB
-            try {
-                await bookDB.save(translatedBook);
-            } catch (e) {
-                console.warn('Error guardando en IndexedDB:', e.message);
-            }
-
-            // Guardar en Firebase
-            await saveToFirebase(AppState.fileHash, translatedBook);
-
-            // Guardar en localStorage para reanudar
-            saveBookToLocal(translatedBook);
-
-            AppState.translatedBook = translatedBook;
-
-            showToast('Traduccion completada', 'success');
-
-            // Renderizar lector
-            renderReader(translatedBook);
-        } catch (err) {
-            console.error('Error en la traduccion:', err);
-            showToast('Error durante la traduccion: ' + err.message, 'error');
-            showView('preview');
-        } finally {
-            AppState.isTranslating = false;
+            // Elemento inline: no abre nuevo bloque, pero el texto va al bloque actual
+            node.childNodes.forEach(c => walk(c, inBlock));
         }
     }
 
-    /* ============================================================
-       REANUDAR LECTURA
-       ============================================================ */
-    function checkResumeReading() {
-        const position = getReadingPosition();
-        const savedBook = loadBookFromLocal();
+    body.childNodes.forEach(c => walk(c, false));
+    return elements;
+}
 
-        if (position && savedBook && position.bookHash === savedBook.hash) {
-            const timeAgo = getTimeAgo(position.timestamp);
-            document.getElementById('resumeInfo').textContent =
-                `"${savedBook.title}" — Capitulo ${position.chapterIndex + 1} — ${timeAgo}`;
-            document.getElementById('resumeModal').classList.add('open');
-            return true;
-        }
-        return false;
+async function parseEPUB(arrayBuffer) {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+
+    // 1. Leer container.xml
+    const containerXml = await zip.file('META-INF/container.xml')?.async('text');
+    if (!containerXml) throw new Error('No se encontró META-INF/container.xml. El archivo no es un EPUB válido.');
+
+    const containerDoc = new DOMParser().parseFromString(containerXml, 'application/xml');
+    const rootfilePath = containerDoc.querySelector('rootfile')?.getAttribute('full-path');
+    if (!rootfilePath) throw new Error('No se encontró la ruta del OPF en container.xml');
+
+    // 2. Leer OPF
+    const opfText = await zip.file(rootfilePath)?.async('text');
+    if (!opfText) throw new Error('No se pudo leer el archivo OPF');
+
+    const opfDoc = new DOMParser().parseFromString(opfText, 'application/xml');
+    const parseError = opfDoc.querySelector('parsererror');
+    if (parseError) {
+        // Intentar como HTML
+        const opfDoc2 = new DOMParser().parseFromString(opfText, 'text/html');
+        return parseOPF(opfDoc2, zip, rootfilePath);
     }
+    return parseOPF(opfDoc, zip, rootfilePath);
+}
 
-    function resumeReading() {
-        const savedBook = loadBookFromLocal();
-        const position = getReadingPosition();
+function parseOPF(opfDoc, zip, opfPath) {
+    // Metadata
+    const titleEl = opfDoc.querySelector('metadata title, dc\\:title');
+    const creatorEl = opfDoc.querySelector('metadata creator, dc\\:creator');
+    const title = titleEl?.textContent?.trim() || 'Libro sin título';
+    const author = creatorEl?.textContent?.trim() || 'Autor desconocido';
 
-        if (savedBook) {
-            AppState.translatedBook = savedBook;
-            AppState.fileHash = savedBook.hash || '';
-            renderReader(savedBook);
-
-            if (position && position.chapterIndex !== undefined) {
-                setTimeout(() => {
-                    navigateToChapter(position.chapterIndex);
-                    if (position.scrollTop) {
-                        document.getElementById('contentArea').scrollTop = position.scrollTop;
-                    }
-                }, 200);
-            }
-        }
-    }
-
-    function getTimeAgo(timestamp) {
-        const diff = Date.now() - timestamp;
-        const minutes = Math.floor(diff / 60000);
-        if (minutes < 1) return 'hace un momento';
-        if (minutes < 60) return `hace ${minutes} min`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `hace ${hours}h`;
-        const days = Math.floor(hours / 24);
-        return `hace ${days}d`;
-    }
-
-    /* ============================================================
-       INICIALIZACIÓN
-       ============================================================ */
-    function init() {
-        // Cargar tema
-        loadTheme();
-
-        // Configurar event listeners
-        initEventListeners();
-
-        // Verificar si hay un libro guardado para reanudar
-        checkResumeReading();
-    }
-
-    // Ejecutar al cargar
-    document.addEventListener('DOMContentLoaded', init);
-    </script>
-</body>
-</html>
+    // Manifest
+    const manifest = {};
+    opfDoc.querySelectorAll('manifest item').forEach(item => {
+        const id =
