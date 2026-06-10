@@ -3,1267 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookTranslate — Traductor de EPUBs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <title>Traductor Quechua Boliviano - Qallarinapaq</title>
     <style>
-        :root {
-            --accent: #B8621B;
-            --accent-hover: #D4781F;
-            --accent-glow: rgba(184,98,27,0.25);
-            --sidebar-bg: #111216;
-            --sidebar-surface: #1A1B20;
-            --sidebar-text: #A8A4A0;
-            --sidebar-heading: #E8E4E0;
-            --reading-bg: #FDFAF5;
-            --reading-text: #2A2724;
-            --card-bg: #FFFFFF;
-            --border: #E8E2DA;
-            --success: #2D8F4E;
-            --error: #C9413B;
-            --warning: #C48A1A;
-            --progress-track: #2A2B30;
-            --progress-fill: #C17817;
-            --reader-font-size: 18px;
-            --reader-font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+        * {
+            box-sizing: border-box;
         }
-        body.dark-mode {
-            --reading-bg: #1A1B1F;
-            --reading-text: #CDC8C2;
-            --card-bg: #222328;
-            --border: #333438;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a472a, #0e2a1a);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        html{scroll-behavior:smooth}
-        body{font-family:'DM Sans',sans-serif;background:var(--sidebar-bg);color:var(--sidebar-text);min-height:100vh;overflow:hidden}
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-
-        .app-layout{display:grid;grid-template-columns:310px 1fr;min-height:100vh;height:100vh}
-
-        /* SIDEBAR */
-        .sidebar{background:var(--sidebar-bg);border-right:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#333 var(--sidebar-bg)}
-        .sidebar::-webkit-scrollbar{width:5px}
-        .sidebar::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
-        .sidebar-header{padding:24px 22px 16px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
-        .sidebar-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--sidebar-heading);letter-spacing:-.5px}
-        .sidebar-logo i{color:var(--accent);font-size:20px}
-        .sidebar-logo span{color:var(--accent)}
-        .sidebar-section{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.05)}
-        .sidebar-section:last-child{border-bottom:none}
-        .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#555;margin-bottom:12px}
-
-        .upload-zone{border:2px dashed #333;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color .3s,background .3s;position:relative}
-        .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(184,98,27,.06)}
-        .upload-zone i{font-size:28px;color:#444;margin-bottom:10px;display:block}
-        .upload-zone:hover i{color:var(--accent)}
-        .upload-zone p{font-size:13px;color:#666;line-height:1.5}
-        .upload-zone .browse-link{color:var(--accent);font-weight:600;text-decoration:underline}
-        #file-input{display:none}
-
-        .book-info{display:none}
-        .book-info.visible{display:block}
-        .book-title-display{font-size:16px;font-weight:700;color:var(--sidebar-heading);line-height:1.3;margin-bottom:4px}
-        .book-author{font-size:12px;color:#666;margin-bottom:8px}
-        .book-chapters-count{font-size:11px;color:#555}
-
-        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .2s ease;width:100%}
-        .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-        .btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px var(--accent-glow)}
-        .btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
-        .btn-primary:active{transform:translateY(0)}
-        .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-        .btn-secondary{background:var(--sidebar-surface);color:var(--sidebar-text);border:1px solid rgba(255,255,255,.08)}
-        .btn-secondary:hover{background:#222328;border-color:rgba(255,255,255,.14)}
-        .btn-danger{background:rgba(201,65,59,.15);color:var(--error);border:1px solid rgba(201,65,59,.2)}
-        .btn-danger:hover{background:rgba(201,65,59,.25)}
-
-        .progress-area{display:none}
-        .progress-area.visible{display:block;margin-top:12px}
-        .progress-bar-track{width:100%;height:6px;background:var(--progress-track);border-radius:3px;overflow:hidden;margin-bottom:8px}
-        .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#D4781F);border-radius:3px;transition:width .3s ease;width:0%}
-        .progress-stats{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#777}
-        .progress-percent{color:var(--accent);font-weight:700}
-        .progress-chapters{color:#666}
-
-        .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-        .control-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:500;background:var(--sidebar-surface);color:var(--sidebar-text);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
-        .control-btn:hover{background:#222328;border-color:rgba(255,255,255,.12)}
-        .control-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-        .control-btn i{font-size:13px}
-        .font-size-display{font-weight:700;color:var(--sidebar-heading);min-width:28px;text-align:center}
-        .font-select{width:100%;padding:8px 10px;border-radius:8px;font-size:12px;background:var(--sidebar-surface);color:var(--sidebar-text);border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
-        .font-select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-        .search-wrap{position:relative;margin-bottom:8px}
-        .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#555;font-size:13px}
-        .search-input{width:100%;padding:9px 12px 9px 34px;border-radius:8px;font-size:13px;background:var(--sidebar-surface);color:var(--sidebar-text);border:1px solid rgba(255,255,255,.06);font-family:'DM Sans',sans-serif}
-        .search-input:focus{outline:none;border-color:var(--accent)}
-        .search-count{font-size:11px;color:#666;margin-top:4px}
-
-        .notice-box{padding:10px 12px;border-radius:8px;font-size:11px;line-height:1.5;margin-top:10px;display:none}
-        .notice-box.visible{display:block}
-        .notice-warning{background:rgba(196,138,26,.12);color:#D4A840;border:1px solid rgba(196,138,26,.2)}
-        .completion-msg{font-size:13px;color:var(--success);font-weight:600;text-align:center;padding:8px;display:none}
-        .completion-msg.visible{display:block}
-
-        /* AREA PRINCIPAL */
-        .main-area{background:var(--reading-bg);color:var(--reading-text);overflow-y:auto;scroll-behavior:smooth;transition:background .4s ease,color .4s ease;scrollbar-width:thin;scrollbar-color:var(--border) var(--reading-bg)}
-        .main-area::-webkit-scrollbar{width:8px}
-        .main-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-
-        .welcome-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:40px 20px;text-align:center;position:relative}
-        .welcome-bg-shapes{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-        .welcome-shape{position:absolute;border-radius:50%;opacity:.07;animation:floatShape 20s ease-in-out infinite}
-        .welcome-shape:nth-child(1){width:400px;height:400px;background:var(--accent);top:-100px;right:-80px}
-        .welcome-shape:nth-child(2){width:250px;height:250px;background:#8B5E3C;bottom:-60px;left:-40px;animation-delay:-7s}
-        .welcome-shape:nth-child(3){width:180px;height:180px;background:var(--accent);top:40%;left:20%;animation-delay:-13s}
-        @keyframes floatShape{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(.95)}}
-        .welcome-icon{font-size:56px;color:var(--accent);margin-bottom:24px;position:relative;z-index:1;animation:pulseIcon 3s ease-in-out infinite}
-        @keyframes pulseIcon{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.05);opacity:1}}
-        .welcome-title{font-family:'Crimson Pro',serif;font-size:36px;font-weight:700;color:var(--reading-text);margin-bottom:12px;position:relative;z-index:1}
-        .welcome-sub{font-size:15px;color:#888;max-width:420px;line-height:1.6;position:relative;z-index:1;margin-bottom:30px}
-        .welcome-features{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
-        .welcome-feature{display:flex;align-items:center;gap:8px;font-size:13px;color:#777;background:var(--card-bg);padding:8px 16px;border-radius:20px;border:1px solid var(--border)}
-        .welcome-feature i{color:var(--accent)}
-
-        .reader-container{max-width:780px;margin:0 auto;padding:40px 32px 80px;display:none}
-        .reader-container.visible{display:block}
-        .reader-book-title{font-family:var(--reader-font-family);font-size:28px;font-weight:700;text-align:center;margin-bottom:6px;color:var(--reading-text)}
-        .reader-book-author{text-align:center;font-size:14px;color:#999;margin-bottom:40px;font-style:italic}
-        .chapter-block{margin-bottom:48px;animation:fadeInChapter .6s ease forwards;opacity:0}
-        @keyframes fadeInChapter{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-        .chapter-heading{font-family:var(--reader-font-family);font-weight:700;font-size:calc(var(--reader-font-size)*1.4);color:var(--reading-text);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--border);line-height:1.3}
-        .chapter-paragraph{font-family:var(--reader-font-family);font-size:var(--reader-font-size);line-height:1.7;text-align:justify;margin-bottom:14px;color:var(--reading-text);text-indent:1.5em;hyphens:auto;transition:font-size .3s ease}
-        .chapter-paragraph:first-of-type{text-indent:0}
-        .chapter-blockquote{font-family:var(--reader-font-family);font-size:var(--reader-font-size);line-height:1.7;text-align:justify;margin:16px 0 16px 24px;padding-left:16px;border-left:3px solid var(--accent);color:var(--reading-text);font-style:italic}
-
-        mark.search-hl{background:#FFD966;color:#333;border-radius:2px;padding:0 2px;box-shadow:0 0 0 2px rgba(255,217,102,.3)}
-
-        .skeleton-line{height:14px;background:linear-gradient(90deg,var(--border) 25%,rgba(0,0,0,.04) 50%,var(--border) 75%);background-size:200% 100%;border-radius:4px;margin-bottom:10px;animation:shimmer 1.5s ease-in-out infinite}
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-        /* TOAST */
-        .toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-        .toast{background:#1E1F24;color:#E8E4E0;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.3);transform:translateX(120%);transition:transform .4s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;gap:10px;border-left:3px solid var(--accent);pointer-events:auto}
-        .toast.show{transform:translateX(0)}
-        .toast.toast-success{border-left-color:var(--success)}
-        .toast.toast-error{border-left-color:var(--error)}
-
-        /* MOBILE */
-        .mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:100;width:40px;height:40px;border-radius:10px;background:var(--sidebar-bg);color:var(--sidebar-heading);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:18px;align-items:center;justify-content:center}
-        .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;opacity:0;transition:opacity .3s}
-        .mobile-overlay.visible{opacity:1}
-
-        @media(max-width:860px){
-            .app-layout{grid-template-columns:1fr}
-            .sidebar{position:fixed;left:-320px;top:0;bottom:0;width:310px;z-index:50;transition:left .35s cubic-bezier(.16,1,.3,1)}
-            .sidebar.open{left:0}
-            .mobile-toggle{display:flex}
-            .mobile-overlay.visible{display:block}
-            .reader-container{padding:60px 18px 80px}
-            .welcome-title{font-size:26px}
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255,255,240,0.95);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
         }
-        @media(max-width:480px){
-            .sidebar{width:290px}
-            .welcome-features{gap:10px}
-            .welcome-feature{font-size:12px;padding:6px 12px}
-            .reader-container{padding:50px 14px 60px}
+        .header {
+            background: #2c5e3a;
+            color: #f9f3d9;
+            padding: 20px 30px;
+            text-align: center;
+            border-bottom: 4px solid #ffb347;
         }
-
-        .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .hidden{display:none!important}
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+        .header p {
+            margin: 8px 0 0;
+            opacity: 0.9;
+            font-style: italic;
+        }
+        .mode-selector {
+            display: flex;
+            background: #e9e6d7;
+            border-bottom: 1px solid #ccc;
+        }
+        .mode-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #e9e6d7;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1.1rem;
+        }
+        .mode-btn.active {
+            background: #ffb347;
+            color: #2c5e3a;
+            border-bottom: 3px solid #2c5e3a;
+        }
+        .translator-panel {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+        .input-area, .output-area {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        .input-area label, .output-area label {
+            font-weight: bold;
+            color: #2c5e3a;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        textarea {
+            height: 180px;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            resize: vertical;
+            font-family: monospace;
+            background: #fff;
+            transition: 0.2s;
+        }
+        textarea:focus {
+            border-color: #ffb347;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,180,71,0.2);
+        }
+        button {
+            margin-top: 15px;
+            background: #2c5e3a;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #ffb347;
+            color: #2c5e3a;
+            transform: scale(1.02);
+        }
+        .analysis {
+            background: #f4f1e1;
+            border-radius: 20px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-left: 5px solid #ffb347;
+            font-family: monospace;
+        }
+        .footer {
+            background: #1e2e1c;
+            color: #bbb;
+            text-align: center;
+            padding: 12px;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 700px) {
+            .translator-panel { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <div class="toast-container" id="toast-container"></div>
-    <button class="mobile-toggle" id="mobile-toggle" aria-label="Abrir menu"><i class="fas fa-bars"></i></button>
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-
-    <div class="app-layout">
-        <!-- SIDEBAR -->
-        <aside class="sidebar" id="sidebar" role="complementary">
-            <div class="sidebar-header">
-                <div class="sidebar-logo"><i class="fas fa-book-open"></i> Book<span>Translate</span></div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="section-label">Cargar EPUB</div>
-                <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Subir archivo EPUB">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Arrastra tu EPUB aqui<br>o <span class="browse-link">selecciona archivo</span></p>
-                </div>
-                <input type="file" id="file-input" accept=".epub">
-            </div>
-
-            <div class="sidebar-section book-info" id="book-info">
-                <div class="section-label">Libro cargado</div>
-                <div class="book-title-display" id="book-title-side"></div>
-                <div class="book-author" id="book-author-side"></div>
-                <div class="book-chapters-count" id="book-chapters-side"></div>
-            </div>
-
-            <div class="sidebar-section hidden" id="translate-section">
-                <div class="section-label">Traduccion</div>
-                <button class="btn btn-primary" id="btn-translate"><i class="fas fa-language"></i> Traducir a espanol</button>
-                <div class="progress-area" id="progress-area">
-                    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
-                    <div class="progress-stats">
-                        <span class="progress-percent" id="progress-percent">0%</span>
-                        <span class="progress-chapters" id="progress-chapters">0 de 0 capitulos</span>
-                    </div>
-                </div>
-                <button class="btn btn-danger hidden" id="btn-cancel" style="margin-top:8px"><i class="fas fa-stop"></i> Cancelar</button>
-                <div class="completion-msg" id="completion-msg"></div>
-                <div class="notice-box notice-warning" id="demo-notice"><i class="fas fa-exclamation-triangle"></i> API no disponible. Usando modo demostracion con diccionario basico.</div>
-            </div>
-
-            <div class="sidebar-section hidden" id="tools-section">
-                <div class="section-label">Herramientas de lectura</div>
-                <div class="controls-grid">
-                    <button class="control-btn" id="btn-font-dec"><i class="fas fa-minus"></i> <span class="font-size-display" id="font-size-val">18</span></button>
-                    <button class="control-btn" id="btn-font-inc"><i class="fas fa-plus"></i> Fuente</button>
-                    <button class="control-btn" id="btn-dark-toggle"><i class="fas fa-moon"></i> Oscuro</button>
-                    <button class="control-btn" id="btn-font-sans"><i class="fas fa-font"></i> Sans</button>
-                </div>
-                <select class="font-select" id="font-select" aria-label="Tipo de fuente">
-                    <option value="'Crimson Pro', Georgia, 'Times New Roman', serif">Serif (Crimson Pro)</option>
-                    <option value="'DM Sans', 'Segoe UI', Helvetica, sans-serif">Sans-serif (DM Sans)</option>
-                    <option value="'Courier New', Courier, monospace">Monoespaciada</option>
-                </select>
-            </div>
-
-            <div class="sidebar-section hidden" id="search-section">
-                <div class="section-label">Buscar en el texto</div>
-                <div class="search-wrap">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" id="search-input" placeholder="Buscar palabra..." aria-label="Buscar">
-                </div>
-                <div class="search-count" id="search-count"></div>
-            </div>
-
-            <div class="sidebar-section hidden" id="actions-section">
-                <div class="section-label">Acciones</div>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <button class="btn btn-secondary" id="btn-copy"><i class="fas fa-copy"></i> Copiar todo el texto</button>
-                    <button class="btn btn-secondary" id="btn-pdf"><i class="fas fa-file-pdf"></i> Exportar a PDF</button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- MAIN -->
-        <main class="main-area" id="main-area">
-            <div class="welcome-screen" id="welcome-screen">
-                <div class="welcome-bg-shapes">
-                    <div class="welcome-shape"></div>
-                    <div class="welcome-shape"></div>
-                    <div class="welcome-shape"></div>
-                </div>
-                <div class="welcome-icon"><i class="fas fa-book-reader"></i></div>
-                <h1 class="welcome-title">Traductor Instantaneo de EPUBs</h1>
-                <p class="welcome-sub">Sube cualquier libro en formato EPUB y obtenlo traducido al espanol en segundos. Lectura comoda, copia el texto o exporta a PDF.</p>
-                <div class="welcome-features">
-                    <div class="welcome-feature"><i class="fas fa-bolt"></i> Traduccion rapida</div>
-                    <div class="welcome-feature"><i class="fas fa-align-justify"></i> Texto justificado</div>
-                    <div class="welcome-feature"><i class="fas fa-file-pdf"></i> Exportar PDF</div>
-                    <div class="welcome-feature"><i class="fas fa-moon"></i> Modo oscuro</div>
-                </div>
-            </div>
-            <div class="reader-container" id="reader-container">
-                <h1 class="reader-book-title" id="reader-book-title"></h1>
-                <p class="reader-book-author" id="reader-book-author"></p>
-                <div id="reader-content"></div>
-            </div>
-        </main>
+<div class="container">
+    <div class="header">
+        <h1>🗣️ QALLARINAPAQ - Kikinmanta</h1>
+        <p>Traductor Quechua Boliviano | Basado en el diccionario oficial y gramática de Plaza (2009)</p>
     </div>
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btnQuechuaEsp">📖 Quechua → Español</button>
+        <button class="mode-btn" id="btnEspQuechua">🔄 Español → Quechua</button>
+    </div>
+    <div class="translator-panel">
+        <div class="input-area">
+            <label id="inputLabel">📝 Texto en Quechua:</label>
+            <textarea id="inputText" placeholder="Ejemplo: Wasikunapi tiyachkanku. Imaynalla kachkanki?"></textarea>
+            <button id="translateBtn">✨ Traducir</button>
+        </div>
+        <div class="output-area">
+            <label>📖 Traducción:</label>
+            <textarea id="outputText" readonly placeholder="Aquí aparecerá la traducción..."></textarea>
+            <div class="analysis" id="analysisBox">
+                🔍 <strong>Análisis morfológico:</strong><br>
+                La traducción intenta separar raíces y sufijos usando el diccionario oficial.
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        ⚡ Basado en "Qhichwa Simipirwa" (ILCQ) y "Qallarinapaq" (Pedro Plaza). 
+        Reconoce sufijos: -kuna, -pi, -man, -manta, -chka, -rqa, -sqa, -nchik, -yku, -yki, -n, -wan, -paq, -taq, -lla, -puni, -ri, -chu, -ña, -raq, -sis, -yá, -ku, -chi, -ysi, -pu, -si.
+    </div>
+</div>
 
 <script>
-/* ========================================================================
-   BookTranslate — Traductor Instantaneo de EPUBs (CODIGO COMPLETO)
-   ======================================================================== */
-
-// ===================== FIREBASE =====================
-let fbDB = null;
-try {
-    const fbApp = firebase.initializeApp({
-        apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
-        authDomain: "celulakmt.firebaseapp.com",
-        databaseURL: "https://celulakmt-default-rtdb.firebaseio.com",
-        projectId: "celulakmt",
-        storageBucket: "celulakmt.firebasestorage.app",
-        messagingSenderId: "623088700057",
-        appId: "1:623088700057:web:fffb8fccbae5ff6d834608"
-    });
-    fbDB = firebase.database();
-    firebase.auth().signInAnonymously().catch(function(){});
-} catch(e) { console.warn('Firebase no disponible:', e); }
-
-// ===================== CACHE =====================
-function hashStr(s) {
-    var h = 0;
-    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
-    return 'tr_' + Math.abs(h).toString(36);
-}
-function getLocal(k) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
-function setLocal(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
-
-async function getCached(original) {
-    var k = hashStr(original);
-    var loc = getLocal(k);
-    if (loc && loc.translated) return loc.translated;
-    if (fbDB) {
-        try {
-            var snap = await fbDB.ref('epub_cache/' + k).once('value');
-            if (snap.exists() && snap.val() && snap.val().translated) {
-                setLocal(k, snap.val());
-                return snap.val().translated;
-            }
-        } catch(e) {}
-    }
-    return null;
-}
-async function setCached(original, translated) {
-    var k = hashStr(original);
-    var obj = { original: original, translated: translated, ts: Date.now() };
-    setLocal(k, obj);
-    if (fbDB) { try { await fbDB.ref('epub_cache/' + k).set(obj); } catch(e) {} }
-}
-
-// ===================== DICCIONARIO DEMO =====================
-// REEMPLAZAR AQUI CON API REAL — Este diccionario se usa cuando MyMemory no esta disponible
-var DEMO_DICT = {
-    'the':'el','a':'un','an':'un','is':'es','are':'son','and':'y','or':'o','in':'en',
-    'on':'en','at':'en','to':'a','of':'de','for':'para','with':'con','from':'de',
-    'by':'por','this':'este','that':'ese','it':'eso','he':'el','she':'ella',
-    'they':'ellos','we':'nosotros','was':'fue','were':'fueron','had':'tenia',
-    'have':'tener','has':'ha','will':'ira','would':'iria','could':'podria',
-    'should':'deberia','can':'puede','do':'hacer','did':'hizo','not':'no',
-    'but':'pero','if':'si','then':'entonces','when':'cuando','where':'donde',
-    'how':'como','what':'que','who':'quien','which':'cual','why':'por que',
-    'said':'dijo','his':'su','her':'su','their':'su','my':'mi','your':'tu',
-    'our':'nuestro','chapter':'capitulo','book':'libro','man':'hombre',
-    'woman':'mujer','girl':'chica','boy':'chico','time':'tiempo','day':'dia',
-    'night':'noche','year':'ano','world':'mundo','life':'vida','love':'amor',
-    'great':'gran','good':'bueno','bad':'malo','new':'nuevo','old':'viejo',
-    'long':'largo','small':'pequeno','big':'grande','little':'pequeno',
-    'first':'primero','last':'ultimo','all':'todo','some':'algunos',
-    'many':'muchos','more':'mas','very':'muy','much':'mucho','than':'que',
-    'also':'tambien','just':'solo','into':'en','like':'como','over':'sobre',
-    'after':'despues','before':'antes','between':'entre','under':'debajo',
-    'never':'nunca','always':'siempre','now':'ahora','here':'aqui',
-    'there':'alli','again':'otra vez','well':'bien','only':'solo',
-    'still':'todavia','about':'sobre','up':'arriba','down':'abajo',
-    'out':'fuera','back':'atras','through':'a traves','during':'durante',
-    'without':'sin','every':'cada','other':'otro','such':'tal','being':'siendo',
-    'made':'hecho','one':'uno','two':'dos','three':'tres','four':'cuatro',
-    'five':'cinco','because':'porque','while':'mientras','however':'sin embargo',
-    'although':'aunque','since':'desde','until':'hasta','both':'ambos',
-    'each':'cada','few':'pocos','most':'la mayoria','another':'otro',
-    'own':'propio','same':'mismo','so':'asi que','too':'tambien',
-    'any':'cualquier','may':'puede','might':'podria','must':'debe',
-    'thought':'penso','know':'saber','see':'ver','think':'pensar',
-    'take':'tomar','come':'venir','make':'hacer','go':'ir','give':'dar',
-    'find':'encontrar','tell':'decir','ask':'preguntar','seem':'parecer',
-    'feel':'sentir','try':'intentar','leave':'dejar','call':'llamar',
-    'keep':'mantener','begin':'comenzar','show':'mostrar','hear':'oir',
-    'play':'jugar','run':'correr','move':'mover','live':'vivir',
-    'believe':'creer','hold':'sostener','bring':'traer','happen':'ocurrir',
-    'write':'escribir','sit':'sentarse','stand':'estar de pie','lose':'perder',
-    'pay':'pagar','meet':'reunirse','include':'incluir','continue':'continuar',
-    'set':'establecer','learn':'aprender','change':'cambiar','lead':'liderar',
-    'understand':'entender','watch':'mirar','follow':'seguir','stop':'detener',
-    'create':'crear','speak':'hablar','read':'leer','allow':'permitir',
-    'add':'anadir','spend':'gastar','grow':'crecer','open':'abrir',
-    'walk':'caminar','win':'ganar','offer':'ofrecer','remember':'recordar',
-    'appear':'aparecer','buy':'comprar','wait':'esperar','serve':'servir',
-    'send':'enviar','expect':'esperar','build':'construir','stay':'quedarse',
-    'fall':'caer','cut':'cortar','reach':'alcanzar','remain':'permanecer',
-    'suggest':'sugerir','raise':'levantar','pass':'pasar','sell':'vender',
-    'require':'requerir','decide':'decidir','pull':'tirar','push':'empujar',
-    'room':'habitacion','house':'casa','door':'puerta','hand':'mano',
-    'head':'cabeza','eye':'ojo','face':'cara','place':'lugar','case':'caso',
-    'point':'punto','fact':'hecho','group':'grupo','number':'numero',
-    'water':'agua','home':'hogar','family':'familia','children':'ninos',
-    'father':'padre','mother':'madre','friend':'amigo','country':'pais',
-    'city':'ciudad','school':'escuela','state':'estado','power':'poder',
-    'study':'estudio','question':'pregunta','problem':'problema',
-    'answer':'respuesta','story':'historia','word':'palabra',
-    'name':'nombre','part':'parte','thing':'cosa','side':'lado',
-    'kind':'tipo','work':'trabajo','way':'camino','end':'fin',
-    'right':'derecho','left':'izquierdo','high':'alto','young':'joven',
-    'important':'importante','different':'diferente','possible':'posible',
-    'large':'grande','social':'social','national':'nacional','early':'temprano',
-    'sure':'seguro','real':'real','whole':'entero','free':'libre',
-    'clear':'claro','strong':'fuerte','full':'lleno','true':'verdadero',
-    'upon':'sobre','nothing':'nada','around':'alrededor',
-    'those':'esos','these':'estos','been':'sido','having':'teniendo',
-    'going':'yendo','doing':'haciendo','saying':'diciendo','looking':'mirando',
-    'getting':'consiguiendo','came':'vino','went':'fue',
-    'got':'obtuvo','took':'tomo','saw':'vio','knew':'supo',
-    'become':'convertirse','let':'dejar','put':'poner','turn':'girar',
-    'mr':'senor','mrs':'senora','miss':'senorita','sir':'senor',
-    'yes':'si','please':'por favor','thank':'gracias',
-    'hello':'hola','goodbye':'adios','perhaps':'quizas','quite':'bastante',
-    'really':'realmente','already':'ya','enough':'suficiente',
-    'together':'juntos','almost':'casi','else':'mas','yet':'sin embargo',
-    'often':'a menudo','along':'a lo largo','away':'lejos',
-    'among':'entre','towards':'hacia','across':'a traves','against':'contra',
-    'within':'dentro de','everything':'todo','something':'algo',
-    'someone':'alguien','anyone':'cualquiera','everyone':'todos',
-    'sometimes':'a veces','usually':'generalmente',
-    'quickly':'rapidamente','slowly':'lentamente','suddenly':'de repente',
-    'finally':'finalmente','actually':'en realidad','certainly':'ciertamente',
-    'probably':'probablemente','especially':'especialmente','simply':'simplemente',
-    'exactly':'exactamente','nearly':'casi','nothing':'nada',
-    'upon':'sobre','whose':'cuyo','whom':'a quien','him':'a el',
-    'them':'a ellos','us':'a nosotros','me':'me','myself':'yo mismo',
-    'yourself':'tu mismo','themselves':'ellos mismos','ourselves':'nosotros mismos',
-    'itself':'si mismo','herself':'ella misma','himself':'el mismo',
-    'yourself':'tu mismo','shall':'debera','ought':'debe',
-    'need':'necesitar','used':'usado','able':'capaz','going':'yendo',
-    'coming':'viniendo','making':'haciendo','taking':'tomando',
-    'giving':'dando','telling':'contando','keeping':'guardando',
-    'letting':'dejando','seeming':'pareciendo','meaning':'significando',
-    'getting':'obteniendo','feeling':'sintiendo','thinking':'pensando',
-    'knowing':'sabiendo','loving':'amando','caring':'cuidando',
-    'hope':'esperanza','wish':'deseo','dream':'sueno','light':'luz',
-    'dark':'oscuro','white':'blanco','black':'negro','red':'rojo',
-    'blue':'azul','green':'verde','yellow':'amarillo','brown':'marron',
-    'warm':'calido','cold':'frio','hot':'caliente','soft':'suave',
-    'hard':'duro','sweet':'dulce','bitter':'amargo','sharp':'afilado',
-    'round':'redondo','flat':'plano','thick':'grueso','thin':'delgado',
-    'wide':'ancho','narrow':'estrecho','deep':'profundo','shallow':'poco profundo',
-    'clean':'limpio','dirty':'sucio','wet':'mojado','dry':'seco',
-    'quiet':'tranquilo','loud':'ruidoso','happy':'feliz','sad':'triste',
-    'angry':'enojado','afraid':'asustado','tired':'cansado','hungry':'hambriento',
-    'thirsty':'sediento','sick':'enfermo','healthy':'sano','poor':'pobre',
-    'rich':'rico','beautiful':'hermoso','ugly':'feo','strange':'extrano',
-    'simple':'simple','complex':'complejo','easy':'facil','difficult':'dificil',
-    'necessary':'necesario','impossible':'imposible','common':'comun',
-    'rare':'raro','certain':'cierto','usual':'habitual',
-    'mrs':'senora','miss':'senorita','sir':'senor','lord':'senor',
-    'lady':'dama','king':'rey','queen':'reina','prince':'principe',
-    'princess':'princesa','master':'maestro','servant':'sirviente',
-    'soldier':'soldado','captain':'capitan','doctor':'doctor',
-    'brother':'hermano','sister':'hermana','son':'hijo','daughter':'hija',
-    'husband':'esposo','wife':'esposa','aunt':'tia','uncle':'tio',
-    'cousin':'primo','nephew':'sobrino','niece':'sobrina',
-    'morning':'manana','evening':'tarde','afternoon':'tarde',
-    'today':'hoy','tomorrow':'manana','yesterday':'ayer',
-    'week':'semana','month':'mes','century':'siglo',
-    'spring':'primavera','summer':'verano','autumn':'otono','winter':'invierno',
-    'sun':'sol','moon':'luna','star':'estrella','sky':'cielo',
-    'rain':'lluvia','snow':'nieve','wind':'viento','fire':'fuego',
-    'earth':'tierra','sea':'mar','river':'rio','mountain':'montana',
-    'forest':'bosque','tree':'arbol','flower':'flor','grass':'hierba',
-    'animal':'animal','horse':'caballo','dog':'perro','cat':'gato',
-    'bird':'pajaro','fish':'pez','heart':'corazon','mind':'mente',
-    'soul':'alma','spirit':'espiritu','body':'cuerpo','blood':'sangre',
-    'bone':'hueso','voice':'voz','sound':'sonido','silence':'silencio',
-    'song':'cancion','music':'musica','art':'arte','color':'color',
-    'truth':'verdad','beauty':'belleza','wisdom':'sabiduria','peace':'paz',
-    'war':'guerra','death':'muerte','birth':'nacimiento','age':'edad',
-    'rest':'resto','sleep':'sueno','dream':'sueno','wake':'despertar',
-    'eat':'comer','drink':'beber','breathe':'respirar','smile':'sonreir',
-    'laugh':'reir','cry':'llorar','sing':'cantar','dance':'bailar',
-    'fight':'luchar','kill':'matar','save':'salvar','help':'ayudar',
-    'teach':'ensenar','learn':'aprender','forget':'olvidar',
-    'promise':'promesa','secret':'secreto','magic':'magia',
-    'fortune':'fortuna','luck':'suerte','chance':'oportunidad',
-    'village':'pueblo','town':'pueblo','church':'iglesia','castle':'castillo',
-    'garden':'jardin','bridge':'puente','road':'camino','path':'sendero',
-    'gate':'puerta','wall':'muro','floor':'piso','roof':'techo',
-    'window':'ventana','table':'mesa','chair':'silla','bed':'cama',
-    'letter':'carta','page':'pagina','pencil':'lapiz','paper':'papel',
-    'sword':'espada','shield':'escudo','crown':'corona','ring':'anillo',
-    'gold':'oro','silver':'plata','iron':'hierro','stone':'piedra',
-    'wood':'madera','glass':'vidrio','cloth':'tela','leather':'cuero',
-    'bread':'pan','meat':'carne','wine':'vino','milk':'leche',
-    'fruit':'fruta','cake':'pastel','salt':'sal','honey':'miel',
-    'money':'dinero','price':'precio','market':'mercado','trade':'comercio',
-    'law':'ley','rule':'regla','order':'orden','reason':'razon',
-    'cause':'causa','effect':'efecto','result':'resultado','method':'metodo',
-    'form':'forma','nature':'naturaleza','science':'ciencia',
-    'religion':'religion','opinion':'opinion','idea':'idea','sense':'sentido',
-    'desire':'deseo','fear':'miedo','joy':'alegria','pain':'dolor',
-    'pleasure':'placer','comfort':'comodidad','trouble':'problema',
-    'danger':'peligro','safety':'seguridad','freedom':'libertad',
-    'justice':'justicia','mercy':'piedad','honor':'honor','glory':'gloria',
-    'shame':'verguenza','pride':'orgullo','envy':'envidia','doubt':'duda'
-};
-
-function demoTranslate(text) {
-    // REEMPLAZAR AQUI CON API REAL
-    if (!text || !text.trim()) return text;
-    var result = text;
-    var entries = Object.entries(DEMO_DICT).sort(function(a,b){ return b[0].length - a[0].length; });
-    for (var i = 0; i < entries.length; i++) {
-        var eng = entries[i][0];
-        var spa = entries[i][1];
-        var re = new RegExp('\\b' + eng.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b', 'gi');
-        result = result.replace(re, spa);
-    }
-    return result;
-}
-
-// ===================== MOTOR DE TRADUCCION =====================
-var useDemoMode = false;
-var translationCancelled = false;
-var currentFontSize = 18;
-
-async function translateTextAPI(text) {
-    if (!text || !text.trim()) return text;
-    var cached = await getCached(text);
-    if (cached) return cached;
-    if (useDemoMode) {
-        var r = demoTranslate(text);
-        await setCached(text, r);
-        return r;
-    }
-    try {
-        var q = encodeURIComponent(text.substring(0, 490));
-        var url = 'https://api.mymemory.translated.net/get?q=' + q + '&langpair=en|es';
-        var resp = await fetch(url);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        var data = await resp.json();
-        if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
-            var translated = data.responseData.translatedText;
-            if (translated.toUpperCase() === text.toUpperCase() && text.length > 20) throw new Error('Fallo');
-            await setCached(text, translated);
-            return translated;
-        }
-        throw new Error('Respuesta invalida');
-    } catch(err) {
-        console.warn('API fallo, activando modo demo:', err.message);
-        useDemoMode = true;
-        document.getElementById('demo-notice').classList.add('visible');
-        var r2 = demoTranslate(text);
-        await setCached(text, r2);
-        return r2;
-    }
-}
-
-function splitForTranslation(text, maxLen) {
-    maxLen = maxLen || 450;
-    if (!text || text.length <= maxLen) return [text];
-    var chunks = [];
-    var remaining = text;
-    while (remaining.length > maxLen) {
-        var splitAt = -1;
-        var seps = ['. ', '.\n', '; ', ', ', ' '];
-        for (var si = 0; si < seps.length; si++) {
-            splitAt = remaining.lastIndexOf(seps[si], maxLen);
-            if (splitAt > 20) { splitAt += seps[si].length; break; }
-        }
-        if (splitAt <= 0) splitAt = maxLen;
-        chunks.push(remaining.substring(0, splitAt));
-        remaining = remaining.substring(splitAt).trim();
-    }
-    if (remaining.trim()) chunks.push(remaining);
-    return chunks;
-}
-
-// ===================== PARSEO DE EPUB =====================
-var bookData = { title: '', author: '', chapters: [] };
-
-function resolvePath(base, rel) {
-    if (!rel) return '';
-    if (rel.startsWith('http')) return rel;
-    if (rel.startsWith('/')) return rel.substring(1);
-    var bp = base.split('/'); bp.pop();
-    var rp = rel.split('/');
-    for (var i = 0; i < rp.length; i++) {
-        if (rp[i] === '..') bp.pop();
-        else if (rp[i] !== '.' && rp[i] !== '') bp.push(rp[i]);
-    }
-    return bp.join('/');
-}
-
-function extractTextBlocks(html) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(html, 'text/html');
-    var body = doc.body || doc.documentElement;
-    var blocks = [];
-
-    function walk(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            var t = node.textContent.trim();
-            if (t && blocks.length > 0) blocks[blocks.length - 1].text += ' ' + t;
-            return;
-        }
-        if (node.nodeType !== Node.ELEMENT_NODE) return;
-        var tag = node.tagName.toLowerCase();
-        if (['script','style','img','svg','image','link','meta','br','hr'].indexOf(tag) !== -1) return;
-
-        var isHeading = /^h[1-6]$/.test(tag);
-        var isBlock = ['p','div','blockquote','li','td','th','dd','dt','pre','figcaption','caption','article','section','aside','header','footer','main','address'].indexOf(tag) !== -1 || isHeading;
-
-        if (isBlock) {
-            var text = (node.textContent || '').trim();
-            if (text) {
-                blocks.push({
-                    type: isHeading ? 'heading' : (tag === 'blockquote' ? 'blockquote' : 'paragraph'),
-                    level: isHeading ? tag : null,
-                    text: text
-                });
-            }
-        } else {
-            for (var c = 0; c < node.childNodes.length; c++) {
-                walk(node.childNodes[c]);
+    // ------------------------------------------------------------
+    // 1. DICCIONARIO QUECHUA - ESPAÑOL (oficial + palabras del curso)
+    // ------------------------------------------------------------
+    const dictQuechua = {
+        // Pronombres y básicos
+        "ñuqa": "yo", "qam": "tú", "pay": "él/ella",
+        "ñuqanchik": "nosotros/as (incl.)", "ñuqayku": "nosotros/as (excl.)",
+        "qamkuna": "ustedes", "paykuna": "ellos/ellas",
+        "kay": "esto/esta", "chay": "eso/esa", "jaqay": "aquello/aquella",
+        "ima": "qué", "pi": "quién", "may": "dónde", "imayna": "cómo",
+        "jayk'a": "cuánto", "mayqin": "cuál",
+        // Verbos comunes
+        "riy": "ir", "jamuy": "venir", "puriy": "caminar", "rimay": "hablar",
+        "llamk'ay": "trabajar", "mikhuy": "comer", "upyay": "beber",
+        "qhaway": "mirar", "yachay": "saber", "munay": "querer",
+        "ruway": "hacer", "kay": "ser/estar", "kachay": "enviar",
+        "tarpuy": "sembrar", "allay": "cavar", "wayk'uy": "cocinar",
+        "qillqay": "escribir", "ñawiriy": "leer", "tusuy": "bailar",
+        "waqay": "llorar", "asikuy": "reírse", "puñuy": "dormir",
+        "sayay": "pararse", "tiyakuy": "sentarse", "yanapay": "ayudar",
+        // Sustantivos comunes
+        "wasi": "casa", "llaqta": "pueblo", "ayllu": "comunidad",
+        "sach'a": "árbol", "yaku": "agua", "t'anta": "pan",
+        "papa": "papa", "sara": "maíz", "chakra": "chacra",
+        "inti": "sol", "killa": "luna", "p'unchaw": "día",
+        "tuta": "noche", "qhari": "hombre", "warmi": "mujer",
+        "wawa": "niño/bebé", "mama": "madre", "tata": "padre",
+        "sunqu": "corazón", "maki": "mano", "ñawi": "ojo",
+        "runasimipirwa": "diccionario", "yachaywasi": "escuela",
+        // Adjetivos
+        "allin": "bueno", "sumaq": "hermoso", "hatun": "grande",
+        "juch'uy": "pequeño", "chiri": "frío", "q'uñi": "caliente",
+        "yuraq": "blanco", "yana": "negro", "puka": "rojo",
+        "q'umir": "verde", "anqas": "azul"
+    };
+    
+    // Sufijos quechuas y su significado (basado en Qallarinapaq)
+    const sufijos = [
+        { suf: "kuna", tipo: "plural", es: "s/es (plural)" },
+        { suf: "pi", tipo: "locativo", es: "en" },
+        { suf: "man", tipo: "direccional", es: "a/hacia" },
+        { suf: "manta", tipo: "ablativo", es: "de/desde" },
+        { suf: "wan", tipo: "instrumental/acompañante", es: "con" },
+        { suf: "paq", tipo: "dativo", es: "para" },
+        { suf: "ta", tipo: "acusativo", es: "a (objeto directo)" },
+        { suf: "chka", tipo: "progresivo", es: "está -ndo" },
+        { suf: "rqa", tipo: "pasado directo", es: "(pretérito) -ó/-é" },
+        { suf: "sqa", tipo: "pasado indirecto/narrativo", es: "(pretérito) -ó (se dice que)" },
+        { suf: "nchik", tipo: "persona", es: "nosotros (inclusivo)" },
+        { suf: "yku", tipo: "persona", es: "nosotros (exclusivo)" },
+        { suf: "yki", tipo: "posesivo", es: "tu" },
+        { suf: "y", tipo: "posesivo/infinitivo", es: "mi / (infinitivo)" },
+        { suf: "n", tipo: "posesivo/3ps", es: "su (de él/ella)" },
+        { suf: "ni", tipo: "1ps", es: "yo (verbo)" },
+        { suf: "nki", tipo: "2ps", es: "tú (verbo)" },
+        { suf: "nku", tipo: "3pp", es: "ellos/ellas (verbo)" },
+        { suf: "lla", tipo: "limitador", es: "nomás/solamente" },
+        { suf: "puni", tipo: "enfático", es: "siempre/sí" },
+        { suf: "chu", tipo: "interrogativo/negativo", es: "? / no" },
+        { suf: "ri", tipo: "atenuativo", es: "un poco/pues" },
+        { suf: "ña", tipo: "terminativo", es: "ya" },
+        { suf: "raq", tipo: "anticipativo", es: "todavía/aún" },
+        { suf: "ku", tipo: "reflexivo", es: "se (a sí mismo)" },
+        { suf: "chi", tipo: "causativo", es: "hacer (que alguien haga algo)" },
+        { suf: "ysi", tipo: "coadyuvativo", es: "ayudar a" },
+        { suf: "pu", tipo: "benefactivo", es: "hacer para otro" },
+        { suf: "si", tipo: "reportativo", es: "(dicen que)" }
+    ];
+    
+    // Función para segmentar una palabra quechua: raíz + posibles sufijos
+    function segmentarPalabraQuechua(palabra) {
+        palabra = palabra.toLowerCase();
+        let sufijosEncontrados = [];
+        let raiz = palabra;
+        let cambio = false;
+        // Iteramos sobre sufijos conocidos (de mayor a menor longitud)
+        let sufijosOrdenados = [...sufijos].sort((a,b) => b.suf.length - a.suf.length);
+        for (let s of sufijosOrdenados) {
+            if (raiz.endsWith(s.suf)) {
+                sufijosEncontrados.unshift(s);  // los ponemos en orden de aparición
+                raiz = raiz.slice(0, -s.suf.length);
+                cambio = true;
+                // Reiniciamos para seguir buscando más sufijos en la nueva raíz
+                sufijosOrdenados = [...sufijos].sort((a,b) => b.suf.length - a.suf.length);
             }
         }
+        // Si no se encontró ningún sufijo, la raíz es la palabra completa
+        if (!cambio) raiz = palabra;
+        
+        // Buscar la raíz en el diccionario
+        let significadoRaiz = dictQuechua[raiz] || `[${raiz}?]`;
+        return { raiz, significadoRaiz, sufijos: sufijosEncontrados };
     }
-
-    for (var i = 0; i < body.childNodes.length; i++) {
-        walk(body.childNodes[i]);
-    }
-    return blocks;
-}
-
-async function parseEPUB(arrayBuffer) {
-    var zip = await JSZip.loadAsync(arrayBuffer);
-
-    // 1. Leer container.xml
-    var containerXml = '';
-    var containerFile = zip.file('META-INF/container.xml');
-    if (containerFile) {
-        containerXml = await containerFile.async('text');
-    }
-    if (!containerXml) throw new Error('No se encontro META-INF/container.xml. Archivo no es un EPUB valido.');
-
-    var containerDoc = new DOMParser().parseFromString(containerXml, 'application/xml');
-    var rootfilePath = '';
-    var rootfileEl = containerDoc.querySelector('rootfile');
-    if (rootfileEl) rootfilePath = rootfileEl.getAttribute('full-path');
-    if (!rootfilePath) throw new Error('No se encontro ruta OPF en container.xml');
-
-    // 2. Leer OPF
-    var opfText = '';
-    var opfFile = zip.file(rootfilePath);
-    if (opfFile) opfText = await opfFile.async('text');
-    if (!opfText) throw new Error('No se pudo leer el archivo OPF');
-
-    var opfDoc = new DOMParser().parseFromString(opfText, 'application/xml');
-    var parseErr = opfDoc.querySelector('parsererror');
-    if (parseErr) {
-        opfDoc = new DOMParser().parseFromString(opfText, 'text/html');
-    }
-
-    // Metadata
-    var titleEl = opfDoc.querySelector('title, dc\\:title');
-    var creatorEl = opfDoc.querySelector('creator, dc\\:creator');
-    // Intentar con getElementsByTagName tambien
-    if (!titleEl) {
-        var metas = opfDoc.getElementsByTagName('dc:title');
-        if (metas.length === 0) metas = opfDoc.getElementsByTagName('title');
-        if (metas.length > 0) titleEl = metas[0];
-    }
-    if (!creatorEl) {
-        var metas2 = opfDoc.getElementsByTagName('dc:creator');
-        if (metas2.length === 0) metas2 = opfDoc.getElementsByTagName('creator');
-        if (metas2.length > 0) creatorEl = metas2[0];
-    }
-    var title = titleEl ? titleEl.textContent.trim() : 'Libro sin titulo';
-    var author = creatorEl ? creatorEl.textContent.trim() : 'Autor desconocido';
-
-    // Manifest
-    var manifest = {};
-    var items = opfDoc.querySelectorAll('item');
-    if (items.length === 0) items = opfDoc.getElementsByTagName('item');
-    for (var ii = 0; ii < items.length; ii++) {
-        var it = items[ii];
-        var id = it.getAttribute('id');
-        var href = it.getAttribute('href');
-        var mtype = it.getAttribute('media-type') || '';
-        if (id && href) manifest[id] = { href: href, type: mtype };
-    }
-
-    // Spine
-    var spineItems = [];
-    var itemrefs = opfDoc.querySelectorAll('spine itemref');
-    if (itemrefs.length === 0) itemrefs = opfDoc.getElementsByTagName('itemref');
-    for (var rr = 0; rr < itemrefs.length; rr++) {
-        var idref = itemrefs[rr].getAttribute('idref');
-        if (idref && manifest[idref]) spineItems.push(idref);
-    }
-
-    // Si no hay spine, usar todos los HTML del manifest
-    if (spineItems.length === 0) {
-        var allIds = Object.keys(manifest);
-        for (var ai = 0; ai < allIds.length; ai++) {
-            var m = manifest[allIds[ai]];
-            if (m.type === 'application/xhtml+xml' || m.type === 'text/html' || m.href.match(/\.(x?html?)/i)) {
-                spineItems.push(allIds[ai]);
+    
+    // Traducción de frase completa (intento palabra por palabra)
+    function traducirQuechuaAEsp(frase) {
+        let palabras = frase.trim().split(/\s+/);
+        let traduccionPalabras = [];
+        let analisisDetallado = [];
+        
+        for (let pal of palabras) {
+            let limpia = pal.replace(/[.,!?;:]/g, '');
+            let segmentado = segmentarPalabraQuechua(limpia);
+            let trad = segmentado.significadoRaiz;
+            
+            // agregar traducción de sufijos
+            let sufText = "";
+            for (let s of segmentado.sufijos) {
+                sufText += ` +${s.suf} (${s.es})`;
+                // Para mejorar la traducción, ajustamos verbos según sufijos relevantes
+                if (s.suf === "chka") trad = "está " + trad + "ndo";
+                if (s.suf === "rqa" && !trad.includes("estaba")) trad = trad + " (pasado)";
+                if (s.suf === "sqa") trad = trad + " (dicen que)";
+                if (s.suf === "kuna") trad = trad + "s";
+                if (s.suf === "nku") trad = trad + " (ellos/ellas)";
+                if (s.suf === "ni") trad = trad + " (yo)";
+                if (s.suf === "nki") trad = trad + " (tú)";
             }
+            // Si es un verbo en infinitivo (termina en y sin sufijos) se ajusta
+            if (limpia.endsWith("y") && segmentado.sufijos.length === 0 && dictQuechua[limpia]) {
+                trad = trad + "r";
+            }
+            traduccionPalabras.push(trad);
+            analisisDetallado.push(`${limpia} → raíz: ${segmentado.raiz} (${segmentado.significadoRaiz}) | sufijos: [${segmentado.sufijos.map(s=>s.suf).join(", ")}]`);
         }
+        let traduccionFinal = traduccionPalabras.join(" ");
+        return { traduccion: traduccionFinal, analisis: analisisDetallado.join("\n") };
     }
-
-    // Leer capitulos
-    var chapters = [];
-    for (var ci = 0; ci < spineItems.length; ci++) {
-        var mItem = manifest[spineItems[ci]];
-        if (!mItem) continue;
-        var filePath = resolvePath(rootfilePath, mItem.href);
-        var zFile = zip.file(filePath);
-        if (!zFile) {
-            // Intentar buscar por nombre directamente
-            var files = Object.keys(zip.files);
-            for (var fi = 0; fi < files.length; fi++) {
-                if (files[fi].endsWith(mItem.href) || files[fi].endsWith('/' + mItem.href)) {
-                    zFile = zip.file(files[fi]);
+    
+    // Traducción Español -> Quechua (búsqueda inversa en diccionario)
+    function traducirEspAQuechua(frase) {
+        let palabras = frase.trim().split(/\s+/);
+        let tradWords = [];
+        for (let pal of palabras) {
+            let encontrado = null;
+            for (let [q, es] of Object.entries(dictQuechua)) {
+                if (es.toLowerCase() === pal.toLowerCase()) {
+                    encontrado = q;
                     break;
                 }
             }
-        }
-        if (!zFile) continue;
-        var html = '';
-        try { html = await zFile.async('text'); } catch(e) { continue; }
-        if (!html.trim()) continue;
-
-        var blocks = extractTextBlocks(html);
-        if (blocks.length === 0) continue;
-
-        // Titulo del capitulo: primer heading o "Capitulo N"
-        var chapTitle = 'Capitulo ' + (chapters.length + 1);
-        for (var bi = 0; bi < blocks.length; bi++) {
-            if (blocks[bi].type === 'heading') { chapTitle = blocks[bi].text; break; }
-        }
-
-        chapters.push({
-            title: chapTitle,
-            blocks: blocks,
-            originalText: blocks.map(function(b){ return b.text; }).join('\n'),
-            translatedText: ''
-        });
-    }
-
-    if (chapters.length === 0) throw new Error('No se encontraron capitulos con texto en este EPUB');
-
-    bookData = { title: title, author: author, chapters: chapters };
-    return bookData;
-}
-
-// ===================== INTERFAZ =====================
-function showToast(msg, type) {
-    type = type || '';
-    var container = document.getElementById('toast-container');
-    var t = document.createElement('div');
-    t.className = 'toast' + (type ? ' toast-' + type : '');
-    t.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle') + '"></i> ' + msg;
-    container.appendChild(t);
-    requestAnimationFrame(function(){ t.classList.add('show'); });
-    setTimeout(function(){
-        t.classList.remove('show');
-        setTimeout(function(){ t.remove(); }, 400);
-    }, 3000);
-}
-
-function updateProgress(percent, done, total) {
-    document.getElementById('progress-fill').style.width = percent + '%';
-    document.getElementById('progress-percent').textContent = Math.round(percent) + '%';
-    document.getElementById('progress-chapters').textContent = done + ' de ' + total + ' capitulos';
-}
-
-function showSection(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.remove('hidden');
-}
-function hideSection(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-}
-
-function displayBookInfo() {
-    document.getElementById('book-title-side').textContent = bookData.title;
-    document.getElementById('book-author-side').textContent = bookData.author;
-    document.getElementById('book-chapters-side').textContent = bookData.chapters.length + ' capitulos detectados';
-    document.getElementById('book-info').classList.add('visible');
-    showSection('translate-section');
-    showToast('EPUB cargado: ' + bookData.title, 'success');
-}
-
-function renderOriginalPreview() {
-    // Mostrar texto original como placeholder mientras se traduce
-    var content = document.getElementById('reader-content');
-    content.innerHTML = '';
-    document.getElementById('reader-book-title').textContent = bookData.title;
-    document.getElementById('reader-book-author').textContent = bookData.author;
-
-    for (var i = 0; i < bookData.chapters.length; i++) {
-        var ch = bookData.chapters[i];
-        var div = document.createElement('div');
-        div.className = 'chapter-block';
-        div.id = 'chapter-' + i;
-        div.style.animationDelay = (i * 0.05) + 's';
-
-        var heading = document.createElement('h2');
-        heading.className = 'chapter-heading';
-        heading.textContent = ch.title;
-        div.appendChild(heading);
-
-        var contentDiv = document.createElement('div');
-        contentDiv.className = 'chapter-content';
-        contentDiv.id = 'chapter-content-' + i;
-
-        for (var j = 0; j < ch.blocks.length; j++) {
-            var block = ch.blocks[j];
-            var el;
-            if (block.type === 'heading') {
-                el = document.createElement('h3');
-                el.className = 'chapter-heading';
-                el.style.fontSize = '1.1em';
-                el.style.borderBottom = '1px solid var(--border)';
-            } else if (block.type === 'blockquote') {
-                el = document.createElement('blockquote');
-                el.className = 'chapter-blockquote';
-            } else {
-                el = document.createElement('p');
-                el.className = 'chapter-paragraph';
+            // Si no encuentra, busca palabras similares
+            if (!encontrado) {
+                for (let [q, es] of Object.entries(dictQuechua)) {
+                    if (es.toLowerCase().includes(pal.toLowerCase()) || pal.toLowerCase().includes(es.toLowerCase())) {
+                        encontrado = q;
+                        break;
+                    }
+                }
             }
-            el.textContent = block.text;
-            el.setAttribute('data-original', block.text);
-            contentDiv.appendChild(el);
+            tradWords.push(encontrado || `[${pal}?]`);
         }
-        div.appendChild(contentDiv);
-        content.appendChild(div);
+        let traduccion = tradWords.join(" ");
+        let analisis = "Traducción directa por diccionario (sin sufijos, solo raíces). Para mejor precisión usa el modo Quechua→Español.";
+        return { traduccion, analisis };
     }
-
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('reader-container').classList.add('visible');
-}
-
-function updateChapterInUI(chapterIndex) {
-    var contentDiv = document.getElementById('chapter-content-' + chapterIndex);
-    if (!contentDiv) return;
-    var ch = bookData.chapters[chapterIndex];
-    var blocks = ch.blocks;
-    var translatedLines = ch.translatedText.split('\n');
-
-    contentDiv.innerHTML = '';
-    for (var j = 0; j < blocks.length; j++) {
-        var block = blocks[j];
-        var el;
-        if (block.type === 'heading') {
-            el = document.createElement('h3');
-            el.className = 'chapter-heading';
-            el.style.fontSize = '1.1em';
-            el.style.borderBottom = '1px solid var(--border)';
-        } else if (block.type === 'blockquote') {
-            el = document.createElement('blockquote');
-            el.className = 'chapter-blockquote';
+    
+    // Variables de UI
+    let modoActual = "quechuaEsp"; // quechuaEsp / espQuechua
+    const inputText = document.getElementById("inputText");
+    const outputText = document.getElementById("outputText");
+    const analysisBox = document.getElementById("analysisBox");
+    const translateBtn = document.getElementById("translateBtn");
+    const btnQuechuaEsp = document.getElementById("btnQuechuaEsp");
+    const btnEspQuechua = document.getElementById("btnEspQuechua");
+    const inputLabel = document.getElementById("inputLabel");
+    
+    // Eventos de modo
+    btnQuechuaEsp.addEventListener("click", () => {
+        modoActual = "quechuaEsp";
+        btnQuechuaEsp.classList.add("active");
+        btnEspQuechua.classList.remove("active");
+        inputLabel.innerText = "📝 Texto en Quechua:";
+        inputText.placeholder = "Ejemplo: Wasikunapi tiyachkanku. Imaynalla kachkanki?";
+        analysisBox.innerHTML = "🔍 <strong>Análisis morfológico:</strong><br>Se intentará separar raíces y sufijos usando el diccionario oficial.";
+        outputText.value = "";
+        inputText.value = "";
+    });
+    btnEspQuechua.addEventListener("click", () => {
+        modoActual = "espQuechua";
+        btnEspQuechua.classList.add("active");
+        btnQuechuaEsp.classList.remove("active");
+        inputLabel.innerText = "📝 Texto en Español:";
+        inputText.placeholder = "Ejemplo: Estoy caminando a mi casa.";
+        analysisBox.innerHTML = "🔍 <strong>Traducción inversa:</strong><br>Se buscará la palabra equivalente en quechua (sin sufijos).";
+        outputText.value = "";
+        inputText.value = "";
+    });
+    
+    // Acción de traducir
+    translateBtn.addEventListener("click", () => {
+        let texto = inputText.value.trim();
+        if (!texto) {
+            outputText.value = "";
+            analysisBox.innerHTML = modoActual === "quechuaEsp" 
+                ? "⚠️ Escribe una palabra o frase en quechua."
+                : "⚠️ Escribe una palabra o frase en español.";
+            return;
+        }
+        if (modoActual === "quechuaEsp") {
+            let resultado = traducirQuechuaAEsp(texto);
+            outputText.value = resultado.traduccion;
+            analysisBox.innerHTML = `🔍 <strong>Análisis morfológico detallado:</strong><br>${resultado.analisis.replace(/\n/g, '<br>')}`;
         } else {
-            el = document.createElement('p');
-            el.className = 'chapter-paragraph';
-        }
-        var translatedText = (j < translatedLines.length && translatedLines[j].trim()) ? translatedLines[j] : block.text;
-        el.textContent = translatedText;
-        contentDiv.appendChild(el);
-    }
-}
-
-// ===================== PROCESO DE TRADUCCION =====================
-async function startTranslation() {
-    translationCancelled = false;
-    useDemoMode = false;
-    document.getElementById('demo-notice').classList.remove('visible');
-    document.getElementById('completion-msg').classList.remove('visible');
-
-    var btnTranslate = document.getElementById('btn-translate');
-    btnTranslate.disabled = true;
-    btnTranslate.innerHTML = '<span class="spinner"></span> Traduciendo...';
-    showSection('btn-cancel');
-    document.getElementById('progress-area').classList.add('visible');
-
-    showSection('tools-section');
-    showSection('search-section');
-    showSection('actions-section');
-
-    renderOriginalPreview();
-
-    var startTime = Date.now();
-    var totalChapters = bookData.chapters.length;
-    var completedChapters = 0;
-
-    updateProgress(0, 0, totalChapters);
-
-    // Traducir capitulo por capitulo, 3 en paralelo
-    var batchSize = 3;
-    for (var batchStart = 0; batchStart < totalChapters; batchStart += batchSize) {
-        if (translationCancelled) break;
-        var batchEnd = Math.min(batchStart + batchSize, totalChapters);
-        var batchPromises = [];
-
-        for (var bi = batchStart; bi < batchEnd; bi++) {
-            (function(idx) {
-                batchPromises.push(translateChapter(idx));
-            })(bi);
-        }
-
-        await Promise.all(batchPromises);
-
-        for (var bi2 = batchStart; bi2 < batchEnd; bi2++) {
-            if (!translationCancelled) {
-                completedChapters++;
-                updateProgress((completedChapters / totalChapters) * 100, completedChapters, totalChapters);
-                updateChapterInUI(bi2);
-            }
-        }
-
-        // Pequena pausa para no saturar
-        await new Promise(function(r){ setTimeout(r, 100); });
-    }
-
-    btnTranslate.disabled = false;
-    btnTranslate.innerHTML = '<i class="fas fa-language"></i> Traducir a espanol';
-    hideSection('btn-cancel');
-
-    if (translationCancelled) {
-        showToast('Traduccion cancelada', 'error');
-    } else {
-        var elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        document.getElementById('completion-msg').textContent = 'Traduccion completada en ' + elapsed + ' segundos';
-        document.getElementById('completion-msg').classList.add('visible');
-        showToast('Traduccion completada en ' + elapsed + 's', 'success');
-        updateProgress(100, totalChapters, totalChapters);
-    }
-}
-
-async function translateChapter(chapterIndex) {
-    var ch = bookData.chapters[chapterIndex];
-    var blocks = ch.blocks;
-    var translatedParts = [];
-
-    // Recopilar todos los textos y dividir en fragmentos
-    var fragments = [];
-    for (var i = 0; i < blocks.length; i++) {
-        var text = blocks[i].text;
-        if (!text || !text.trim()) {
-            fragments.push({ blockIndex: i, text: '', translated: '' });
-            continue;
-        }
-        var chunks = splitForTranslation(text);
-        for (var c = 0; c < chunks.length; c++) {
-            fragments.push({ blockIndex: i, text: chunks[c], translated: '' });
-        }
-    }
-
-    // Traducir fragmentos en lotes de 5 en paralelo
-    var concurrency = 5;
-    for (var fi = 0; fi < fragments.length; fi += concurrency) {
-        if (translationCancelled) break;
-        var batch = fragments.slice(fi, fi + concurrency);
-        var promises = batch.map(function(frag) {
-            if (!frag.text.trim()) return Promise.resolve('');
-            return translateTextAPI(frag.text).catch(function(){ return frag.text; });
-        });
-        var results = await Promise.all(promises);
-        for (var ri = 0; ri < batch.length; ri++) {
-            batch[ri].translated = results[ri] || batch[ri].text;
-        }
-    }
-
-    // Reconstruir texto traducido por bloque
-    var blockTexts = [];
-    for (var bi = 0; bi < blocks.length; bi++) {
-        var parts = [];
-        for (var fj = 0; fj < fragments.length; fj++) {
-            if (fragments[fj].blockIndex === bi) parts.push(fragments[fj].translated);
-        }
-        blockTexts.push(parts.join(' '));
-    }
-
-    ch.translatedText = blockTexts.join('\n');
-}
-
-// ===================== COPIAR TEXTO =====================
-function copyAllText() {
-    var allText = bookData.title + '\n' + bookData.author + '\n\n';
-    for (var i = 0; i < bookData.chapters.length; i++) {
-        var ch = bookData.chapters[i];
-        allText += ch.title + '\n\n';
-        var lines = ch.translatedText.split('\n');
-        for (var j = 0; j < lines.length; j++) {
-            allText += lines[j].trim() + '\n\n';
-        }
-        allText += '---\n\n';
-    }
-    navigator.clipboard.writeText(allText).then(function(){
-        showToast('Texto copiado al portapapeles', 'success');
-    }).catch(function(){
-        showToast('Error al copiar', 'error');
-    });
-}
-
-// ===================== EXPORTAR PDF =====================
-async function exportPDF() {
-    showToast('Generando PDF...', '');
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    var pageW = doc.internal.pageSize.getWidth();
-    var pageH = doc.internal.pageSize.getHeight();
-    var marginL = 25, marginR = 25, marginT = 30, marginB = 25;
-    var contentW = pageW - marginL - marginR;
-    var contentH = pageH - marginT - marginB;
-    var fontSize = 11;
-    var lineHeight = fontSize * 0.5;
-    var currentPage = 1;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(fontSize);
-
-    function addPageNumber() {
-        doc.setFontSize(9);
-        doc.setTextColor(150);
-        doc.text(String(currentPage), pageW / 2, pageH - 10, { align: 'center' });
-        doc.setTextColor(30);
-    }
-
-    // Portada
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    var titleLines = doc.splitTextToSize(bookData.title, contentW);
-    doc.text(titleLines, pageW / 2, 80, { align: 'center' });
-
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'normal');
-    doc.text(bookData.author, pageW / 2, 100, { align: 'center' });
-
-    doc.setFontSize(10);
-    doc.setTextColor(120);
-    var fecha = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-    doc.text('Traducido con BookTranslate — ' + fecha, pageW / 2, 120, { align: 'center' });
-    doc.setTextColor(30);
-
-    addPageNumber();
-
-    var y = marginT;
-
-    function checkSpace(needed) {
-        if (y + needed > pageH - marginB) {
-            doc.addPage();
-            currentPage++;
-            addPageNumber();
-            y = marginT;
-        }
-    }
-
-    for (var i = 0; i < bookData.chapters.length; i++) {
-        var ch = bookData.chapters[i];
-        // Titulo de capitulo
-        checkSpace(20);
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        var chLines = doc.splitTextToSize(ch.title, contentW);
-        for (var cl = 0; cl < chLines.length; cl++) {
-            checkSpace(lineHeight * 1.5);
-            doc.text(chLines[cl], marginL, y);
-            y += lineHeight * 1.5;
-        }
-        y += 4;
-
-        // Linea separadora
-        checkSpace(6);
-        doc.setDrawColor(200);
-        doc.line(marginL, y, pageW - marginR, y);
-        y += 6;
-
-        // Texto del capitulo
-        doc.setFontSize(fontSize);
-        doc.setFont('helvetica', 'normal');
-        var lines = ch.translatedText.split('\n');
-        for (var li = 0; li < lines.length; li++) {
-            var para = lines[li].trim();
-            if (!para) { y += lineHeight * 0.5; continue; }
-            var splitLines = doc.splitTextToSize(para, contentW);
-            for (var sl = 0; sl < splitLines.length; sl++) {
-                checkSpace(lineHeight + 1);
-                doc.text(splitLines[sl], marginL, y, { maxWidth: contentW, align: 'justify' });
-                y += lineHeight;
-            }
-            y += 3;
-        }
-        y += 10;
-    }
-
-    var safeTitle = bookData.title.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').substring(0, 40);
-    doc.save('libro_traducido_' + safeTitle + '.pdf');
-    showToast('PDF descargado', 'success');
-}
-
-// ===================== HERRAMIENTAS DE LECTURA =====================
-function changeFontSize(delta) {
-    currentFontSize = Math.max(12, Math.min(30, currentFontSize + delta));
-    document.documentElement.style.setProperty('--reader-font-size', currentFontSize + 'px');
-    document.getElementById('font-size-val').textContent = currentFontSize;
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    var btn = document.getElementById('btn-dark-toggle');
-    var isDark = document.body.classList.contains('dark-mode');
-    btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> Claro' : '<i class="fas fa-moon"></i> Oscuro';
-}
-
-function changeFontFamily(font) {
-    document.documentElement.style.setProperty('--reader-font-family', font);
-}
-
-// ===================== BUSQUEDA =====================
-var searchTimeout = null;
-function performSearch(query) {
-    // Limpiar highlights previos
-    var prevMarks = document.querySelectorAll('mark.search-hl');
-    for (var m = 0; m < prevMarks.length; m++) {
-        var parent = prevMarks[m].parentNode;
-        parent.replaceChild(document.createTextNode(prevMarks[m].textContent), prevMarks[m]);
-        parent.normalize();
-    }
-
-    var countEl = document.getElementById('search-count');
-    if (!query || query.length < 2) { countEl.textContent = ''; return; }
-
-    var count = 0;
-    var chapterContents = document.querySelectorAll('.chapter-content');
-    for (var c = 0; c < chapterContents.length; c++) {
-        var el = chapterContents[c];
-        highlightInElement(el, query, function(){ count++; });
-    }
-    countEl.textContent = count > 0 ? count + ' resultado' + (count !== 1 ? 's' : '') + ' encontrado' + (count !== 1 ? 's' : '') : 'Sin resultados';
-
-    // Scroll al primer resultado
-    var firstMark = document.querySelector('mark.search-hl');
-    if (firstMark) firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function highlightInElement(el, query, onMatch) {
-    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-    var nodesToReplace = [];
-    while (walker.nextNode()) {
-        var node = walker.currentNode;
-        var idx = node.textContent.toLowerCase().indexOf(query.toLowerCase());
-        if (idx !== -1) nodesToReplace.push({ node: node, index: idx });
-    }
-    for (var i = 0; i < nodesToReplace.length; i++) {
-        var n = nodesToReplace[i];
-        var text = n.node.textContent;
-        var lo = text.toLowerCase().indexOf(query.toLowerCase());
-        if (lo === -1) continue;
-        var before = text.substring(0, lo);
-        var match = text.substring(lo, lo + query.length);
-        var after = text.substring(lo + query.length);
-        var mark = document.createElement('mark');
-        mark.className = 'search-hl';
-        mark.textContent = match;
-        var frag = document.createDocumentFragment();
-        if (before) frag.appendChild(document.createTextNode(before));
-        frag.appendChild(mark);
-        if (after) frag.appendChild(document.createTextNode(after));
-        n.node.parentNode.replaceChild(frag, n.node);
-        if (onMatch) onMatch();
-    }
-}
-
-// ===================== MOVIL =====================
-function toggleSidebar() {
-    var sb = document.getElementById('sidebar');
-    var ov = document.getElementById('mobile-overlay');
-    sb.classList.toggle('open');
-    if (sb.classList.contains('open')) {
-        ov.style.display = 'block';
-        requestAnimationFrame(function(){ ov.classList.add('visible'); });
-    } else {
-        ov.classList.remove('visible');
-        setTimeout(function(){ ov.style.display = 'none'; }, 300);
-    }
-}
-
-// ===================== EVENT LISTENERS =====================
-document.addEventListener('DOMContentLoaded', function() {
-
-    // Upload zone
-    var uploadZone = document.getElementById('upload-zone');
-    var fileInput = document.getElementById('file-input');
-
-    uploadZone.addEventListener('click', function() { fileInput.click(); });
-    uploadZone.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
-
-    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
-    uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
-    uploadZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadZone.classList.remove('dragover');
-        var files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].name.toLowerCase().endsWith('.epub')) {
-            handleFile(files[0]);
-        } else {
-            showToast('Por favor sube un archivo .epub', 'error');
+            let resultado = traducirEspAQuechua(texto);
+            outputText.value = resultado.traduccion;
+            analysisBox.innerHTML = `🔍 <strong>Diccionario (Esp→Qch):</strong><br>${resultado.analisis}`;
         }
     });
-
-    fileInput.addEventListener('change', function() {
-        if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
-    });
-
-    // Traducir
-    document.getElementById('btn-translate').addEventListener('click', function() { startTranslation(); });
-
-    // Cancelar
-    document.getElementById('btn-cancel').addEventListener('click', function() {
-        translationCancelled = true;
-        showToast('Cancelando traduccion...', 'error');
-    });
-
-    // Herramientas
-    document.getElementById('btn-font-dec').addEventListener('click', function() { changeFontSize(-2); });
-    document.getElementById('btn-font-inc').addEventListener('click', function() { changeFontSize(2); });
-    document.getElementById('btn-dark-toggle').addEventListener('click', toggleDarkMode);
-    document.getElementById('btn-font-sans').addEventListener('click', function() {
-        var sel = document.getElementById('font-select');
-        sel.value = "'DM Sans', 'Segoe UI', Helvetica, sans-serif";
-        changeFontFamily(sel.value);
-    });
-    document.getElementById('font-select').addEventListener('change', function() {
-        changeFontFamily(this.value);
-    });
-
-    // Busqueda
-    document.getElementById('search-input').addEventListener('input', function() {
-        var q = this.value;
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function(){ performSearch(q); }, 300);
-    });
-
-    // Acciones
-    document.getElementById('btn-copy').addEventListener('click', copyAllText);
-    document.getElementById('btn-pdf').addEventListener('click', exportPDF);
-
-    // Movil
-    document.getElementById('mobile-toggle').addEventListener('click', toggleSidebar);
-    document.getElementById('mobile-overlay').addEventListener('click', toggleSidebar);
-});
-
-// ===================== MANEJO DE ARCHIVO =====================
-async function handleFile(file) {
-    showToast('Cargando EPUB...', '');
-    try {
-        var arrayBuffer = await file.arrayBuffer();
-        await parseEPUB(arrayBuffer);
-        displayBookInfo();
-
-        // Actualizar zona de upload
-        var uploadZone = document.getElementById('upload-zone');
-        uploadZone.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i><p style="color:var(--success)">' + file.name + '<br><span style="font-size:11px;color:#777">Arrastra otro para reemplazar</span></p>';
-    } catch(e) {
-        console.error('Error cargando EPUB:', e);
-        showToast('Error: ' + e.message, 'error');
-    }
-}
+    
+    // Agregar algunos ejemplos en consola
+    console.log("✅ Traductor Quechua Boliviano cargado. Basado en documentos oficiales.");
 </script>
 </body>
 </html>
