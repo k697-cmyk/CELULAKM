@@ -1,386 +1,2635 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traductor Quechua Boliviano - Qallarinapaq</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a472a, #0e2a1a);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            background: rgba(255,255,240,0.95);
-            border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            backdrop-filter: blur(2px);
-        }
-        .header {
-            background: #2c5e3a;
-            color: #f9f3d9;
-            padding: 20px 30px;
-            text-align: center;
-            border-bottom: 4px solid #ffb347;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-            letter-spacing: 2px;
-        }
-        .header p {
-            margin: 8px 0 0;
-            opacity: 0.9;
-            font-style: italic;
-        }
-        .mode-selector {
-            display: flex;
-            background: #e9e6d7;
-            border-bottom: 1px solid #ccc;
-        }
-        .mode-btn {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            background: #e9e6d7;
-            transition: all 0.2s;
-            border: none;
-            font-size: 1.1rem;
-        }
-        .mode-btn.active {
-            background: #ffb347;
-            color: #2c5e3a;
-            border-bottom: 3px solid #2c5e3a;
-        }
-        .translator-panel {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 20px;
-            gap: 20px;
-        }
-        .input-area, .output-area {
-            flex: 1;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-        }
-        .input-area label, .output-area label {
-            font-weight: bold;
-            color: #2c5e3a;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-        textarea {
-            height: 180px;
-            padding: 15px;
-            font-size: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 20px;
-            resize: vertical;
-            font-family: monospace;
-            background: #fff;
-            transition: 0.2s;
-        }
-        textarea:focus {
-            border-color: #ffb347;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255,180,71,0.2);
-        }
-        button {
-            margin-top: 15px;
-            background: #2c5e3a;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 1rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        button:hover {
-            background: #ffb347;
-            color: #2c5e3a;
-            transform: scale(1.02);
-        }
-        .analysis {
-            background: #f4f1e1;
-            border-radius: 20px;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            border-left: 5px solid #ffb347;
-            font-family: monospace;
-        }
-        .footer {
-            background: #1e2e1c;
-            color: #bbb;
-            text-align: center;
-            padding: 12px;
-            font-size: 0.8rem;
-        }
-        @media (max-width: 700px) {
-            .translator-panel { flex-direction: column; }
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1>🗣️ QALLARINAPAQ - Kikinmanta</h1>
-        <p>Traductor Quechua Boliviano | Basado en el diccionario oficial y gramática de Plaza (2009)</p>
-    </div>
-    <div class="mode-selector">
-        <button class="mode-btn active" id="btnQuechuaEsp">📖 Quechua → Español</button>
-        <button class="mode-btn" id="btnEspQuechua">🔄 Español → Quechua</button>
-    </div>
-    <div class="translator-panel">
-        <div class="input-area">
-            <label id="inputLabel">📝 Texto en Quechua:</label>
-            <textarea id="inputText" placeholder="Ejemplo: Wasikunapi tiyachkanku. Imaynalla kachkanki?"></textarea>
-            <button id="translateBtn">✨ Traducir</button>
-        </div>
-        <div class="output-area">
-            <label>📖 Traducción:</label>
-            <textarea id="outputText" readonly placeholder="Aquí aparecerá la traducción..."></textarea>
-            <div class="analysis" id="analysisBox">
-                🔍 <strong>Análisis morfológico:</strong><br>
-                La traducción intenta separar raíces y sufijos usando el diccionario oficial.
-            </div>
-        </div>
-    </div>
-    <div class="footer">
-        ⚡ Basado en "Qhichwa Simipirwa" (ILCQ) y "Qallarinapaq" (Pedro Plaza). 
-        Reconoce sufijos: -kuna, -pi, -man, -manta, -chka, -rqa, -sqa, -nchik, -yku, -yki, -n, -wan, -paq, -taq, -lla, -puni, -ri, -chu, -ña, -raq, -sis, -yá, -ku, -chi, -ysi, -pu, -si.
-    </div>
-</div>
+ciclo-de-lecturas/
+├── public/
+│   ├── index.html
+│   ├── ranking.html
+│   ├── tutor.html
+│   ├── css/
+│   │   └── styles.css
+│   └── js/
+│       ├── firebase-config.js
+│       ├── estudiantes.js
+│       ├── libros.js
+│       ├── valoraciones.js
+│       ├── rankings.js
+│       └── app.js
+├── firestore.rules
+├── storage.rules
+├── firebase.json
+└── README.mdrules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-<script>
-    // ------------------------------------------------------------
-    // 1. DICCIONARIO QUECHUA - ESPAÑOL (oficial + palabras del curso)
-    // ------------------------------------------------------------
-    const dictQuechua = {
-        // Pronombres y básicos
-        "ñuqa": "yo", "qam": "tú", "pay": "él/ella",
-        "ñuqanchik": "nosotros/as (incl.)", "ñuqayku": "nosotros/as (excl.)",
-        "qamkuna": "ustedes", "paykuna": "ellos/ellas",
-        "kay": "esto/esta", "chay": "eso/esa", "jaqay": "aquello/aquella",
-        "ima": "qué", "pi": "quién", "may": "dónde", "imayna": "cómo",
-        "jayk'a": "cuánto", "mayqin": "cuál",
-        // Verbos comunes
-        "riy": "ir", "jamuy": "venir", "puriy": "caminar", "rimay": "hablar",
-        "llamk'ay": "trabajar", "mikhuy": "comer", "upyay": "beber",
-        "qhaway": "mirar", "yachay": "saber", "munay": "querer",
-        "ruway": "hacer", "kay": "ser/estar", "kachay": "enviar",
-        "tarpuy": "sembrar", "allay": "cavar", "wayk'uy": "cocinar",
-        "qillqay": "escribir", "ñawiriy": "leer", "tusuy": "bailar",
-        "waqay": "llorar", "asikuy": "reírse", "puñuy": "dormir",
-        "sayay": "pararse", "tiyakuy": "sentarse", "yanapay": "ayudar",
-        // Sustantivos comunes
-        "wasi": "casa", "llaqta": "pueblo", "ayllu": "comunidad",
-        "sach'a": "árbol", "yaku": "agua", "t'anta": "pan",
-        "papa": "papa", "sara": "maíz", "chakra": "chacra",
-        "inti": "sol", "killa": "luna", "p'unchaw": "día",
-        "tuta": "noche", "qhari": "hombre", "warmi": "mujer",
-        "wawa": "niño/bebé", "mama": "madre", "tata": "padre",
-        "sunqu": "corazón", "maki": "mano", "ñawi": "ojo",
-        "runasimipirwa": "diccionario", "yachaywasi": "escuela",
-        // Adjetivos
-        "allin": "bueno", "sumaq": "hermoso", "hatun": "grande",
-        "juch'uy": "pequeño", "chiri": "frío", "q'uñi": "caliente",
-        "yuraq": "blanco", "yana": "negro", "puka": "rojo",
-        "q'umir": "verde", "anqas": "azul"
-    };
-    
-    // Sufijos quechuas y su significado (basado en Qallarinapaq)
-    const sufijos = [
-        { suf: "kuna", tipo: "plural", es: "s/es (plural)" },
-        { suf: "pi", tipo: "locativo", es: "en" },
-        { suf: "man", tipo: "direccional", es: "a/hacia" },
-        { suf: "manta", tipo: "ablativo", es: "de/desde" },
-        { suf: "wan", tipo: "instrumental/acompañante", es: "con" },
-        { suf: "paq", tipo: "dativo", es: "para" },
-        { suf: "ta", tipo: "acusativo", es: "a (objeto directo)" },
-        { suf: "chka", tipo: "progresivo", es: "está -ndo" },
-        { suf: "rqa", tipo: "pasado directo", es: "(pretérito) -ó/-é" },
-        { suf: "sqa", tipo: "pasado indirecto/narrativo", es: "(pretérito) -ó (se dice que)" },
-        { suf: "nchik", tipo: "persona", es: "nosotros (inclusivo)" },
-        { suf: "yku", tipo: "persona", es: "nosotros (exclusivo)" },
-        { suf: "yki", tipo: "posesivo", es: "tu" },
-        { suf: "y", tipo: "posesivo/infinitivo", es: "mi / (infinitivo)" },
-        { suf: "n", tipo: "posesivo/3ps", es: "su (de él/ella)" },
-        { suf: "ni", tipo: "1ps", es: "yo (verbo)" },
-        { suf: "nki", tipo: "2ps", es: "tú (verbo)" },
-        { suf: "nku", tipo: "3pp", es: "ellos/ellas (verbo)" },
-        { suf: "lla", tipo: "limitador", es: "nomás/solamente" },
-        { suf: "puni", tipo: "enfático", es: "siempre/sí" },
-        { suf: "chu", tipo: "interrogativo/negativo", es: "? / no" },
-        { suf: "ri", tipo: "atenuativo", es: "un poco/pues" },
-        { suf: "ña", tipo: "terminativo", es: "ya" },
-        { suf: "raq", tipo: "anticipativo", es: "todavía/aún" },
-        { suf: "ku", tipo: "reflexivo", es: "se (a sí mismo)" },
-        { suf: "chi", tipo: "causativo", es: "hacer (que alguien haga algo)" },
-        { suf: "ysi", tipo: "coadyuvativo", es: "ayudar a" },
-        { suf: "pu", tipo: "benefactivo", es: "hacer para otro" },
-        { suf: "si", tipo: "reportativo", es: "(dicen que)" }
-    ];
-    
-    // Función para segmentar una palabra quechua: raíz + posibles sufijos
-    function segmentarPalabraQuechua(palabra) {
-        palabra = palabra.toLowerCase();
-        let sufijosEncontrados = [];
-        let raiz = palabra;
-        let cambio = false;
-        // Iteramos sobre sufijos conocidos (de mayor a menor longitud)
-        let sufijosOrdenados = [...sufijos].sort((a,b) => b.suf.length - a.suf.length);
-        for (let s of sufijosOrdenados) {
-            if (raiz.endsWith(s.suf)) {
-                sufijosEncontrados.unshift(s);  // los ponemos en orden de aparición
-                raiz = raiz.slice(0, -s.suf.length);
-                cambio = true;
-                // Reiniciamos para seguir buscando más sufijos en la nueva raíz
-                sufijosOrdenados = [...sufijos].sort((a,b) => b.suf.length - a.suf.length);
-            }
-        }
-        // Si no se encontró ningún sufijo, la raíz es la palabra completa
-        if (!cambio) raiz = palabra;
-        
-        // Buscar la raíz en el diccionario
-        let significadoRaiz = dictQuechua[raiz] || `[${raiz}?]`;
-        return { raiz, significadoRaiz, sufijos: sufijosEncontrados };
+:root {
+  --pixel-font: 'Press Start 2P', cursive;
+  --bg-dark: #1a0f07;
+  --bg-panel: #2c1810;
+  --bg-card: #3d2b1f;
+  --bg-input: #4a3728;
+  --bg-parchment: #f5e6c8;
+  --bg-parchment-dark: #e8d5a8;
+  --text-light: #f5e6c8;
+  --text-gold: #ffd700;
+  --text-dark: #2c1810;
+  --gold: #daa520;
+  --gold-bright: #ffd700;
+  --brown: #8b4513;
+  --brown-light: #a0522d;
+  --brown-dark: #654321;
+  --green: #2e8b57;
+  --green-light: #3cb371;
+  --red: #cd5c5c;
+  --red-light: #e07070;
+  --blue: #4682b4;
+  --border-color: #654321;
+  --shadow: rgba(0,0,0,0.6);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--pixel-font);
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(218,165,32,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(139,69,19,0.05) 0%, transparent 50%);
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: none;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+  border-left: 3px solid var(--brown-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brown);
+  border: 2px solid var(--brown-dark);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* ============ PIXEL BANNER ============ */
+.pixel-banner {
+  background: linear-gradient(180deg, #2c1810 0%, #1a0f07 100%);
+  border-top: 5px solid var(--gold);
+  border-bottom: 5px solid var(--gold);
+  padding: 18px 10px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-banner::before,
+.pixel-banner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--gold);
+  border: 3px solid var(--brown-dark);
+}
+
+.pixel-banner::before {
+  left: 15px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.pixel-banner::after {
+  right: 15px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.pixel-banner h1 {
+  font-size: clamp(14px, 3vw, 28px);
+  color: var(--gold-bright);
+  text-shadow: 3px 3px 0 #8b4513, 5px 5px 0 rgba(0,0,0,0.5);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.pixel-banner h2 {
+  font-size: clamp(8px, 1.8vw, 14px);
+  color: var(--text-parchment);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+}
+
+.pixel-banner h3 {
+  font-size: clamp(7px, 1.5vw, 11px);
+  color: var(--brown-light);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+}
+
+.pixel-banner p {
+  font-size: clamp(6px, 1.2vw, 9px);
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-top: 6px;
+}
+
+/* ============ PIXEL NAV ============ */
+.pixel-nav {
+  background: var(--bg-panel);
+  border-bottom: 4px solid var(--brown-dark);
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pixel-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pixel-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pixel-nav .nav-title {
+  font-size: clamp(8px, 1.5vw, 12px);
+  color: var(--gold);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-nav .nav-student-name {
+  font-size: clamp(7px, 1.2vw, 10px);
+  color: var(--green-light);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+/* ============ PIXEL BUTTONS ============ */
+.pixel-btn {
+  font-family: var(--pixel-font);
+  font-size: clamp(7px, 1.2vw, 10px);
+  padding: 8px 16px;
+  border: 3px solid;
+  border-color: var(--gold-bright) var(--brown-dark) var(--brown-dark) var(--gold-bright);
+  background: var(--brown-light);
+  color: var(--text-light);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
+  transition: all 0.08s;
+  white-space: nowrap;
+}
+
+.pixel-btn:hover {
+  background: var(--gold);
+  color: var(--bg-dark);
+  text-shadow: none;
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+
+.pixel-btn:active {
+  border-color: var(--brown-dark) var(--gold-bright) var(--gold-bright) var(--brown-dark);
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.pixel-btn-gold {
+  background: var(--gold);
+  color: var(--bg-dark);
+  border-color: #fff5a0 var(--brown) var(--brown) #fff5a0;
+  text-shadow: none;
+}
+
+.pixel-btn-gold:hover {
+  background: var(--gold-bright);
+  color: var(--bg-dark);
+}
+
+.pixel-btn-green {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green-light) #1a5c3a #1a5c3a var(--green-light);
+}
+
+.pixel-btn-green:hover {
+  background: var(--green-light);
+  color: #fff;
+}
+
+.pixel-btn-red {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red-light) #8b2e2e #8b2e2e var(--red-light);
+}
+
+.pixel-btn-red:hover {
+  background: var(--red-light);
+  color: #fff;
+}
+
+.pixel-btn-blue {
+  background: var(--blue);
+  color: #fff;
+  border-color: #6fa8d6 #2c5a7a #2c5a7a #6fa8d6;
+}
+
+.pixel-btn-blue:hover {
+  background: #5a9cc5;
+  color: #fff;
+}
+
+.pixel-btn-sm {
+  font-size: 7px;
+  padding: 5px 10px;
+  border-width: 2px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.pixel-btn-sm:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.pixel-btn-lg {
+  font-size: clamp(9px, 1.8vw, 14px);
+  padding: 14px 28px;
+  border-width: 4px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+}
+
+/* ============ PIXEL PANEL ============ */
+.pixel-panel {
+  background: var(--bg-card);
+  border: 4px solid var(--gold);
+  box-shadow:
+    0 0 0 4px var(--brown-dark),
+    6px 6px 0 rgba(0,0,0,0.4);
+  padding: 20px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.pixel-panel-title {
+  font-size: clamp(9px, 1.8vw, 14px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--brown-dark);
+  position: relative;
+}
+
+.pixel-panel-title::before,
+.pixel-panel-title::after {
+  content: '◆';
+  color: var(--gold);
+  margin: 0 8px;
+  font-size: 0.7em;
+}
+
+/* ============ PIXEL CARD (LIBROS) ============ */
+.pixel-card {
+  background: var(--bg-card);
+  border: 3px solid var(--brown-dark);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.pixel-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold);
+  box-shadow: 4px 8px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-card-cover {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+  border-bottom: 3px solid var(--brown-dark);
+}
+
+.pixel-card-placeholder {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown-dark) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 3px solid var(--brown-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-card-placeholder::before {
+  content: '📖';
+  font-size: 40px;
+  filter: grayscale(30%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pixel-card-placeholder span {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--gold);
+  text-align: center;
+  padding: 5px;
+  position: absolute;
+  bottom: 10px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+}
+
+.pixel-card-body {
+  padding: 10px;
+}
+
+.pixel-card-body h5 {
+  font-family: var(--pixel-font);
+  font-size: clamp(7px, 1.2vw, 10px);
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-bottom: 6px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.pixel-card-body p {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-light);
+  opacity: 0.7;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pixel-card-badge {
+  display: inline-block;
+  font-family: var(--pixel-font);
+  font-size: 6px;
+  padding: 3px 6px;
+  background: var(--brown);
+  color: var(--gold);
+  border: 2px solid var(--brown-dark);
+  margin-top: 4px;
+}
+
+.pixel-card-stars {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* ============ PIXEL FORM INPUTS ============ */
+.pixel-input,
+.pixel-select,
+.pixel-textarea {
+  font-family: var(--pixel-font);
+  font-size: clamp(8px, 1.4vw, 11px);
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 3px solid;
+  border-color: var(--brown-dark) var(--gold) var(--gold) var(--brown-dark);
+  color: var(--text-light);
+  width: 100%;
+  outline: none;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.pixel-input:focus,
+.pixel-select:focus,
+.pixel-textarea:focus {
+  border-color: var(--gold-bright);
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.3), 0 0 8px rgba(218,165,32,0.3);
+}
+
+.pixel-input::placeholder,
+.pixel-textarea::placeholder {
+  color: rgba(245,230,200,0.3);
+}
+
+.pixel-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.pixel-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23daa520' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 30px;
+}
+
+.pixel-select option {
+  background: var(--bg-panel);
+  color: var(--text-light);
+}
+
+.pixel-label {
+  font-family: var(--pixel-font);
+  font-size: clamp(7px, 1.2vw, 9px);
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ============ PIXEL FILE INPUT ============ */
+.pixel-file-input {
+  position: relative;
+  display: inline-block;
+}
+
+.pixel-file-input input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+}
+
+/* ============ PIXEL TABLE ============ */
+.pixel-table-wrapper {
+  overflow-x: auto;
+  border: 3px solid var(--brown-dark);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+}
+
+.pixel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--pixel-font);
+  font-size: clamp(6px, 1.1vw, 9px);
+}
+
+.pixel-table thead {
+  background: var(--brown-dark);
+}
+
+.pixel-table th {
+  padding: 10px 8px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  text-align: left;
+  border-bottom: 3px solid var(--gold);
+  white-space: nowrap;
+}
+
+.pixel-table td {
+  padding: 8px;
+  border-bottom: 2px solid rgba(101,67,33,0.5);
+  vertical-align: middle;
+}
+
+.pixel-table tbody tr {
+  background: var(--bg-card);
+  transition: background 0.1s;
+}
+
+.pixel-table tbody tr:hover {
+  background: rgba(218,165,32,0.1);
+}
+
+.pixel-table tbody tr:nth-child(even) {
+  background: rgba(44,24,16,0.8);
+}
+
+.pixel-table tbody tr:nth-child(even):hover {
+  background: rgba(218,165,32,0.1);
+}
+
+/* ============ PIXEL MODAL ============ */
+.pixel-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.pixel-modal-overlay.active {
+  display: flex;
+}
+
+.pixel-modal {
+  background: var(--bg-panel);
+  border: 4px solid var(--gold);
+  box-shadow:
+    0 0 0 4px var(--brown-dark),
+    0 0 0 8px rgba(0,0,0,0.5),
+    8px 8px 0 rgba(0,0,0,0.6);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.pixel-modal-header {
+  background: var(--brown-dark);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--gold);
+}
+
+.pixel-modal-header h3 {
+  font-family: var(--pixel-font);
+  font-size: clamp(8px, 1.6vw, 12px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-modal-close {
+  font-family: var(--pixel-font);
+  font-size: 14px;
+  background: var(--red);
+  color: #fff;
+  border: 2px solid var(--red-light);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pixel-modal-close:hover {
+  background: var(--red-light);
+}
+
+.pixel-modal-body {
+  padding: 20px;
+}
+
+/* ============ PIXEL STARS ============ */
+.pixel-star {
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.1s;
+  display: inline-block;
+}
+
+.pixel-star.star-filled {
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 #8b6914, 0 0 8px rgba(255,215,0,0.4);
+}
+
+.pixel-star.star-empty {
+  color: var(--brown-dark);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-star.star-hover {
+  transform: scale(1.3);
+}
+
+.pixel-star-static {
+  cursor: default;
+}
+
+.pixel-stars-interactive {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+/* ============ PIXEL TOAST ============ */
+#toast-container {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pixel-toast {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  padding: 12px 18px;
+  border: 3px solid;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.3s;
+  max-width: 320px;
+}
+
+.pixel-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pixel-toast-success {
+  background: var(--green);
+  border-color: var(--green-light);
+}
+
+.pixel-toast-error {
+  background: var(--red);
+  border-color: var(--red-light);
+}
+
+.pixel-toast-info {
+  background: var(--blue);
+  border-color: #6fa8d6;
+}
+
+/* ============ LOGIN SCREEN ============ */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at center, rgba(218,165,32,0.08) 0%, transparent 60%),
+    var(--bg-dark);
+}
+
+.login-title {
+  font-size: clamp(16px, 4vw, 36px);
+  color: var(--gold-bright);
+  text-shadow: 3px 3px 0 #8b4513, 5px 5px 0 rgba(0,0,0,0.6);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.login-subtitle {
+  font-size: clamp(8px, 2vw, 14px);
+  color: var(--text-light);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.login-area {
+  font-size: clamp(7px, 1.5vw, 11px);
+  color: var(--brown-light);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.login-footer {
+  font-size: clamp(6px, 1.2vw, 8px);
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  margin-top: 16px;
+}
+
+.login-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.login-pixel-art {
+  margin: 20px 0;
+  font-size: 50px;
+  text-align: center;
+  animation: floatBook 3s ease-in-out infinite;
+}
+
+@keyframes floatBook {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.login-divider {
+  width: 200px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 15px 0;
+  border: none;
+}
+
+/* ============ STUDENT SELECT ============ */
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.student-select-card {
+  background: var(--bg-card);
+  border: 3px solid var(--brown-dark);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.1s;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.student-select-card:hover {
+  border-color: var(--gold);
+  background: rgba(218,165,32,0.15);
+  transform: translateY(-2px);
+  box-shadow: 2px 4px 0 rgba(0,0,0,0.4);
+}
+
+.student-select-card .student-avatar {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 8px;
+  border-radius: 0;
+  border: 3px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pixel-font);
+  font-size: 16px;
+  background: var(--brown-dark);
+}
+
+.student-select-card .student-name {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-light);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  line-height: 1.4;
+}
+
+/* ============ BOOKS GRID ============ */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 10px 0;
+}
+
+/* ============ BOOK DETAIL ============ */
+.book-detail-cover {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 4px solid var(--gold);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.book-detail-placeholder {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown-dark) 100%);
+  border: 4px solid var(--gold);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  margin: 0 auto 16px;
+}
+
+.book-detail-info {
+  text-align: center;
+}
+
+.book-detail-info h4 {
+  font-family: var(--pixel-font);
+  font-size: clamp(9px, 2vw, 14px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+}
+
+.book-detail-info p {
+  font-family: var(--pixel-font);
+  font-size: clamp(7px, 1.3vw, 10px);
+  color: var(--text-light);
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+.book-detail-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ============ RATING ITEM ============ */
+.rating-item {
+  background: rgba(61,43,31,0.6);
+  border: 2px solid var(--brown-dark);
+  padding: 12px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.rating-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rating-item-book {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+.rating-item-date {
+  font-family: var(--pixel-font);
+  font-size: 6px;
+  color: rgba(245,230,200,0.5);
+}
+
+.rating-item-comment {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-top: 6px;
+  word-break: break-word;
+}
+
+/* ============ RANKING ============ */
+.ranking-position {
+  font-family: var(--pixel-font);
+  font-size: clamp(10px, 2vw, 16px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  text-align: center;
+  min-width: 40px;
+}
+
+.ranking-position.pos-1 {
+  color: #ffd700;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 12px rgba(255,215,0,0.5);
+}
+
+.ranking-position.pos-2 {
+  color: #c0c0c0;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 8px rgba(192,192,192,0.3);
+}
+
+.ranking-position.pos-3 {
+  color: #cd7f32;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5), 0 0 8px rgba(205,127,50,0.3);
+}
+
+.ranking-cover {
+  width: 40px;
+  height: 54px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 2px solid var(--brown-dark);
+}
+
+.ranking-cover-placeholder {
+  width: 40px;
+  height: 54px;
+  background: var(--brown-dark);
+  border: 2px solid var(--brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* ============ TUTOR TABS ============ */
+.tutor-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--bg-panel);
+  border-bottom: 4px solid var(--brown-dark);
+}
+
+.tutor-tab {
+  font-family: var(--pixel-font);
+  font-size: clamp(6px, 1.2vw, 9px);
+  padding: 12px 16px;
+  background: var(--bg-card);
+  color: var(--text-light);
+  border: none;
+  border-right: 3px solid var(--brown-dark);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  transition: all 0.1s;
+}
+
+.tutor-tab:hover {
+  background: rgba(218,165,32,0.2);
+  color: var(--gold);
+}
+
+.tutor-tab.active {
+  background: var(--bg-dark);
+  color: var(--gold-bright);
+  border-bottom: 3px solid var(--gold);
+}
+
+.tutor-content {
+  display: none;
+  padding: 20px;
+  background: var(--bg-dark);
+  min-height: 60vh;
+}
+
+.tutor-content.active {
+  display: block;
+}
+
+/* ============ STATS CARDS ============ */
+.stat-card {
+  background: var(--bg-card);
+  border: 3px solid var(--brown-dark);
+  padding: 16px;
+  text-align: center;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+}
+
+.stat-card-value {
+  font-family: var(--pixel-font);
+  font-size: clamp(16px, 3vw, 28px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+
+.stat-card-label {
+  font-family: var(--pixel-font);
+  font-size: clamp(6px, 1.2vw, 9px);
+  color: var(--text-light);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-top: 8px;
+}
+
+/* ============ SECTION TITLES ============ */
+.section-title {
+  font-family: var(--pixel-font);
+  font-size: clamp(9px, 2vw, 14px);
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--brown-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::before {
+  content: '▶';
+  color: var(--gold);
+  font-size: 0.7em;
+}
+
+/* ============ FILTER BAR ============ */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(44,24,16,0.5);
+  border: 2px solid var(--brown-dark);
+}
+
+.filter-bar .filter-group {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* ============ LOADING ============ */
+.pixel-loading {
+  text-align: center;
+  padding: 40px;
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+.pixel-loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--gold);
+  animation: pixelBlink 0.6s infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes pixelBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ============ EMPTY STATE ============ */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  color: rgba(245,230,200,0.4);
+}
+
+.empty-state-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* ============ MISC ============ */
+.text-gold {
+  color: var(--gold) !important;
+}
+
+.text-green {
+  color: var(--green-light) !important;
+}
+
+.text-red {
+  color: var(--red-light) !important;
+}
+
+.mb-pixel {
+  margin-bottom: 16px;
+}
+
+.mt-pixel {
+  margin-top: 16px;
+}
+
+.pixel-divider {
+  border: none;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--brown-dark), transparent);
+  margin: 16px 0;
+}
+
+.pixel-badge-count {
+  display: inline-block;
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  padding: 2px 6px;
+  background: var(--red);
+  color: #fff;
+  border: 2px solid var(--red-light);
+  margin-left: 4px;
+}
+
+.pixel-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--gold);
+  text-decoration: none;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  padding: 6px 0;
+  transition: color 0.1s;
+}
+
+.pixel-back-link:hover {
+  color: var(--gold-bright);
+}
+
+/* ============ BOOK DETAIL RATINGS LIST ============ */
+.book-ratings-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+/* ============ MY RATINGS SECTION ============ */
+.my-ratings-section {
+  margin-top: 20px;
+}
+
+/* ============ TUTOR CODE INPUT ============ */
+.tutor-code-area {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.tutor-code-area .pixel-input {
+  max-width: 200px;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 8px;
+  margin: 10px auto;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .student-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+  }
+
+  .pixel-panel {
+    padding: 12px;
+  }
+
+  .pixel-modal {
+    max-width: 95%;
+  }
+
+  .pixel-modal-body {
+    padding: 12px;
+  }
+
+  .tutor-tab {
+    padding: 8px 10px;
+    font-size: 6px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-bar .filter-group {
+    min-width: 100%;
+  }
+
+  .book-detail-cover,
+  .book-detail-placeholder {
+    max-width: 200px;
+  }
+
+  .login-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .student-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pixel-btn-lg {
+    padding: 10px 20px;
+  }
+
+  .pixel-banner {
+    padding: 12px 8px;
+  }
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease forwards;
+}
+
+/* ============ TUTOR BOOK CARD (ADMIN) ============ */
+.tutor-book-card {
+  background: var(--bg-card);
+  border: 3px solid var(--brown-dark);
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.tutor-book-card-cover {
+  width: 70px;
+  height: 94px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 2px solid var(--brown-dark);
+  flex-shrink: 0;
+}
+
+.tutor-book-card-cover-placeholder {
+  width: 70px;
+  height: 94px;
+  background: var(--brown-dark);
+  border: 2px solid var(--brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.tutor-book-card-info {
+  flex: 1;
+  min-width: 180px;
+}
+
+.tutor-book-card-info h5 {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+}
+
+.tutor-book-card-info p {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text-light);
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+
+.tutor-book-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ============ TUTOR STUDENT CARD ============ */
+.tutor-student-card {
+  background: var(--bg-card);
+  border: 2px solid var(--brown-dark);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.tutor-student-card-info {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text-light);
+}
+
+.tutor-student-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ============ PIXEL DECORATIONS ============ */
+.pixel-corner-tl,
+.pixel-corner-tr,
+.pixel-corner-bl,
+.pixel-corner-br {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+}
+
+.pixel-corner-tl { top: -2px; left: -2px; }
+.pixel-corner-tr { top: -2px; right: -2px; }
+.pixel-corner-bl { bottom: -2px; left: -2px; }
+.pixel-corner-br { bottom: -2px; right: -2px; }
+
+/* ============ HIDDEN ============ */
+.hidden {
+  display: none !important;
+}const firebaseConfig = {
+  apiKey: "AIzaSyCDmWUBk7bpTI-sIEYqHn_sTCaYTSuekLA",
+  authDomain: "celulakmt.firebaseapp.com",
+  databaseURL: "https://celulakmt-default-rtdb.firebaseio.com",
+  projectId: "celulakmt",
+  storageBucket: "celulakmt.firebasestorage.app",
+  messagingSenderId: "623088700057",
+  appId: "1:623088700057:web:fffb8fccbae5ff6d834608",
+  measurementId: "G-CY1HY229XX"
+};
+
+firebase.initializeApp(firebaseConfig);
+window.db = firebase.firestore();
+window.storage = firebase.storage();window.EstudiantesModule = {
+  async getAll() {
+    try {
+      const snapshot = await window.db.collection('estudiantes').orderBy('apellido').orderBy('nombre').get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.error('Error al obtener estudiantes:', e);
+      return [];
     }
-    
-    // Traducción de frase completa (intento palabra por palabra)
-    function traducirQuechuaAEsp(frase) {
-        let palabras = frase.trim().split(/\s+/);
-        let traduccionPalabras = [];
-        let analisisDetallado = [];
-        
-        for (let pal of palabras) {
-            let limpia = pal.replace(/[.,!?;:]/g, '');
-            let segmentado = segmentarPalabraQuechua(limpia);
-            let trad = segmentado.significadoRaiz;
-            
-            // agregar traducción de sufijos
-            let sufText = "";
-            for (let s of segmentado.sufijos) {
-                sufText += ` +${s.suf} (${s.es})`;
-                // Para mejorar la traducción, ajustamos verbos según sufijos relevantes
-                if (s.suf === "chka") trad = "está " + trad + "ndo";
-                if (s.suf === "rqa" && !trad.includes("estaba")) trad = trad + " (pasado)";
-                if (s.suf === "sqa") trad = trad + " (dicen que)";
-                if (s.suf === "kuna") trad = trad + "s";
-                if (s.suf === "nku") trad = trad + " (ellos/ellas)";
-                if (s.suf === "ni") trad = trad + " (yo)";
-                if (s.suf === "nki") trad = trad + " (tú)";
-            }
-            // Si es un verbo en infinitivo (termina en y sin sufijos) se ajusta
-            if (limpia.endsWith("y") && segmentado.sufijos.length === 0 && dictQuechua[limpia]) {
-                trad = trad + "r";
-            }
-            traduccionPalabras.push(trad);
-            analisisDetallado.push(`${limpia} → raíz: ${segmentado.raiz} (${segmentado.significadoRaiz}) | sufijos: [${segmentado.sufijos.map(s=>s.suf).join(", ")}]`);
-        }
-        let traduccionFinal = traduccionPalabras.join(" ");
-        return { traduccion: traduccionFinal, analisis: analisisDetallado.join("\n") };
+  },
+
+  async create(nombre, apellido) {
+    try {
+      const snapshot = await window.db.collection('estudiantes').get();
+      if (snapshot.size >= 26) {
+        throw new Error('Maximo 26 estudiantes alcanzado');
+      }
+      const docRef = await window.db.collection('estudiantes').add({
+        nombre: nombre.trim(),
+        apellido: apellido.trim()
+      });
+      return docRef.id;
+    } catch (e) {
+      console.error('Error al crear estudiante:', e);
+      throw e;
     }
-    
-    // Traducción Español -> Quechua (búsqueda inversa en diccionario)
-    function traducirEspAQuechua(frase) {
-        let palabras = frase.trim().split(/\s+/);
-        let tradWords = [];
-        for (let pal of palabras) {
-            let encontrado = null;
-            for (let [q, es] of Object.entries(dictQuechua)) {
-                if (es.toLowerCase() === pal.toLowerCase()) {
-                    encontrado = q;
-                    break;
-                }
-            }
-            // Si no encuentra, busca palabras similares
-            if (!encontrado) {
-                for (let [q, es] of Object.entries(dictQuechua)) {
-                    if (es.toLowerCase().includes(pal.toLowerCase()) || pal.toLowerCase().includes(es.toLowerCase())) {
-                        encontrado = q;
-                        break;
-                    }
-                }
-            }
-            tradWords.push(encontrado || `[${pal}?]`);
-        }
-        let traduccion = tradWords.join(" ");
-        let analisis = "Traducción directa por diccionario (sin sufijos, solo raíces). Para mejor precisión usa el modo Quechua→Español.";
-        return { traduccion, analisis };
+  },
+
+  async update(id, nombre, apellido) {
+    try {
+      await window.db.collection('estudiantes').doc(id).update({
+        nombre: nombre.trim(),
+        apellido: apellido.trim()
+      });
+    } catch (e) {
+      console.error('Error al actualizar estudiante:', e);
+      throw e;
     }
-    
-    // Variables de UI
-    let modoActual = "quechuaEsp"; // quechuaEsp / espQuechua
-    const inputText = document.getElementById("inputText");
-    const outputText = document.getElementById("outputText");
-    const analysisBox = document.getElementById("analysisBox");
-    const translateBtn = document.getElementById("translateBtn");
-    const btnQuechuaEsp = document.getElementById("btnQuechuaEsp");
-    const btnEspQuechua = document.getElementById("btnEspQuechua");
-    const inputLabel = document.getElementById("inputLabel");
-    
-    // Eventos de modo
-    btnQuechuaEsp.addEventListener("click", () => {
-        modoActual = "quechuaEsp";
-        btnQuechuaEsp.classList.add("active");
-        btnEspQuechua.classList.remove("active");
-        inputLabel.innerText = "📝 Texto en Quechua:";
-        inputText.placeholder = "Ejemplo: Wasikunapi tiyachkanku. Imaynalla kachkanki?";
-        analysisBox.innerHTML = "🔍 <strong>Análisis morfológico:</strong><br>Se intentará separar raíces y sufijos usando el diccionario oficial.";
-        outputText.value = "";
-        inputText.value = "";
+  },
+
+  async delete(id) {
+    try {
+      const ratingsSnapshot = await window.db.collection('valoraciones').where('estudianteId', '==', id).get();
+      const batch = window.db.batch();
+      ratingsSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      batch.delete(window.db.collection('estudiantes').doc(id));
+      await batch.commit();
+    } catch (e) {
+      console.error('Error al eliminar estudiante:', e);
+      throw e;
+    }
+  },
+
+  async getById(id) {
+    try {
+      const doc = await window.db.collection('estudiantes').doc(id).get();
+      if (doc.exists) {
+        return { id: doc.id, ...doc.data() };
+      }
+      return null;
+    } catch (e) {
+      console.error('Error al obtener estudiante:', e);
+      return null;
+    }
+  }
+};window.LibrosModule = {
+  async getAll() {
+    try {
+      const snapshot = await window.db.collection('libros').orderBy('titulo').get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.error('Error al obtener libros:', e);
+      return [];
+    }
+  },
+
+  async create(titulo, autor, genero) {
+    try {
+      const snapshot = await window.db.collection('libros').get();
+      if (snapshot.size >= 30) {
+        throw new Error('Maximo 30 libros alcanzado');
+      }
+      const docRef = await window.db.collection('libros').add({
+        titulo: titulo.trim(),
+        autor: autor.trim(),
+        genero: genero.trim(),
+        portadaUrl: '',
+        pdfUrl: ''
+      });
+      return docRef.id;
+    } catch (e) {
+      console.error('Error al crear libro:', e);
+      throw e;
+    }
+  },
+
+  async update(id, data) {
+    try {
+      await window.db.collection('libros').doc(id).update(data);
+    } catch (e) {
+      console.error('Error al actualizar libro:', e);
+      throw e;
+    }
+  },
+
+  async delete(id) {
+    try {
+      const doc = await window.db.collection('libros').doc(id).get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.portadaUrl) {
+          try {
+            await window.storage.refFromURL(data.portadaUrl).delete();
+          } catch (err) { }
+        }
+        if (data.pdfUrl) {
+          try {
+            await window.storage.refFromURL(data.pdfUrl).delete();
+          } catch (err) { }
+        }
+        const ratingsSnapshot = await window.db.collection('valoraciones').where('libroId', '==', id).get();
+        const batch = window.db.batch();
+        ratingsSnapshot.docs.forEach(rdoc => {
+          batch.delete(rdoc.ref);
+        });
+        batch.delete(window.db.collection('libros').doc(id));
+        await batch.commit();
+      }
+    } catch (e) {
+      console.error('Error al eliminar libro:', e);
+      throw e;
+    }
+  },
+
+  async uploadCover(id, file) {
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const ref = window.storage.ref('portadas/' + id + '_' + safeName);
+      await ref.put(file);
+      const url = await ref.getDownloadURL();
+      await window.db.collection('libros').doc(id).update({ portadaUrl: url });
+      return url;
+    } catch (e) {
+      console.error('Error al subir portada:', e);
+      throw e;
+    }
+  },
+
+  async deleteCover(id) {
+    try {
+      const doc = await window.db.collection('libros').doc(id).get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.portadaUrl) {
+          try {
+            await window.storage.refFromURL(data.portadaUrl).delete();
+          } catch (err) { }
+          await window.db.collection('libros').doc(id).update({ portadaUrl: '' });
+        }
+      }
+    } catch (e) {
+      console.error('Error al eliminar portada:', e);
+      throw e;
+    }
+  },
+
+  async uploadPDF(id, file) {
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const ref = window.storage.ref('pdfs/' + id + '_' + safeName);
+      await ref.put(file);
+      const url = await ref.getDownloadURL();
+      await window.db.collection('libros').doc(id).update({ pdfUrl: url });
+      return url;
+    } catch (e) {
+      console.error('Error al subir PDF:', e);
+      throw e;
+    }
+  },
+
+  async deletePDF(id) {
+    try {
+      const doc = await window.db.collection('libros').doc(id).get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.pdfUrl) {
+          try {
+            await window.storage.refFromURL(data.pdfUrl).delete();
+          } catch (err) { }
+          await window.db.collection('libros').doc(id).update({ pdfUrl: '' });
+        }
+      }
+    } catch (e) {
+      console.error('Error al eliminar PDF:', e);
+      throw e;
+    }
+  },
+
+  async getById(id) {
+    try {
+      const doc = await window.db.collection('libros').doc(id).get();
+      if (doc.exists) {
+        return { id: doc.id, ...doc.data() };
+      }
+      return null;
+    } catch (e) {
+      console.error('Error al obtener libro:', e);
+      return null;
+    }
+  }
+};window.ValoracionesModule = {
+  async getAll() {
+    try {
+      const snapshot = await window.db.collection('valoraciones').orderBy('fecha', 'desc').get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.error('Error al obtener valoraciones:', e);
+      return [];
+    }
+  },
+
+  async getByStudent(estudianteId) {
+    try {
+      const snapshot = await window.db.collection('valoraciones')
+        .where('estudianteId', '==', estudianteId)
+        .orderBy('fecha', 'desc')
+        .get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.error('Error al obtener valoraciones del estudiante:', e);
+      return [];
+    }
+  },
+
+  async getByBook(libroId) {
+    try {
+      const snapshot = await window.db.collection('valoraciones')
+        .where('libroId', '==', libroId)
+        .orderBy('fecha', 'desc')
+        .get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      console.error('Error al obtener valoraciones del libro:', e);
+      return [];
+    }
+  },
+
+  async create(estudianteId, libroId, puntaje, comentario) {
+    try {
+      if (!comentario || comentario.trim() === '') {
+        throw new Error('El comentario es obligatorio');
+      }
+      if (puntaje < 1 || puntaje > 5) {
+        throw new Error('Puntaje invalido');
+      }
+      const docRef = await window.db.collection('valoraciones').add({
+        estudianteId: estudianteId,
+        libroId: libroId,
+        puntaje: puntaje,
+        comentario: comentario.trim(),
+        fecha: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      return docRef.id;
+    } catch (e) {
+      console.error('Error al crear valoracion:', e);
+      throw e;
+    }
+  },
+
+  async delete(id) {
+    try {
+      await window.db.collection('valoraciones').doc(id).delete();
+    } catch (e) {
+      console.error('Error al eliminar valoracion:', e);
+      throw e;
+    }
+  }
+};window.RankingsModule = {
+  async getStudentRanking() {
+    try {
+      const [estudiantes, valoraciones] = await Promise.all([
+        window.EstudiantesModule.getAll(),
+        window.ValoracionesModule.getAll()
+      ]);
+
+      const conteo = {};
+      valoraciones.forEach(v => {
+        if (!conteo[v.estudianteId]) {
+          conteo[v.estudianteId] = { total: 0, ultimaFecha: new Date(0) };
+        }
+        conteo[v.estudianteId].total++;
+        const fecha = v.fecha && v.fecha.toDate ? v.fecha.toDate() : new Date(0);
+        if (fecha > conteo[v.estudianteId].ultimaFecha) {
+          conteo[v.estudianteId].ultimaFecha = fecha;
+        }
+      });
+
+      const ranking = estudiantes.map(e => ({
+        ...e,
+        totalValoraciones: conteo[e.id] ? conteo[e.id].total : 0,
+        ultimaFecha: conteo[e.id] ? conteo[e.id].ultimaFecha : new Date(0)
+      }));
+
+      ranking.sort((a, b) => {
+        if (b.totalValoraciones !== a.totalValoraciones) {
+          return b.totalValoraciones - a.totalValoraciones;
+        }
+        return b.ultimaFecha - a.ultimaFecha;
+      });
+
+      return ranking;
+    } catch (e) {
+      console.error('Error al obtener ranking de estudiantes:', e);
+      return [];
+    }
+  },
+
+  async getBookRanking() {
+    try {
+      const [libros, valoraciones] = await Promise.all([
+        window.LibrosModule.getAll(),
+        window.ValoracionesModule.getAll()
+      ]);
+
+      const datos = {};
+      valoraciones.forEach(v => {
+        if (!datos[v.libroId]) {
+          datos[v.libroId] = { totalPuntaje: 0, cantidad: 0 };
+        }
+        datos[v.libroId].totalPuntaje += v.puntaje;
+        datos[v.libroId].cantidad++;
+      });
+
+      const ranking = libros.map(l => ({
+        ...l,
+        promedio: datos[l.id] ? (datos[l.id].totalPuntaje / datos[l.id].cantidad) : 0,
+        cantidadValoraciones: datos[l.id] ? datos[l.id].cantidad : 0
+      }));
+
+      ranking.sort((a, b) => {
+        if (b.promedio !== a.promedio) {
+          return b.promedio - a.promedio;
+        }
+        return b.cantidadValoraciones - a.cantidadValoraciones;
+      });
+
+      return ranking;
+    } catch (e) {
+      console.error('Error al obtener ranking de libros:', e);
+      return [];
+    }
+  }
+};window.App = {
+  currentStudentId: null,
+  currentStudentName: '',
+  allStudents: [],
+  allBooks: [],
+  allRatings: [],
+  selectedRatingScore: 0,
+  ratingBookId: null,
+
+  /* ====== NOTIFICACIONES ====== */
+  showNotification(message, type) {
+    type = type || 'success';
+    var container = document.getElementById('toast-container');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'pixel-toast pixel-toast-' + type;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(function () { toast.classList.add('show'); }, 20);
+    setTimeout(function () {
+      toast.classList.remove('show');
+      setTimeout(function () { toast.remove(); }, 300);
+    }, 3000);
+  },
+
+  /* ====== UTILIDADES ====== */
+  renderStars(puntaje, interactive) {
+    var html = '';
+    for (var i = 1; i <= 5; i++) {
+      if (interactive) {
+        html += '<span class="pixel-star ' + (i <= puntaje ? 'star-filled' : 'star-empty') + '" data-score="' + i + '" onclick="App.setRatingScore(' + i + ')">★</span>';
+      } else {
+        html += '<span class="pixel-star pixel-star-static ' + (i <= puntaje ? 'star-filled' : 'star-empty') + '">★</span>';
+      }
+    }
+    return html;
+  },
+
+  formatDate(timestamp) {
+    if (!timestamp) return 'Sin fecha';
+    var d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    var day = d.getDate().toString().padStart(2, '0');
+    var month = (d.getMonth() + 1).toString().padStart(2, '0');
+    var year = d.getFullYear();
+    var hours = d.getHours().toString().padStart(2, '0');
+    var mins = d.getMinutes().toString().padStart(2, '0');
+    return day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
+  },
+
+  getStudentName(id) {
+    var s = this.allStudents.find(function (e) { return e.id === id; });
+    return s ? s.nombre + ' ' + s.apellido : 'Desconocido';
+  },
+
+  getBookTitle(id) {
+    var b = this.allBooks.find(function (e) { return e.id === id; });
+    return b ? b.titulo : 'Desconocido';
+  },
+
+  getBookCover(id) {
+    var b = this.allBooks.find(function (e) { return e.id === id; });
+    return b ? b.portadaUrl : '';
+  },
+
+  /* ====== INDEX PAGE ====== */
+  initIndex() {
+    var self = this;
+    var studentId = sessionStorage.getItem('studentId');
+    if (studentId) {
+      self.currentStudentId = studentId;
+      self.currentStudentName = sessionStorage.getItem('studentName') || '';
+      self.showMainApp();
+    } else {
+      self.showLoginScreen();
+    }
+  },
+
+  showLoginScreen() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+  },
+
+  showMainApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    var nameEl = document.getElementById('nav-student-name');
+    if (nameEl) {
+      nameEl.textContent = this.currentStudentName;
+    }
+    this.loadBooks();
+    this.loadMyRatings();
+  },
+
+  showStudentSelector() {
+    var self = this;
+    var modal = document.getElementById('modal-student-select');
+    var grid = document.getElementById('student-select-grid');
+    grid.innerHTML = '<div class="pixel-loading">Cargando estudiantes</div>';
+    modal.classList.add('active');
+
+    self.allStudents = [];
+    window.EstudiantesModule.getAll().then(function (students) {
+      self.allStudents = students;
+      if (students.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><span class="empty-state-icon">👤</span>No hay estudiantes registrados</div>';
+        return;
+      }
+      var html = '';
+      var colors = ['#8b4513', '#2e8b57', '#4682b4', '#cd5c5c', '#daa520', '#6a5acd', '#20b2aa', '#d2691e', '#708090', '#b22222', '#3cb371', '#db7093', '#5f9ea0', '#9acd32', '#ff8c00', '#6495ed', '#ff69b4', '#00ced1', '#ffc0cb', '#add8e6', '#90ee90', '#f0e68c', '#dda0dd', '#b0c4de', '#ffa07a', '#87ceeb'];
+      students.forEach(function (s, idx) {
+        var initial = s.nombre.charAt(0).toUpperCase();
+        var color = colors[idx % colors.length];
+        html += '<div class="student-select-card" onclick="App.selectStudent(\'' + s.id + '\')">';
+        html += '<div class="student-avatar" style="background:' + color + '">' + initial + '</div>';
+        html += '<div class="student-name">' + s.nombre + ' ' + s.apellido + '</div>';
+        html += '</div>';
+      });
+      grid.innerHTML = html;
     });
-    btnEspQuechua.addEventListener("click", () => {
-        modoActual = "espQuechua";
-        btnEspQuechua.classList.add("active");
-        btnQuechuaEsp.classList.remove("active");
-        inputLabel.innerText = "📝 Texto en Español:";
-        inputText.placeholder = "Ejemplo: Estoy caminando a mi casa.";
-        analysisBox.innerHTML = "🔍 <strong>Traducción inversa:</strong><br>Se buscará la palabra equivalente en quechua (sin sufijos).";
-        outputText.value = "";
-        inputText.value = "";
-    });
-    
-    // Acción de traducir
-    translateBtn.addEventListener("click", () => {
-        let texto = inputText.value.trim();
-        if (!texto) {
-            outputText.value = "";
-            analysisBox.innerHTML = modoActual === "quechuaEsp" 
-                ? "⚠️ Escribe una palabra o frase en quechua."
-                : "⚠️ Escribe una palabra o frase en español.";
-            return;
-        }
-        if (modoActual === "quechuaEsp") {
-            let resultado = traducirQuechuaAEsp(texto);
-            outputText.value = resultado.traduccion;
-            analysisBox.innerHTML = `🔍 <strong>Análisis morfológico detallado:</strong><br>${resultado.analisis.replace(/\n/g, '<br>')}`;
+  },
+
+  selectStudent(id) {
+    var self = this;
+    var student = self.allStudents.find(function (s) { return s.id === id; });
+    if (student) {
+      self.currentStudentId = id;
+      self.currentStudentName = student.nombre + ' ' + student.apellido;
+      sessionStorage.setItem('studentId', id);
+      sessionStorage.setItem('studentName', self.currentStudentName);
+      self.closeModal('modal-student-select');
+      self.showMainApp();
+      self.showNotification('Bienvenido, ' + self.currentStudentName, 'success');
+    }
+  },
+
+  showTutorLogin() {
+    document.getElementById('modal-tutor-login').classList.add('active');
+    document.getElementById('tutor-code-input').value = '';
+    document.getElementById('tutor-code-input').focus();
+  },
+
+  verifyTutorCode() {
+    var code = document.getElementById('tutor-code-input').value.trim();
+    if (code === '1998') {
+      sessionStorage.setItem('tutorAccess', 'true');
+      window.location.href = 'tutor.html';
+    } else {
+      this.showNotification('Codigo incorrecto', 'error');
+      document.getElementById('tutor-code-input').value = '';
+      document.getElementById('tutor-code-input').focus();
+    }
+  },
+
+  logout() {
+    sessionStorage.removeItem('studentId');
+    sessionStorage.removeItem('studentName');
+    this.currentStudentId = null;
+    this.currentStudentName = '';
+    this.showLoginScreen();
+  },
+
+  /* ====== LOAD BOOKS ====== */
+  loadBooks() {
+    var self = this;
+    var container = document.getElementById('books-container');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando biblioteca</div>';
+
+    window.LibrosModule.getAll().then(function (books) {
+      self.allBooks = books;
+      if (books.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">📚</span>No hay libros disponibles</div>';
+        return;
+      }
+      var html = '<div class="books-grid">';
+      books.forEach(function (book) {
+        html += '<div class="pixel-card fade-in" onclick="App.showBookDetail(\'' + book.id + '\')">';
+        if (book.portadaUrl) {
+          html += '<img src="' + book.portadaUrl + '" alt="' + book.titulo + '" class="pixel-card-cover">';
         } else {
-            let resultado = traducirEspAQuechua(texto);
-            outputText.value = resultado.traduccion;
-            analysisBox.innerHTML = `🔍 <strong>Diccionario (Esp→Qch):</strong><br>${resultado.analisis}`;
+          html += '<div class="pixel-card-placeholder"><span>' + book.titulo + '</span></div>';
         }
+        html += '<div class="pixel-card-body">';
+        html += '<h5>' + book.titulo + '</h5>';
+        html += '<p>' + book.autor + '</p>';
+        html += '<span class="pixel-card-badge">' + book.genero + '</span>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
     });
-    
-    // Agregar algunos ejemplos en consola
-    console.log("✅ Traductor Quechua Boliviano cargado. Basado en documentos oficiales.");
-</script>
-</body>
-</html>
+  },
+
+  /* ====== BOOK DETAIL ====== */
+  showBookDetail(bookId) {
+    var self = this;
+    var book = self.allBooks.find(function (b) { return b.id === bookId; });
+    if (!book) return;
+
+    var modal = document.getElementById('modal-book-detail');
+    var body = document.getElementById('book-detail-body');
+
+    var html = '<div class="row">';
+    html += '<div class="col-md-5 text-center">';
+    if (book.portadaUrl) {
+      html += '<img src="' + book.portadaUrl + '" alt="' + book.titulo + '" class="book-detail-cover">';
+    } else {
+      html += '<div class="book-detail-placeholder">📖</div>';
+    }
+    html += '</div>';
+    html += '<div class="col-md-7">';
+    html += '<div class="book-detail-info">';
+    html += '<h4>' + book.titulo + '</h4>';
+    html += '<p><strong>Autor:</strong> ' + book.autor + '</p>';
+    html += '<p><strong>Genero:</strong> ' + book.genero + '</p>';
+    html += '</div>';
+    html += '<div class="book-detail-actions">';
+    if (book.pdfUrl) {
+      html += '<a href="' + book.pdfUrl + '" target="_blank" class="pixel-btn pixel-btn-blue pixel-btn-sm">Descargar PDF</a>';
+    }
+    html += '<button class="pixel-btn pixel-btn-gold pixel-btn-sm" onclick="App.showRatingModal(\'' + bookId + '\')">Valorar</button>';
+    html += '</div>';
+    html += '</div></div>';
+
+    html += '<hr class="pixel-divider">';
+    html += '<h6 class="section-title" style="font-size:9px">Valoraciones del libro</h6>';
+    html += '<div id="book-ratings-list" class="book-ratings-list"><div class="pixel-loading">Cargando</div></div>';
+
+    body.innerHTML = html;
+    modal.classList.add('active');
+
+    window.ValoracionesModule.getByBook(bookId).then(function (ratings) {
+      var listEl = document.getElementById('book-ratings-list');
+      if (!listEl) return;
+      if (ratings.length === 0) {
+        listEl.innerHTML = '<div class="empty-state" style="padding:15px;font-size:8px">Sin valoraciones aun</div>';
+        return;
+      }
+      var rhtml = '';
+      ratings.forEach(function (r) {
+        var sName = self.getStudentName(r.estudianteId);
+        rhtml += '<div class="rating-item">';
+        rhtml += '<div class="rating-item-header">';
+        rhtml += '<span class="rating-item-book">' + sName + '</span>';
+        rhtml += '<span class="rating-item-date">' + self.formatDate(r.fecha) + '</span>';
+        rhtml += '</div>';
+        rhtml += '<div>' + self.renderStars(r.puntaje, false) + '</div>';
+        rhtml += '<div class="rating-item-comment">' + self.comentario + '</div>';
+        rhtml += '</div>';
+      });
+      listEl.innerHTML = rhtml;
+    });
+  },
+
+  /* ====== RATING MODAL ====== */
+  showRatingModal(bookId) {
+    this.ratingBookId = bookId;
+    this.selectedRatingScore = 0;
+    var modal = document.getElementById('modal-rating');
+    var starsContainer = document.getElementById('rating-stars');
+    var commentInput = document.getElementById('rating-comment');
+    var bookTitle = this.getBookTitle(bookId);
+    document.getElementById('rating-book-title').textContent = bookTitle;
+    starsContainer.innerHTML = this.renderStars(0, true);
+    commentInput.value = '';
+    this.closeModal('modal-book-detail');
+    modal.classList.add('active');
+  },
+
+  setRatingScore(score) {
+    this.selectedRatingScore = score;
+    var starsContainer = document.getElementById('rating-stars');
+    starsContainer.innerHTML = this.renderStars(score, true);
+  },
+
+  submitRating() {
+    var self = this;
+    var comment = document.getElementById('rating-comment').value;
+    if (self.selectedRatingScore === 0) {
+      self.showNotification('Selecciona una puntuacion', 'error');
+      return;
+    }
+    if (!comment || comment.trim() === '') {
+      self.showNotification('El comentario es obligatorio', 'error');
+      return;
+    }
+
+    window.ValoracionesModule.create(
+      self.currentStudentId,
+      self.ratingBookId,
+      self.selectedRatingScore,
+      comment
+    ).then(function () {
+      self.showNotification('Valoracion registrada', 'success');
+      self.closeModal('modal-rating');
+      self.loadMyRatings();
+    }).catch(function (e) {
+      self.showNotification(e.message || 'Error al registrar valoracion', 'error');
+    });
+  },
+
+  /* ====== MY RATINGS ====== */
+  loadMyRatings() {
+    var self = this;
+    var container = document.getElementById('my-ratings-container');
+    if (!container || !self.currentStudentId) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    window.ValoracionesModule.getByStudent(self.currentStudentId).then(function (ratings) {
+      self.allRatings = ratings;
+      if (ratings.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="padding:20px"><span class="empty-state-icon">⭐</span>Aun no has realizado valoraciones</div>';
+        return;
+      }
+      var html = '';
+      ratings.forEach(function (r) {
+        var bTitle = self.getBookTitle(r.libroId);
+        html += '<div class="rating-item fade-in">';
+        html += '<div class="rating-item-header">';
+        html += '<span class="rating-item-book">' + bTitle + '</span>';
+        html += '<div>';
+        html += '<span class="rating-item-date">' + self.formatDate(r.fecha) + '</span>';
+        html += ' <button class="pixel-btn pixel-btn-red pixel-btn-sm" style="font-size:6px;padding:3px 6px" onclick="App.deleteMyRating(\'' + r.id + '\')">X</button>';
+        html += '</div></div>';
+        html += '<div>' + self.renderStars(r.puntaje, false) + '</div>';
+        html += '<div class="rating-item-comment">' + r.comentario + '</div>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    });
+  },
+
+  deleteMyRating(id) {
+    var self = this;
+    if (!confirm('Eliminar esta valoracion?')) return;
+    window.ValoracionesModule.delete(id).then(function () {
+      self.showNotification('Valoracion eliminada', 'info');
+      self.loadMyRatings();
+    }).catch(function () {
+      self.showNotification('Error al eliminar', 'error');
+    });
+  },
+
+  /* ====== MODAL HELPERS ====== */
+  closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  },
+
+  /* ====== RANKING PAGE ====== */
+  initRanking() {
+    this.loadStudentRanking();
+    this.loadBookRanking();
+  },
+
+  loadStudentRanking() {
+    var self = this;
+    var container = document.getElementById('student-ranking-body');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    Promise.all([
+      window.EstudiantesModule.getAll(),
+      window.RankingsModule.getStudentRanking()
+    ]).then(function (results) {
+      self.allStudents = results[0];
+      var ranking = results[1];
+      if (ranking.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">🏆</span>Sin datos de ranking</div>';
+        return;
+      }
+      var html = '<div class="pixel-table-wrapper"><table class="pixel-table" style="width:100%">';
+      html += '<thead><tr><th>Pos</th><th>Nombre</th><th>Valoraciones</th></tr></thead><tbody>';
+      ranking.forEach(function (s, idx) {
+        var posClass = idx < 3 ? ' pos-' + (idx + 1) : '';
+        var medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+        html += '<tr>';
+        html += '<td><span class="ranking-position' + posClass + '">' + medal + ' ' + (idx + 1) + '</span></td>';
+        html += '<td>' + s.nombre + ' ' + s.apellido + '</td>';
+        html += '<td>' + s.totalValoraciones + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    });
+  },
+
+  loadBookRanking() {
+    var self = this;
+    var container = document.getElementById('book-ranking-body');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    Promise.all([
+      window.LibrosModule.getAll(),
+      window.RankingsModule.getBookRanking()
+    ]).then(function (results) {
+      self.allBooks = results[0];
+      var ranking = results[1];
+      if (ranking.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">📚</span>Sin datos de ranking</div>';
+        return;
+      }
+      var html = '<div class="pixel-table-wrapper"><table class="pixel-table" style="width:100%">';
+      html += '<thead><tr><th>Pos</th><th>Portada</th><th>Titulo</th><th>Autor</th><th>Promedio</th><th>Valoraciones</th></tr></thead><tbody>';
+      ranking.forEach(function (b, idx) {
+        var posClass = idx < 3 ? ' pos-' + (idx + 1) : '';
+        var medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+        html += '<tr>';
+        html += '<td><span class="ranking-position' + posClass + '">' + medal + ' ' + (idx + 1) + '</span></td>';
+        html += '<td>';
+        if (b.portadaUrl) {
+          html += '<img src="' + b.portadaUrl + '" class="ranking-cover" alt="' + b.titulo + '">';
+        } else {
+          html += '<div class="ranking-cover-placeholder">📖</div>';
+        }
+        html += '</td>';
+        html += '<td>' + b.titulo + '</td>';
+        html += '<td>' + b.autor + '</td>';
+        html += '<td>' + (b.promedio > 0 ? b.promedio.toFixed(1) : '-') + '</td>';
+        html += '<td>' + b.cantidadValoraciones + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    });
+  },
+
+  /* ====== TUTOR PAGE ====== */
+  initTutor() {
+    var access = sessionStorage.getItem('tutorAccess');
+    if (access !== 'true') {
+      this.showTutorLoginInline();
+    } else {
+      document.getElementById('tutor-login-screen').style.display = 'none';
+      document.getElementById('tutor-main').style.display = 'block';
+      this.loadTutorStudents();
+    }
+  },
+
+  showTutorLoginInline() {
+    document.getElementById('tutor-login-screen').style.display = 'flex';
+    document.getElementById('tutor-main').style.display = 'none';
+  },
+
+  verifyTutorCodeInline() {
+    var code = document.getElementById('tutor-code-inline').value.trim();
+    if (code === '1998') {
+      sessionStorage.setItem('tutorAccess', 'true');
+      document.getElementById('tutor-login-screen').style.display = 'none';
+      document.getElementById('tutor-main').style.display = 'block';
+      this.loadTutorStudents();
+      this.showNotification('Acceso concedido', 'success');
+    } else {
+      this.showNotification('Codigo incorrecto', 'error');
+    }
+  },
+
+  tutorLogout() {
+    sessionStorage.removeItem('tutorAccess');
+    window.location.href = 'index.html';
+  },
+
+  switchTutorTab(tabName) {
+    var tabs = document.querySelectorAll('.tutor-tab');
+    var contents = document.querySelectorAll('.tutor-content');
+    tabs.forEach(function (t) { t.classList.remove('active'); });
+    contents.forEach(function (c) { c.classList.remove('active'); });
+    document.getElementById('tab-btn-' + tabName).classList.add('active');
+    document.getElementById('tab-content-' + tabName).classList.add('active');
+
+    if (tabName === 'estudiantes') this.loadTutorStudents();
+    if (tabName === 'libros') this.loadTutorBooks();
+    if (tabName === 'valoraciones') this.loadTutorRatings();
+    if (tabName === 'estadisticas') this.loadTutorStats();
+  },
+
+  /* ====== TUTOR: ESTUDIANTES ====== */
+  loadTutorStudents() {
+    var self = this;
+    var container = document.getElementById('tutor-students-list');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    window.EstudiantesModule.getAll().then(function (students) {
+      self.allStudents = students;
+      if (students.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">👤</span>No hay estudiantes</div>';
+        return;
+      }
+      var html = '';
+      students.forEach(function (s) {
+        html += '<div class="tutor-student-card">';
+        html += '<div class="tutor-student-card-info">' + s.nombre + ' ' + s.apellido + '</div>';
+        html += '<div class="tutor-student-card-actions">';
+        html += '<button class="pixel-btn pixel-btn-blue pixel-btn-sm" onclick="App.editStudent(\'' + s.id + '\',\'' + self.escapeStr(s.nombre) + '\',\'' + self.escapeStr(s.apellido) + '\')">Editar</button>';
+        html += '<button class="pixel-btn pixel-btn-red pixel-btn-sm" onclick="App.deleteStudent(\'' + s.id + '\')">Eliminar</button>';
+        html += '</div></div>';
+      });
+      container.innerHTML = html;
+      document.getElementById('student-count').textContent = students.length + '/26';
+    });
+  },
+
+  escapeStr(str) {
+    return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+  },
+
+  addStudent() {
+    var nombre = document.getElementById('add-student-nombre').value.trim();
+    var apellido = document.getElementById('add-student-apellido').value.trim();
+    if (!nombre || !apellido) {
+      this.showNotification('Completa todos los campos', 'error');
+      return;
+    }
+    var self = this;
+    window.EstudiantesModule.create(nombre, apellido).then(function () {
+      self.showNotification('Estudiante agregado', 'success');
+      document.getElementById('add-student-nombre').value = '';
+      document.getElementById('add-student-apellido').value = '';
+      self.loadTutorStudents();
+    }).catch(function (e) {
+      self.showNotification(e.message, 'error');
+    });
+  },
+
+  editStudent(id, nombre, apellido) {
+    document.getElementById('edit-student-id').value = id;
+    document.getElementById('edit-student-nombre').value = nombre;
+    document.getElementById('edit-student-apellido').value = apellido;
+    document.getElementById('modal-edit-student').classList.add('active');
+  },
+
+  saveEditStudent() {
+    var id = document.getElementById('edit-student-id').value;
+    var nombre = document.getElementById('edit-student-nombre').value.trim();
+    var apellido = document.getElementById('edit-student-apellido').value.trim();
+    if (!nombre || !apellido) {
+      this.showNotification('Completa todos los campos', 'error');
+      return;
+    }
+    var self = this;
+    window.EstudiantesModule.update(id, nombre, apellido).then(function () {
+      self.showNotification('Estudiante actualizado', 'success');
+      self.closeModal('modal-edit-student');
+      self.loadTutorStudents();
+    }).catch(function (e) {
+      self.showNotification('Error al actualizar', 'error');
+    });
+  },
+
+  deleteStudent(id) {
+    if (!confirm('Eliminar este estudiante y sus valoraciones?')) return;
+    var self = this;
+    window.EstudiantesModule.delete(id).then(function () {
+      self.showNotification('Estudiante eliminado', 'info');
+      self.loadTutorStudents();
+    }).catch(function () {
+      self.showNotification('Error al eliminar', 'error');
+    });
+  },
+
+  /* ====== TUTOR: LIBROS ====== */
+  loadTutorBooks() {
+    var self = this;
+    var container = document.getElementById('tutor-books-list');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    window.LibrosModule.getAll().then(function (books) {
+      self.allBooks = books;
+      if (books.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">📚</span>No hay libros</div>';
+        return;
+      }
+      var html = '';
+      books.forEach(function (b) {
+        html += '<div class="tutor-book-card">';
+        if (b.portadaUrl) {
+          html += '<img src="' + b.portadaUrl + '" class="tutor-book-card-cover" alt="' + b.titulo + '">';
+        } else {
+          html += '<div class="tutor-book-card-cover-placeholder">📖</div>';
+        }
+        html += '<div class="tutor-book-card-info">';
+        html += '<h5>' + b.titulo + '</h5>';
+        html += '<p>Autor: ' + b.autor + '</p>';
+        html += '<p>Genero: ' + b.genero + '</p>';
+        if (b.pdfUrl) {
+          html += '<p style="color:var(--green-light)">PDF disponible</p>';
+        } else {
+          html += '<p style="opacity:0.4">Sin PDF</p>';
+        }
+        html += '<div class="tutor-book-card-actions">';
+        html += '<button class="pixel-btn pixel-btn-blue pixel-btn-sm" onclick="App.editBook(\'' + b.id + '\')">Editar</button>';
+        html += '<button class="pixel-btn pixel-btn-red pixel-btn-sm" onclick="App.deleteBook(\'' + b.id + '\')">Eliminar</button>';
+        html += '<div class="pixel-file-input"><button class="pixel-btn pixel-btn-green pixel-btn-sm">Portada</button><input type="file" accept="image/jpeg,image/png" onchange="App.uploadBookCover(\'' + b.id + '\',this)"></div>';
+        if (b.portadaUrl) {
+          html += '<button class="pixel-btn pixel-btn-sm" style="background:#8b6914;color:#fff;border-color:#a0862a #5a4510 #5a4510 #a0862a" onclick="App.deleteBookCover(\'' + b.id + '\')">X Portada</button>';
+        }
+        html += '<div class="pixel-file-input"><button class="pixel-btn pixel-btn-green pixel-btn-sm">PDF</button><input type="file" accept="application/pdf" onchange="App.uploadBookPDF(\'' + b.id + '\',this)"></div>';
+        if (b.pdfUrl) {
+          html += '<button class="pixel-btn pixel-btn-sm" style="background:#8b6914;color:#fff;border-color:#a0862a #5a4510 #5a4510 #a0862a" onclick="App.deleteBookPDF(\'' + b.id + '\')">X PDF</button>';
+        }
+        html += '</div></div></div>';
+      });
+      container.innerHTML = html;
+      document.getElementById('book-count').textContent = books.length + '/30';
+    });
+  },
+
+  addBook() {
+    var titulo = document.getElementById('add-book-titulo').value.trim();
+    var autor = document.getElementById('add-book-autor').value.trim();
+    var genero = document.getElementById('add-book-genero').value.trim();
+    if (!titulo || !autor || !genero) {
+      this.showNotification('Completa todos los campos', 'error');
+      return;
+    }
+    var self = this;
+    window.LibrosModule.create(titulo, autor, genero).then(function (id) {
+      var coverInput = document.getElementById('add-book-cover');
+      var pdfInput = document.getElementById('add-book-pdf');
+      var promises = [];
+      if (coverInput.files.length > 0) {
+        promises.push(window.LibrosModule.uploadCover(id, coverInput.files[0]));
+      }
+      if (pdfInput.files.length > 0) {
+        promises.push(window.LibrosModule.uploadPDF(id, pdfInput.files[0]));
+      }
+      Promise.all(promises).then(function () {
+        self.showNotification('Libro agregado', 'success');
+        document.getElementById('add-book-titulo').value = '';
+        document.getElementById('add-book-autor').value = '';
+        document.getElementById('add-book-genero').value = '';
+        document.getElementById('add-book-cover').value = '';
+        document.getElementById('add-book-pdf').value = '';
+        self.loadTutorBooks();
+      });
+    }).catch(function (e) {
+      self.showNotification(e.message, 'error');
+    });
+  },
+
+  editBook(id) {
+    var self = this;
+    var book = self.allBooks.find(function (b) { return b.id === id; });
+    if (!book) return;
+    document.getElementById('edit-book-id').value = id;
+    document.getElementById('edit-book-titulo').value = book.titulo;
+    document.getElementById('edit-book-autor').value = book.autor;
+    document.getElementById('edit-book-genero').value = book.genero;
+    document.getElementById('modal-edit-book').classList.add('active');
+  },
+
+  saveEditBook() {
+    var id = document.getElementById('edit-book-id').value;
+    var titulo = document.getElementById('edit-book-titulo').value.trim();
+    var autor = document.getElementById('edit-book-autor').value.trim();
+    var genero = document.getElementById('edit-book-genero').value.trim();
+    if (!titulo || !autor || !genero) {
+      this.showNotification('Completa todos los campos', 'error');
+      return;
+    }
+    var self = this;
+    window.LibrosModule.update(id, { titulo: titulo, autor: autor, genero: genero }).then(function () {
+      self.showNotification('Libro actualizado', 'success');
+      self.closeModal('modal-edit-book');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al actualizar', 'error');
+    });
+  },
+
+  deleteBook(id) {
+    if (!confirm('Eliminar este libro, sus valoraciones y archivos?')) return;
+    var self = this;
+    window.LibrosModule.delete(id).then(function () {
+      self.showNotification('Libro eliminado', 'info');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al eliminar', 'error');
+    });
+  },
+
+  uploadBookCover(id, input) {
+    var self = this;
+    if (!input.files.length) return;
+    self.showNotification('Subiendo portada...', 'info');
+    window.LibrosModule.uploadCover(id, input.files[0]).then(function () {
+      self.showNotification('Portada subida', 'success');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al subir portada', 'error');
+    });
+  },
+
+  deleteBookCover(id) {
+    if (!confirm('Eliminar portada?')) return;
+    var self = this;
+    window.LibrosModule.deleteCover(id).then(function () {
+      self.showNotification('Portada eliminada', 'info');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al eliminar portada', 'error');
+    });
+  },
+
+  uploadBookPDF(id, input) {
+    var self = this;
+    if (!input.files.length) return;
+    self.showNotification('Subiendo PDF...', 'info');
+    window.LibrosModule.uploadPDF(id, input.files[0]).then(function () {
+      self.showNotification('PDF subido', 'success');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al subir PDF', 'error');
+    });
+  },
+
+  deleteBookPDF(id) {
+    if (!confirm('Eliminar PDF?')) return;
+    var self = this;
+    window.LibrosModule.deletePDF(id).then(function () {
+      self.showNotification('PDF eliminado', 'info');
+      self.loadTutorBooks();
+    }).catch(function () {
+      self.showNotification('Error al eliminar PDF', 'error');
+    });
+  },
+
+  /* ====== TUTOR: VALORACIONES ====== */
+  loadTutorRatings() {
+    var self = this;
+    var container = document.getElementById('tutor-ratings-list');
+    if (!container) return;
+    container.innerHTML = '<div class="pixel-loading">Cargando</div>';
+
+    Promise.all([
+      window.ValoracionesModule.getAll(),
+      window.EstudiantesModule.getAll(),
+      window.LibrosModule.getAll()
+    ]).then(function (results) {
+      self.allRatings = results[0];
+      self.allStudents = results[1];
+      self.allBooks = results[2];
+      self.populateFilterSelects();
+      self.renderFilteredRatings();
+    });
+  },
+
+  populateFilterSelects() {
+    var self = this;
+    var studentFilter = document.getElementById('filter-student');
+    var bookFilter = document.getElementById('filter-book');
+    if (studentFilter) {
+      var sh = '<option value="">Todos los estudiantes</option>';
+      self.allStudents.forEach(function (s) {
+        sh += '<option value="' + s.id + '">' + s.nombre + ' ' + s.apellido + '</option>';
+      });
+      studentFilter.innerHTML = sh;
+    }
+    if (bookFilter) {
+      var bh = '<option value="">Todos los libros</option>';
+      self.allBooks.forEach(function (b) {
+        bh += '<option value="' + b.id + '">' + b.titulo + '</option>';
+      });
+      bookFilter.innerHTML = bh;
+    }
+  },
+
+  filterRatings() {
+    this.renderFilteredRatings();
+  },
+
+  renderFilteredRatings() {
+    var self = this;
+    var studentFilter = document.getElementById('filter-student');
+    var bookFilter = document.getElementById('filter-book');
+    var container = document.getElementById('tutor-ratings-list');
+
+    var sf = studentFilter ? studentFilter.value : '';
+    var bf = bookFilter ? bookFilter.value : '';
+
+    var filtered = self.allRatings.filter(function (r) {
+      var matchStudent = !sf || r.estudianteId === sf;
+      var matchBook = !bf || r.libroId === bf;
+      return matchStudent && matchBook;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state"><span class="empty-state-icon">⭐</span>No hay valoraciones</div>';
+      return;
+    }
+
+    var html = '<div class="pixel-table-wrapper"><table class="pixel-table" style="width:100%">';
+    html += '<thead><tr><th>Estudiante</th><th>Libro</th><th>Puntaje</th><th>Comentario</th><th>Fecha</th><th>Accion</th></tr></thead><tbody>';
+    filtered.forEach(function (r) {
+      html += '<tr>';
+      html += '<td>' + self.getStudentName(r.estudianteId) + '</td>';
+      html += '<td>' + self.getBookTitle(r.libroId) + '</td>';
+      html += '<td>' + self.renderStars(r.puntaje, false) + '</td>';
+      html += '<td style="max-width:200px;word-break:break-word">' + r.comentario + '</td>';
+      html += '<td style="white-space:nowrap">' + self.formatDate(r.fecha) + '</td>';
+      html += '<td><button class="pixel-btn pixel-btn-red pixel-btn-sm" onclick="App.deleteTutorRating(\'' + r.id + '\')">X</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+  },
+
+  deleteTutorRating(id) {
+    if (!confirm('Eliminar esta valoracion?')) return;
+    var self = this;
+    window.ValoracionesModule.delete(id).then(function () {
+      self.showNotification('Valoracion eliminada', 'info');
+      self.loadTutorRatings();
+    }).catch(function () {
+      self.showNotification('Error al eliminar', 'error');
+    });
+  },
+
+  /* ====== TUTOR: ESTADISTICAS ====== */
+  loadTutorStats() {
+    var self = this;
+    Promise.all([
+      window.EstudiantesModule.getAll(),
+      window.LibrosModule.getAll(),
+      window.ValoracionesModule.getAll(),
+      window.RankingsModule.getStudentRanking(),
+      window.RankingsModule.getBookRanking()
+    ]).then(function (results) {
+      self.allStudents = results[0];
+      self.allBooks = results[1];
+      self.allRatings = results[2];
+      var studentRanking = results[3];
+      var bookRanking = results[4];
+
+      var totalEstudiantes = self.allStudents.length;
+      var totalLibros = self.allBooks.length;
+      var totalValoraciones = self.allRatings.length;
+      var promedioGeneral = 0;
+      if (totalValoraciones > 0) {
+        var suma = 0;
+        self.allRatings.forEach(function (r) { suma += r.puntaje; });
+        promedioGeneral = (suma / totalValoraciones).toFixed(1);
+      }
+
+      document.getElementById('stat-estudiantes').textContent = totalEstudiantes;
+      document.getElementById('stat-libros').textContent = totalLibros;
+      document.getElementById('stat-valoraciones').textContent = totalValoraciones;
+      document.getElementById('stat-promedio').textContent = promedioGeneral || '-';
+
+      /* Ranking estudiantes en stats */
+      var srContainer = document.getElementById('stats-student-ranking');
+      if (srContainer) {
+        if (studentRanking.length === 0) {
+          srContainer.innerHTML = '<div class="empty-state" style="padding:15px;font-size:8px">Sin datos</div>';
+        } else {
+          var shtml = '<div class="pixel-table-wrapper"><table class="pixel-table" style="width:100%">';
+          shtml += '<thead><tr><th>Pos</th><th>Nombre</th><th>Valoraciones</th></tr></thead><tbody>';
+          studentRanking.forEach(function (s, idx) {
+            var medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+            shtml += '<tr><td>' + medal + ' ' + (idx + 1) + '</td><td>' + s.nombre + ' ' + s.apellido + '</td><td>' + s.totalValoraciones + '</td></tr>';
+          });
+          shtml += '</tbody></table></div>';
+          srContainer.innerHTML = shtml;
+        }
+      }
+
+      /* Ranking libros en stats */
+      var brContainer = document.getElementById('stats-book-ranking');
+      if (brContainer) {
+        if (bookRanking.length === 0) {
+          brContainer.innerHTML = '<div class="empty-state" style="padding:15px;font-size:8px">Sin datos</div>';
+        } else {
+          var bhtml = '<div class="pixel-table-wrapper"><table class="pixel-table" style="width:100%">';
+          bhtml += '<thead><tr><th>Pos</th><th>Titulo</th><th>Promedio</th><th>Valoraciones</th></tr></thead><tbody>';
+          bookRanking.forEach(function (b, idx) {
+            var medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+            bhtml += '<tr><td>' + medal + ' ' + (idx + 1) + '</td><td>' + b.titulo + '</td><td>' + (b.promedio > 0 ? b.promedio.toFixed(1) : '-') + '</td><td>' + b.cantidadValoraciones + '</td></tr>';
+          });
+          bhtml += '</tbody></table></div>';
+          brContainer.innerHTML = bhtml;
+        }
+      }
+    });
+  }
+};
